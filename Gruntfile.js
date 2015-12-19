@@ -1,6 +1,5 @@
 var css = require("css"),
-    fs = require("fs")
-    datauri = require("datauri");
+    fs = require("fs");
 
 module.exports = function(grunt) {
 
