@@ -1,6 +1,7 @@
 (function ($, window, nodeGlobal) {
-	var global = {jquery: $}, globalFunc = {}, globalClass = {};
-	var navigator = window.navigator;
+	var global = {},
+		globalFunc = {},
+		globalClass = {};
 
 	// JUI의 기본 설정 값 (향후 더 추가될 수 있음)
 	var globalOpts = {
@@ -11,6 +12,7 @@
 		},
 		logUrl: "tool/debug.html"
 	};
+
 
 	/**
 	 * @class util.base
@@ -35,13 +37,13 @@
 		browser: {
 			webkit: ('WebkitAppearance' in document.documentElement.style) ? true : false,
 			mozilla: (typeof window.mozInnerScreenX != "undefined") ? true : false,
-			msie: (navigator.userAgent.indexOf("Trident") != -1) ? true : false
+			msie: (window.navigator.userAgent.indexOf("Trident") != -1) ? true : false
 		},
 		/**
 		 * @property {Boolean} isTouch
 		 * check touch device
 		 */
-		isTouch: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+		isTouch: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(window.navigator.userAgent),
 
 		//-- Functions
 		/**
@@ -142,7 +144,7 @@
 		 * @return {Array}
 		 */
 		clone: function (obj) {
-			var clone = ($.isArray(obj)) ? [] : {};
+			var clone = (this.typeCheck("array", obj)) ? [] : {};
 
 			for (var i in obj) {
 				if (this.typeCheck("object", obj[i]))
@@ -241,9 +243,7 @@
 				}
 			})();
 
-			$(window).resize(function () {
-				after_resize();
-			});
+			window.onresize = after_resize;
 		},
 		/**
 		 * @method index
@@ -404,7 +404,7 @@
 		 */
 		dataToCsv2: function (options) {
 			var csv = "";
-			var opts = $.extend({
+			var opts = this.extend({
 				fields: null, // required
 				rows: null, // required
 				names: null,
@@ -492,7 +492,7 @@
 							data[keys[j]] = tmpArr[j];
 						}
 
-						if ($.inArray(keys[j], csvNumber) != -1) {
+						if (this.inArray(keys[j], csvNumber) != -1) {
 							data[keys[j]] = parseFloat(tmpArr[j]);
 						}
 					}
@@ -842,6 +842,69 @@
 			var lastIndex = subjectString.indexOf(searchString, position);
 
 			return lastIndex !== -1 && lastIndex === position;
+		},
+
+		inArray: function (target, list) {
+			for(var i = 0, len = list.length; i < len; i++) {
+				if(list[i] == target)
+					return i;
+			}
+
+			return -1;
+		},
+
+		offset: function(elem) {
+			function isWindow(obj) {
+				/* jshint eqeqeq: false */
+				return obj != null && obj == obj.window;
+			}
+
+			function getWindow(elem) {
+				return isWindow(elem) ?
+					elem :
+					elem.nodeType === 9 ?
+					elem.defaultView || elem.parentWindow :
+						false;
+			}
+
+			var docElem, win,
+				box = { top: 0, left: 0 },
+				doc = elem && elem.ownerDocument;
+
+			if ( !doc ) {
+				return;
+			}
+
+			docElem = doc.documentElement;
+
+			// Make sure it's not a disconnected DOM node
+			/*/
+			if ( !jQuery.contains( docElem, elem ) ) {
+				return box;
+			}
+			/**/
+
+			// If we don't have gBCR, just use 0,0 rather than error
+			// BlackBerry 5, iOS 3 (original iPhone)
+			var strundefined = typeof undefined;
+			if ( typeof elem.getBoundingClientRect !== strundefined ) {
+				box = elem.getBoundingClientRect();
+			}
+			win = getWindow( doc );
+
+			return {
+				top: box.top  + ( win.pageYOffset || docElem.scrollTop )  - ( docElem.clientTop  || 0 ),
+				left: box.left + ( win.pageXOffset || docElem.scrollLeft ) - ( docElem.clientLeft || 0 )
+			};
+		},
+
+		trim: function( text ) {
+			var whitespace = "[\\x20\\t\\r\\n\\f]",
+				rtrim = new RegExp( "^" + whitespace + "+|((?:^|[^\\\\])(?:\\\\.)*)" + whitespace + "+$", "g" );
+
+			return text == null ?
+				"" :
+				( text + "" ).replace( rtrim, "" );
 		}
 	}
 
@@ -856,7 +919,7 @@
 		for (var i = 0; i < depends.length; i++) {
 			var module = global[depends[i]];
 
-			if (!utility.typeCheck(["function", "object"], module)) {
+			if (!utility.typeCheck([ "function", "object" ], module)) {
 				var modules = getModules(depends[i]);
 
 				if (modules == null) {
@@ -905,6 +968,8 @@
 	 */
 	window.jui = nodeGlobal.jui = {
 
+		jQuery: $,
+
 		/**
 		 * @method ready
 		 *
@@ -917,20 +982,25 @@
 				callback = (arguments.length == 2) ? arguments[1] : arguments[0],
 				depends = (arguments.length == 2) ? arguments[0] : null;
 
-			if (!utility.typeCheck(["array", "null"], depends) || !utility.typeCheck("function", callback)) {
-
+			if (!utility.typeCheck([ "array", "null" ], depends) || !utility.typeCheck("function", callback)) {
 				throw new Error("JUI_CRITICAL_ERR: Invalid parameter type of the function");
 			}
 
-			$(function () {
+			if ($ != null) {
+				$(load);
+			} else {
+				window.onload = load;
+			}
+
+			function load() {
 				if (depends) {
 					args = getDepends(depends);
 				} else {
-					args = [getModules("ui"), getModules("uix"), utility];
+					args = [ getModules("ui"), getModules("uix"), utility ];
 				}
 
 				callback.apply(null, args);
-			});
+			}
 		},
 
 		/**
@@ -1051,7 +1121,7 @@
 			for (var i = 0; i < optKeys.length; i++) {
 				var name = optKeys[i];
 
-				if ($.inArray(name, defOptKeys) == -1 && $.inArray(name, exceptOpts) == -1) {
+				if (utility.inArray(name, defOptKeys) == -1 && utility.inArray(name, exceptOpts) == -1) {
 					throw new Error("JUI_CRITICAL_ERR: '" + name + "' is not an option");
 				}
 			}
@@ -1150,9 +1220,14 @@
 			return globalOpts;
 		}
 	};
-})(jQuery || $, window, (typeof global !== "undefined") ? global : window);
+})(
+	(typeof(jQuery) !== "undefined") ? jQuery : null,
+	window,
+	(typeof(global) !== "undefined") ? global : window
+);
 
-jui.define("manager", [ "jquery", "util.base" ], function($, _) {
+jui.define("manager", [ "util.base" ], function(_) {
+    var $ = jui.jQuery;
 
     /**
      * @class core.UIManager
@@ -1427,7 +1502,8 @@ jui.define("manager", [ "jquery", "util.base" ], function($, _) {
 
     return UIManager;
 });
-jui.define("event", [ "jquery", "util.base" ], function($, _) {
+jui.define("event", [ "util.base" ], function(_) {
+    var $ = jui.jQuery;
 
     var UIEvent = function () {
         var list = [];
@@ -1550,8 +1626,9 @@ jui.define("collection", [], function() {
 
     return UICollection;
 });
-jui.define("core", [ "jquery", "util.base", "manager", "event", "collection" ],
-	function($, _, UIManager, UIEvent, UICollection) {
+jui.define("core", [ "util.base", "manager", "event", "collection" ],
+    function(_, UIManager, UIEvent, UICollection) {
+    var $ = jui.jQuery;
 
 	/** 
 	 * @class core
@@ -1829,45 +1906,43 @@ jui.define("core", [ "jquery", "util.base", "manager", "event", "collection" ],
         }
 	};
 
+
     UICore.build = function(UI) {
 
-        return function(selector, options) {
-            var $root = $(selector || "<div />");
-            var list = [];
+        function createUIObject(selector, index, elem, options) {
+            var mainObj = new UI["class"]();
 
-            $root.each(function(index) {
-                var mainObj = new UI["class"]();
+            // Check Options
+            var opts = jui.defineOptions(UI["class"], options || {});
 
-                // Check Options
-                var opts = jui.defineOptions(UI["class"], options || {});
+            // Public Properties
+            mainObj.init.prototype = mainObj;
+            /** @property {String/HTMLElement} selector */
+            mainObj.init.prototype.selector = selector;
+            /** @property {HTMLElement} root */
+            mainObj.init.prototype.root = elem;
+            /** @property {Object} options */
+            mainObj.init.prototype.options = opts;
+            /** @property {Object} tpl Templates */
+            mainObj.init.prototype.tpl = {};
+            /** @property {Array} event Custom events */
+            mainObj.init.prototype.event = new Array(); // Custom Event
+            /** @property {Object} listen Dom events */
+            mainObj.init.prototype.listen = new UIEvent(); // DOM Event
+            /** @property {Integer} timestamp UI Instance creation time*/
+            mainObj.init.prototype.timestamp = new Date().getTime();
+            /** @property {Integer} index Index of UI instance*/
+            mainObj.init.prototype.index = index;
+            /** @property {Class} module Module class */
+            mainObj.init.prototype.module = UI;
 
-                // Public Properties
-                mainObj.init.prototype = mainObj;
-                /** @property {String/HTMLElement} selector */
-                mainObj.init.prototype.selector = $root.selector;
-                /** @property {HTMLElement} root */
-                mainObj.init.prototype.root = this;
-                /** @property {Object} options */
-                mainObj.init.prototype.options = opts;
-                /** @property {Object} tpl Templates */
-                mainObj.init.prototype.tpl = {};
-                /** @property {Array} event Custom events */
-                mainObj.init.prototype.event = new Array(); // Custom Event
-                /** @property {Object} listen Dom events */
-                mainObj.init.prototype.listen = new UIEvent(); // DOM Event
-                /** @property {Integer} timestamp UI Instance creation time*/
-                mainObj.init.prototype.timestamp = new Date().getTime();
-                /** @property {Integer} index Index of UI instance*/
-                mainObj.init.prototype.index = index;
-                /** @property {Class} module Module class */
-                mainObj.init.prototype.module = UI;
-
-                // Template Setting (Markup)
-                $("script").each(function(i) {
-                    if(selector == $(this).data("jui") || selector == $(this).data("vo") || selector instanceof HTMLElement) {
+            // Template Settings (jQuery loaded)
+            if($ != null) {
+                $("script").each(function (i) { // Markup
+                    if (selector == $(this).data("jui") || selector == $(this).data("vo") || selector instanceof HTMLElement) {
                         var tplName = $(this).data("tpl");
 
-                        if(tplName == "") {
+                        if (tplName == "") {
                             throw new Error("JUI_CRITICAL_ERR: 'data-tpl' property is required");
                         }
 
@@ -1875,27 +1950,55 @@ jui.define("core", [ "jquery", "util.base", "manager", "event", "collection" ],
                     }
                 });
 
-                // Template Setting (Script)
-                for(var name in opts.tpl) {
+                for (var name in opts.tpl) { // Script
                     var tplHtml = opts.tpl[name];
 
-                    if(_.typeCheck("string", tplHtml) && tplHtml != "") {
+                    if (_.typeCheck("string", tplHtml) && tplHtml != "") {
                         mainObj.init.prototype.tpl[name] = _.template(tplHtml);
                     }
                 }
+            }
 
-                var uiObj = new mainObj.init();
+            var uiObj = new mainObj.init();
 
-                // Event Setting
-                for(var key in opts.event) {
-                    uiObj.on(key, opts.event[key]);
+            // Event Setting
+            for(var key in opts.event) {
+                uiObj.on(key, opts.event[key]);
+            }
+
+            // 엘리먼트 객체에 jui 속성 추가
+            elem.jui = uiObj;
+
+            return uiObj;
+        }
+
+        return function(selector, options) {
+            var list = [];
+
+            // jQuery loaded
+            if($ != null) {
+                var $root = $(selector || "<div />");
+
+                $root.each(function (index) {
+                    list[index] = createUIObject($root.selector, index, this, options);
+                });
+            } else {
+                var elemList = [];
+
+                if(_.typeCheck("string", selector)) {
+                    if (_.startsWith(selector, "#")) {
+                        elemList.push(document.getElementById(selector.substr(1)));
+                    } else if (_.startsWith(selector, ".")) {
+                        elemList = document.getElementsByClassName(selector.substr(1));
+                    }
+                } else {
+                    elemList.push(selector);
                 }
 
-                list[index] = uiObj;
-
-                // 엘리먼트 객체에 jui 속성 추가
-                this.jui = uiObj;
-            });
+                for(var i = 0, len = elemList.length; i < len; i++) {
+                    list[i] = createUIObject(selector, i, elemList[i], options);
+                }
+            }
 
             // UIManager에 데이터 입력
             UIManager.add(new UICollection(UI.type, selector, options, list));
@@ -1952,7 +2055,7 @@ jui.define("core", [ "jquery", "util.base", "manager", "event", "collection" ],
      * @extends core.UIManager
      * @singleton
      */
-	window.jui = (typeof(jui) == "object") ? $.extend(jui, UIManager) : UIManager;
+	window.jui = (typeof(jui) == "object") ? _.extend(jui, UIManager) : UIManager;
 	
 	return UICore;
 });
@@ -3687,7 +3790,7 @@ jui.define("util.scale", [ "util.math", "util.time" ], function(math, _time) {
 	return self;
 });
 
-jui.define("util.color", ["jquery", "util.math"], function($, math) {
+jui.define("util.color", [ "util.math" ], function(math) {
 
 	/**
 	 *  @class util.color
@@ -3785,7 +3888,7 @@ jui.define("util.color", ["jquery", "util.math"], function($, math) {
 					var arr = str.replace("rgb(", "").replace(")","").split(",");
 
 					for(var i = 0, len = arr.length; i < len; i++) {
-						arr[i] = parseInt($.trim(arr[i]), 10);
+						arr[i] = parseInt(_.trim(arr[i]), 10);
 					}
 
 					return { r : arr[0], g : arr[1], b : arr[2], a : 1	};
@@ -3795,9 +3898,9 @@ jui.define("util.color", ["jquery", "util.math"], function($, math) {
 					for(var i = 0, len = arr.length; i < len; i++) {
 
 						if (len - 1 == i) {
-							arr[i] = parseFloat($.trim(arr[i]));
+							arr[i] = parseFloat(_.trim(arr[i]));
 						} else {
-							arr[i] = parseInt($.trim(arr[i]), 10);
+							arr[i] = parseInt(_.trim(arr[i]), 10);
 						}
 					}
 

@@ -1,4 +1,5 @@
-jui.define("manager", [ "jquery", "util.base" ], function($, _) {
+jui.define("manager", [ "util.base" ], function(_) {
+    var $ = jui.jQuery;
 
     /**
      * @class core.UIManager

@@ -1,5 +1,6 @@
-jui.define("core", [ "jquery", "util.base", "manager", "event", "collection" ],
-	function($, _, UIManager, UIEvent, UICollection) {
+jui.define("core", [ "util.base", "manager", "event", "collection" ],
+    function(_, UIManager, UIEvent, UICollection) {
+    var $ = jui.jQuery;
 
 	/** 
 	 * @class core
@@ -277,45 +278,43 @@ jui.define("core", [ "jquery", "util.base", "manager", "event", "collection" ],
         }
 	};
 
+
     UICore.build = function(UI) {
 
-        return function(selector, options) {
-            var $root = $(selector || "<div />");
-            var list = [];
+        function createUIObject(selector, index, elem, options) {
+            var mainObj = new UI["class"]();
 
-            $root.each(function(index) {
-                var mainObj = new UI["class"]();
+            // Check Options
+            var opts = jui.defineOptions(UI["class"], options || {});
 
-                // Check Options
-                var opts = jui.defineOptions(UI["class"], options || {});
+            // Public Properties
+            mainObj.init.prototype = mainObj;
+            /** @property {String/HTMLElement} selector */
+            mainObj.init.prototype.selector = selector;
+            /** @property {HTMLElement} root */
+            mainObj.init.prototype.root = elem;
+            /** @property {Object} options */
+            mainObj.init.prototype.options = opts;
+            /** @property {Object} tpl Templates */
+            mainObj.init.prototype.tpl = {};
+            /** @property {Array} event Custom events */
+            mainObj.init.prototype.event = new Array(); // Custom Event
+            /** @property {Object} listen Dom events */
+            mainObj.init.prototype.listen = new UIEvent(); // DOM Event
+            /** @property {Integer} timestamp UI Instance creation time*/
+            mainObj.init.prototype.timestamp = new Date().getTime();
+            /** @property {Integer} index Index of UI instance*/
+            mainObj.init.prototype.index = index;
+            /** @property {Class} module Module class */
+            mainObj.init.prototype.module = UI;
 
-                // Public Properties
-                mainObj.init.prototype = mainObj;
-                /** @property {String/HTMLElement} selector */
-                mainObj.init.prototype.selector = $root.selector;
-                /** @property {HTMLElement} root */
-                mainObj.init.prototype.root = this;
-                /** @property {Object} options */
-                mainObj.init.prototype.options = opts;
-                /** @property {Object} tpl Templates */
-                mainObj.init.prototype.tpl = {};
-                /** @property {Array} event Custom events */
-                mainObj.init.prototype.event = new Array(); // Custom Event
-                /** @property {Object} listen Dom events */
-                mainObj.init.prototype.listen = new UIEvent(); // DOM Event
-                /** @property {Integer} timestamp UI Instance creation time*/
-                mainObj.init.prototype.timestamp = new Date().getTime();
-                /** @property {Integer} index Index of UI instance*/
-                mainObj.init.prototype.index = index;
-                /** @property {Class} module Module class */
-                mainObj.init.prototype.module = UI;
-
-                // Template Setting (Markup)
-                $("script").each(function(i) {
-                    if(selector == $(this).data("jui") || selector == $(this).data("vo") || selector instanceof HTMLElement) {
+            // Template Settings (jQuery loaded)
+            if($ != null) {
+                $("script").each(function (i) { // Markup
+                    if (selector == $(this).data("jui") || selector == $(this).data("vo") || selector instanceof HTMLElement) {
                         var tplName = $(this).data("tpl");
 
-                        if(tplName == "") {
+                        if (tplName == "") {
                             throw new Error("JUI_CRITICAL_ERR: 'data-tpl' property is required");
                         }
 
@@ -323,27 +322,55 @@ jui.define("core", [ "jquery", "util.base", "manager", "event", "collection" ],
                     }
                 });
 
-                // Template Setting (Script)
-                for(var name in opts.tpl) {
+                for (var name in opts.tpl) { // Script
                     var tplHtml = opts.tpl[name];
 
-                    if(_.typeCheck("string", tplHtml) && tplHtml != "") {
+                    if (_.typeCheck("string", tplHtml) && tplHtml != "") {
                         mainObj.init.prototype.tpl[name] = _.template(tplHtml);
                     }
                 }
+            }
 
-                var uiObj = new mainObj.init();
+            var uiObj = new mainObj.init();
 
-                // Event Setting
-                for(var key in opts.event) {
-                    uiObj.on(key, opts.event[key]);
+            // Event Setting
+            for(var key in opts.event) {
+                uiObj.on(key, opts.event[key]);
+            }
+
+            // 엘리먼트 객체에 jui 속성 추가
+            elem.jui = uiObj;
+
+            return uiObj;
+        }
+
+        return function(selector, options) {
+            var list = [];
+
+            // jQuery loaded
+            if($ != null) {
+                var $root = $(selector || "<div />");
+
+                $root.each(function (index) {
+                    list[index] = createUIObject($root.selector, index, this, options);
+                });
+            } else {
+                var elemList = [];
+
+                if(_.typeCheck("string", selector)) {
+                    if (_.startsWith(selector, "#")) {
+                        elemList.push(document.getElementById(selector.substr(1)));
+                    } else if (_.startsWith(selector, ".")) {
+                        elemList = document.getElementsByClassName(selector.substr(1));
+                    }
+                } else {
+                    elemList.push(selector);
                 }
 
-                list[index] = uiObj;
-
-                // 엘리먼트 객체에 jui 속성 추가
-                this.jui = uiObj;
-            });
+                for(var i = 0, len = elemList.length; i < len; i++) {
+                    list[i] = createUIObject(selector, i, elemList[i], options);
+                }
+            }
 
             // UIManager에 데이터 입력
             UIManager.add(new UICollection(UI.type, selector, options, list));
@@ -400,7 +427,7 @@ jui.define("core", [ "jquery", "util.base", "manager", "event", "collection" ],
      * @extends core.UIManager
      * @singleton
      */
-	window.jui = (typeof(jui) == "object") ? $.extend(jui, UIManager) : UIManager;
+	window.jui = (typeof(jui) == "object") ? _.extend(jui, UIManager) : UIManager;
 	
 	return UICore;
 });

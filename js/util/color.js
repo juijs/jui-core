@@ -1,4 +1,4 @@
-jui.define("util.color", ["jquery", "util.math"], function($, math) {
+jui.define("util.color", [ "util.math" ], function(math) {
 
 	/**
 	 *  @class util.color
@@ -96,7 +96,7 @@ jui.define("util.color", ["jquery", "util.math"], function($, math) {
 					var arr = str.replace("rgb(", "").replace(")","").split(",");
 
 					for(var i = 0, len = arr.length; i < len; i++) {
-						arr[i] = parseInt($.trim(arr[i]), 10);
+						arr[i] = parseInt(_.trim(arr[i]), 10);
 					}
 
 					return { r : arr[0], g : arr[1], b : arr[2], a : 1	};
@@ -106,9 +106,9 @@ jui.define("util.color", ["jquery", "util.math"], function($, math) {
 					for(var i = 0, len = arr.length; i < len; i++) {
 
 						if (len - 1 == i) {
-							arr[i] = parseFloat($.trim(arr[i]));
+							arr[i] = parseFloat(_.trim(arr[i]));
 						} else {
-							arr[i] = parseInt($.trim(arr[i]), 10);
+							arr[i] = parseInt(_.trim(arr[i]), 10);
 						}
 					}
 

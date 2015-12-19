@@ -1,6 +1,7 @@
 (function ($, window, nodeGlobal) {
-	var global = {jquery: $}, globalFunc = {}, globalClass = {};
-	var navigator = window.navigator;
+	var global = {},
+		globalFunc = {},
+		globalClass = {};
 
 	// JUI의 기본 설정 값 (향후 더 추가될 수 있음)
 	var globalOpts = {
@@ -11,6 +12,7 @@
 		},
 		logUrl: "tool/debug.html"
 	};
+
 
 	/**
 	 * @class util.base
@@ -35,13 +37,13 @@
 		browser: {
 			webkit: ('WebkitAppearance' in document.documentElement.style) ? true : false,
 			mozilla: (typeof window.mozInnerScreenX != "undefined") ? true : false,
-			msie: (navigator.userAgent.indexOf("Trident") != -1) ? true : false
+			msie: (window.navigator.userAgent.indexOf("Trident") != -1) ? true : false
 		},
 		/**
 		 * @property {Boolean} isTouch
 		 * check touch device
 		 */
-		isTouch: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+		isTouch: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(window.navigator.userAgent),
 
 		//-- Functions
 		/**
@@ -142,7 +144,7 @@
 		 * @return {Array}
 		 */
 		clone: function (obj) {
-			var clone = ($.isArray(obj)) ? [] : {};
+			var clone = (this.typeCheck("array", obj)) ? [] : {};
 
 			for (var i in obj) {
 				if (this.typeCheck("object", obj[i]))
@@ -241,9 +243,7 @@
 				}
 			})();
 
-			$(window).resize(function () {
-				after_resize();
-			});
+			window.onresize = after_resize;
 		},
 		/**
 		 * @method index
@@ -404,7 +404,7 @@
 		 */
 		dataToCsv2: function (options) {
 			var csv = "";
-			var opts = $.extend({
+			var opts = this.extend({
 				fields: null, // required
 				rows: null, // required
 				names: null,
@@ -492,7 +492,7 @@
 							data[keys[j]] = tmpArr[j];
 						}
 
-						if ($.inArray(keys[j], csvNumber) != -1) {
+						if (this.inArray(keys[j], csvNumber) != -1) {
 							data[keys[j]] = parseFloat(tmpArr[j]);
 						}
 					}
@@ -842,6 +842,69 @@
 			var lastIndex = subjectString.indexOf(searchString, position);
 
 			return lastIndex !== -1 && lastIndex === position;
+		},
+
+		inArray: function (target, list) {
+			for(var i = 0, len = list.length; i < len; i++) {
+				if(list[i] == target)
+					return i;
+			}
+
+			return -1;
+		},
+
+		offset: function(elem) {
+			function isWindow(obj) {
+				/* jshint eqeqeq: false */
+				return obj != null && obj == obj.window;
+			}
+
+			function getWindow(elem) {
+				return isWindow(elem) ?
+					elem :
+					elem.nodeType === 9 ?
+					elem.defaultView || elem.parentWindow :
+						false;
+			}
+
+			var docElem, win,
+				box = { top: 0, left: 0 },
+				doc = elem && elem.ownerDocument;
+
+			if ( !doc ) {
+				return;
+			}
+
+			docElem = doc.documentElement;
+
+			// Make sure it's not a disconnected DOM node
+			/*/
+			if ( !jQuery.contains( docElem, elem ) ) {
+				return box;
+			}
+			/**/
+
+			// If we don't have gBCR, just use 0,0 rather than error
+			// BlackBerry 5, iOS 3 (original iPhone)
+			var strundefined = typeof undefined;
+			if ( typeof elem.getBoundingClientRect !== strundefined ) {
+				box = elem.getBoundingClientRect();
+			}
+			win = getWindow( doc );
+
+			return {
+				top: box.top  + ( win.pageYOffset || docElem.scrollTop )  - ( docElem.clientTop  || 0 ),
+				left: box.left + ( win.pageXOffset || docElem.scrollLeft ) - ( docElem.clientLeft || 0 )
+			};
+		},
+
+		trim: function( text ) {
+			var whitespace = "[\\x20\\t\\r\\n\\f]",
+				rtrim = new RegExp( "^" + whitespace + "+|((?:^|[^\\\\])(?:\\\\.)*)" + whitespace + "+$", "g" );
+
+			return text == null ?
+				"" :
+				( text + "" ).replace( rtrim, "" );
 		}
 	}
 
@@ -856,7 +919,7 @@
 		for (var i = 0; i < depends.length; i++) {
 			var module = global[depends[i]];
 
-			if (!utility.typeCheck(["function", "object"], module)) {
+			if (!utility.typeCheck([ "function", "object" ], module)) {
 				var modules = getModules(depends[i]);
 
 				if (modules == null) {
@@ -905,6 +968,8 @@
 	 */
 	window.jui = nodeGlobal.jui = {
 
+		jQuery: $,
+
 		/**
 		 * @method ready
 		 *
@@ -917,20 +982,25 @@
 				callback = (arguments.length == 2) ? arguments[1] : arguments[0],
 				depends = (arguments.length == 2) ? arguments[0] : null;
 
-			if (!utility.typeCheck(["array", "null"], depends) || !utility.typeCheck("function", callback)) {
-
+			if (!utility.typeCheck([ "array", "null" ], depends) || !utility.typeCheck("function", callback)) {
 				throw new Error("JUI_CRITICAL_ERR: Invalid parameter type of the function");
 			}
 
-			$(function () {
+			if ($ != null) {
+				$(load);
+			} else {
+				window.onload = load;
+			}
+
+			function load() {
 				if (depends) {
 					args = getDepends(depends);
 				} else {
-					args = [getModules("ui"), getModules("uix"), utility];
+					args = [ getModules("ui"), getModules("uix"), utility ];
 				}
 
 				callback.apply(null, args);
-			});
+			}
 		},
 
 		/**
@@ -1051,7 +1121,7 @@
 			for (var i = 0; i < optKeys.length; i++) {
 				var name = optKeys[i];
 
-				if ($.inArray(name, defOptKeys) == -1 && $.inArray(name, exceptOpts) == -1) {
+				if (utility.inArray(name, defOptKeys) == -1 && utility.inArray(name, exceptOpts) == -1) {
 					throw new Error("JUI_CRITICAL_ERR: '" + name + "' is not an option");
 				}
 			}
@@ -1150,4 +1220,8 @@
 			return globalOpts;
 		}
 	};
-})(jQuery || $, window, (typeof global !== "undefined") ? global : window);
+})(
+	(typeof(jQuery) !== "undefined") ? jQuery : null,
+	window,
+	(typeof(global) !== "undefined") ? global : window
+);
