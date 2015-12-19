@@ -15,6 +15,11 @@
 jui.ready([ "util.math", "util.time", "util.scale" ], function(math, time, scale) {
     window.math = math;
     window.scale = scale;
+
+    var test = scale.linear().domain([0, 100]).range([0, 400]);
+
+    console.log(test(200), 800);
+    console.log(test(-200), -800);
 });
 </script>
 </head>

@@ -502,6 +502,7 @@ jui.define("util.scale", [ "util.math", "util.time" ], function(math, _time) {
 
 			var distDomain = null;
 			var distRange = null;
+			var rate = 0;
 
 			var callFunction = null;
 			var _rangeBand = null;
@@ -513,13 +514,13 @@ jui.define("util.scale", [ "util.math", "util.time" ], function(math, _time) {
 						return func(domainMax);
 					}
 
-					return _range[0] + Math.abs(x - _domain[1]) * distDomain / distRange;
+					return _range[0] + Math.abs(x - _domain[0]) * rate;
 				} else if (domainMin > x) {
 					if (_isClamp) {
 						return func(domainMin);
 					}
 
-					return _range[0] - Math.abs(x - _domain[0]) * distDomain / distRange;
+					return _range[0] - Math.abs(x - _domain[0]) * rate;
 				} else {
 					var pos = (x - _domain[0]) / (distDomain);
 
@@ -591,6 +592,8 @@ jui.define("util.scale", [ "util.math", "util.time" ], function(math, _time) {
 				rangeMax = func.rangeMax();
 
 				distRange = Math.abs(rangeMax - rangeMin);
+
+				rate = distRange / distDomain;
 
 				callFunction = _isRound ? roundFunction : numberFunction;
 

@@ -1,6 +1,3 @@
-var css = require("css"),
-    fs = require("fs");
-
 module.exports = function(grunt) {
 
     var base_src = [
