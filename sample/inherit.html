@@ -6,7 +6,12 @@
 <title>[JUI Library] - JavaScript/Inherit</title>
 
 <script src="../lib/jquery-1.8.0.min.js"></script>
-<script src="../dist/jui.js"></script>
+<script src="../js/base.js"></script>
+<script src="../js/manager.js"></script>
+<script src="../js/event.js"></script>
+<script src="../js/collection.js"></script>
+<script src="../js/core.js"></script>
+
 <script>
 jui.defineUI("base.ui.select", [], function() {
   
@@ -60,5 +65,8 @@ jui.ready([ "base.ui.select", "test.ui.select" ], function(base, test) {
 </script>
 </head>
 <body>
+
+<div class="jui"></div>
+
 </body>
 </html>

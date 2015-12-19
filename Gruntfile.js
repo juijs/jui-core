@@ -6,9 +6,18 @@ module.exports = function(grunt) {
     var base_src = [
         // core
         "js/base.js",
+
+        // related ui
+        "js/manager.js",
+        "js/event.js",
+        "js/collection.js",
         "js/core.js",
 
         // util
+        "js/util/sort.js",
+        "js/util/keyparser.js",
+        "js/util/base64.js",
+        "js/util/template.js",
         "js/util/math.js",
         "js/util/transform.js",
         "js/util/time.js",

@@ -13,415 +13,6 @@
 	};
 
 	/**
-	 * @class QuickSort
-	 *
-	 * 퀵 정렬
-	 *
-	 * @param {Array} array
-	 * @param {Boolean} isClone  isClone 이 true 이면, 해당 배열을 참조하지 않고 복사해서 처리
-	 * @constructor
-	 * @private
-	 */
-	var QuickSort = function (array, isClone) { //
-		var compareFunc = null,
-			array = (isClone) ? array.slice(0) : array;
-
-		function swap(indexA, indexB) {
-			var temp = array[indexA];
-
-			array[indexA] = array[indexB];
-			array[indexB] = temp;
-		}
-
-		function partition(pivot, left, right) {
-			var storeIndex = left, pivotValue = array[pivot];
-			swap(pivot, right);
-
-			for (var v = left; v < right; v++) {
-				if (compareFunc(array[v], pivotValue) || !compareFunc(pivotValue, array[v]) && v % 2 == 1) {
-					swap(v, storeIndex);
-					storeIndex++;
-				}
-			}
-
-			swap(right, storeIndex);
-
-			return storeIndex;
-		}
-
-		this.setCompare = function (func) {
-			compareFunc = func;
-		}
-
-		this.run = function (left, right) {
-			var pivot = null;
-
-			if (typeof left !== 'number') {
-				left = 0;
-			}
-
-			if (typeof right !== 'number') {
-				right = array.length - 1;
-			}
-
-			if (left < right) {
-				pivot = left + Math.ceil((right - left) * 0.5);
-				newPivot = partition(pivot, left, right);
-
-				this.run(left, newPivot - 1);
-				this.run(newPivot + 1, right);
-			}
-
-			return array;
-		}
-	}
-
-	/**
-	 * @class IndexParser
-	 *
-	 * 0.0.1 형식의 키 문자열을 제어하는 클래스
-	 *
-	 * @private
-	 * @constructor
-	 */
-	var IndexParser = function () {
-		/**
-		 * @method isIndexDepth
-		 *
-		 * @param {String} index
-		 * @return {Boolean}
-		 */
-		this.isIndexDepth = function (index) {
-			if (typeof(index) == "string" && index.indexOf(".") != -1) {
-				return true;
-			}
-
-			return false;
-		}
-
-		/**
-		 * @method getIndexList
-		 *
-		 * @param {String} index
-		 * @return {Array}
-		 */
-		this.getIndexList = function (index) { // 트리 구조의 모든 키를 배열 형태로 반환
-			var resIndex = [], strIndex = "" + index;
-
-			if (strIndex.length == 1) {
-				resIndex[0] = parseInt(index);
-			} else {
-				var keys = strIndex.split(".");
-
-				for (var i = 0; i < keys.length; i++) {
-					resIndex[i] = parseInt(keys[i]);
-				}
-			}
-
-			return resIndex;
-		}
-
-
-		/**
-		 * @method changeIndex
-		 *
-		 *
-		 * @param {String} index
-		 * @param {String} targetIndex
-		 * @param {String} rootIndex
-		 * @return {String}
-		 */
-		this.changeIndex = function (index, targetIndex, rootIndex) {
-			var rootIndexLen = this.getIndexList(rootIndex).length,
-				indexList = this.getIndexList(index),
-				tIndexList = this.getIndexList(targetIndex);
-
-			for (var i = 0; i < rootIndexLen; i++) {
-				indexList.shift();
-			}
-
-			return tIndexList.concat(indexList).join(".");
-		}
-
-		/**
-		 * @method getNextIndex
-		 *
-		 * @param {String} index
-		 * @return {String}
-		 */
-		this.getNextIndex = function (index) { // 현재 인덱스에서 +1
-			var indexList = this.getIndexList(index),
-				no = indexList.pop() + 1;
-
-			indexList.push(no);
-			return indexList.join(".");
-		}
-
-		/**
-		 * @method getParentIndex
-		 *
-		 *
-		 * @param {String} index
-		 * @returns {*}
-		 */
-		this.getParentIndex = function (index) {
-			if (!this.isIndexDepth(index)) return null;
-			var keys = this.getIndexList(index);
-
-			if (keys.length == 2) {
-				return "" + keys[0];
-			} else if (keys.length > 2) {
-				keys.pop();
-				return keys.join(".");
-			}
-		}
-	}
-
-	/**
-	 * Private Static Classes
-	 *
-	 */
-	var Base64 = {
-
-		// private property
-		_keyStr: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
-
-		// public method for encoding
-		encode: function (input) {
-			var output = "";
-			var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
-			var i = 0;
-
-			input = Base64._utf8_encode(input);
-
-			while (i < input.length) {
-
-				chr1 = input.charCodeAt(i++);
-				chr2 = input.charCodeAt(i++);
-				chr3 = input.charCodeAt(i++);
-
-				enc1 = chr1 >> 2;
-				enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
-				enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
-				enc4 = chr3 & 63;
-
-				if (isNaN(chr2)) {
-					enc3 = enc4 = 64;
-				} else if (isNaN(chr3)) {
-					enc4 = 64;
-				}
-
-				output = output +
-					Base64._keyStr.charAt(enc1) + Base64._keyStr.charAt(enc2) +
-					Base64._keyStr.charAt(enc3) + Base64._keyStr.charAt(enc4);
-
-			}
-
-			return output;
-		},
-
-		// public method for decoding
-		decode: function (input) {
-			var output = "";
-			var chr1, chr2, chr3;
-			var enc1, enc2, enc3, enc4;
-			var i = 0;
-
-			input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
-
-			while (i < input.length) {
-
-				enc1 = Base64._keyStr.indexOf(input.charAt(i++));
-				enc2 = Base64._keyStr.indexOf(input.charAt(i++));
-				enc3 = Base64._keyStr.indexOf(input.charAt(i++));
-				enc4 = Base64._keyStr.indexOf(input.charAt(i++));
-
-				chr1 = (enc1 << 2) | (enc2 >> 4);
-				chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
-				chr3 = ((enc3 & 3) << 6) | enc4;
-
-				output = output + String.fromCharCode(chr1);
-
-				if (enc3 != 64) {
-					output = output + String.fromCharCode(chr2);
-				}
-				if (enc4 != 64) {
-					output = output + String.fromCharCode(chr3);
-				}
-
-			}
-
-			output = Base64._utf8_decode(output);
-
-			return output;
-
-		},
-
-		// private method for UTF-8 encoding
-		_utf8_encode: function (string) {
-			string = string.replace(/\r\n/g, "\n");
-
-			// BOM 코드 적용 (UTF-8 관련)
-			var utftext = String.fromCharCode(239) + String.fromCharCode(187) + String.fromCharCode(191);
-
-			for (var n = 0; n < string.length; n++) {
-
-				var c = string.charCodeAt(n);
-
-				if (c < 128) {
-					utftext += String.fromCharCode(c);
-				}
-				else if ((c > 127) && (c < 2048)) {
-					utftext += String.fromCharCode((c >> 6) | 192);
-					utftext += String.fromCharCode((c & 63) | 128);
-				}
-				else {
-					utftext += String.fromCharCode((c >> 12) | 224);
-					utftext += String.fromCharCode(((c >> 6) & 63) | 128);
-					utftext += String.fromCharCode((c & 63) | 128);
-				}
-
-			}
-
-			return utftext;
-		},
-
-		// private method for UTF-8 decoding
-		_utf8_decode: function (utftext) {
-			var string = "";
-			var i = 0;
-			var c = c1 = c2 = 0;
-
-			while (i < utftext.length) {
-
-				c = utftext.charCodeAt(i);
-
-				if (c < 128) {
-					string += String.fromCharCode(c);
-					i++;
-				}
-				else if ((c > 191) && (c < 224)) {
-					c2 = utftext.charCodeAt(i + 1);
-					string += String.fromCharCode(((c & 31) << 6) | (c2 & 63));
-					i += 2;
-				}
-				else {
-					c2 = utftext.charCodeAt(i + 1);
-					c3 = utftext.charCodeAt(i + 2);
-					string += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
-					i += 3;
-				}
-
-			}
-
-			return string;
-		}
-	}
-
-	/**
-	 * Private Functions
-	 *
-	 */
-	var template = function (text, data, settings) {
-		var _ = {},
-			breaker = {};
-
-		var ArrayProto = Array.prototype,
-			slice = ArrayProto.slice,
-			nativeForEach = ArrayProto.forEach;
-
-		var escapes = {
-			'\\': '\\',
-			"'": "'",
-			'r': '\r',
-			'n': '\n',
-			't': '\t',
-			'u2028': '\u2028',
-			'u2029': '\u2029'
-		};
-
-		for (var p in escapes)
-			escapes[escapes[p]] = p;
-
-		var escaper = /\\|'|\r|\n|\t|\u2028|\u2029/g,
-			unescaper = /\\(\\|'|r|n|t|u2028|u2029)/g,
-			noMatch = /.^/;
-
-		var unescape = function (code) {
-			return code.replace(unescaper, function (match, escape) {
-				return escapes[escape];
-			});
-		};
-
-		var each = _.each = _.forEach = function (obj, iterator, context) {
-			if (obj == null)
-				return;
-			if (nativeForEach && obj.forEach === nativeForEach) {
-				obj.forEach(iterator, context);
-			} else if (obj.length === +obj.length) {
-				for (var i = 0, l = obj.length; i < l; i++) {
-					if (i in obj && iterator.call(context, obj[i], i, obj) === breaker)
-						return;
-				}
-			} else {
-				for (var key in obj) {
-					if (_.has(obj, key)) {
-						if (iterator.call(context, obj[key], key, obj) === breaker)
-							return;
-					}
-				}
-			}
-		};
-
-		_.has = function (obj, key) {
-			return hasOwnProperty.call(obj, key);
-		};
-
-		_.defaults = function (obj) {
-			each(slice.call(arguments, 1), function (source) {
-				for (var prop in source) {
-					if (obj[prop] == null)
-						obj[prop] = source[prop];
-				}
-			});
-			return obj;
-		};
-
-		_.template = function (text, data, settings) {
-			settings = _.defaults(settings || {}, globalOpts.template);
-
-			var source = "__p+='" + text.replace(escaper, function (match) {
-					return '\\' + escapes[match];
-				}).replace(settings.escape || noMatch, function (match, code) {
-					return "'+\n_.escape(" + unescape(code) + ")+\n'";
-				}).replace(settings.interpolate || noMatch, function (match, code) {
-					return "'+\n(" + unescape(code) + ")+\n'";
-				}).replace(settings.evaluate || noMatch, function (match, code) {
-					return "';\n" + unescape(code) + "\n;__p+='";
-				}) + "';\n";
-
-			if (!settings.variable)
-				source = 'with(obj||{}){\n' + source + '}\n';
-
-			source = "var __p='';" + "var print=function(){__p+=Array.prototype.join.call(arguments, '')};\n" + source + "return __p;\n";
-
-			var render = new Function(settings.variable || 'obj', '_', source);
-			if (data)
-				return render(data, _);
-			var template = function (data) {
-				return render.call(this, data, _);
-			};
-
-			template.source = 'function(' + (settings.variable || 'obj') + '){\n' + source + '}';
-
-			return template;
-		};
-
-		return _.template(text, data, settings);
-	}
-
-
-	/**
 	 * @class util.base
 	 *
 	 * jui 에서 공통적으로 사용하는 유틸리티 함수 모음
@@ -604,6 +195,7 @@
 		 * @return {QuickSort}
 		 */
 		sort: function (array) {
+			var QuickSort = jui.include("util.sort");
 			return new QuickSort(array);
 		},
 		/**
@@ -628,8 +220,10 @@
 		 * @param obj
 		 */
 		template: function (html, obj) {
-			if (!obj) return template(html);
-			else return template(html, obj);
+			var tpl = jui.include("util.template");
+
+			if (!obj) return tpl(html, null, globalOpts.template);
+			else return tpl(html, obj, globalOpts.template);
 		},
 		/**
 		 * @method resize
@@ -659,7 +253,8 @@
 		 * @return {IndexParser}
 		 */
 		index: function () {
-			return new IndexParser();
+			var KeyParser = jui.include("util.keyparser");
+			return new KeyParser();
 		},
 		/**
 		 * @method chunk
@@ -867,6 +462,7 @@
 		 * @return {String}
 		 */
 		csvToBase64: function (csv) {
+			var Base64 = jui.include("util.base64");
 			return "data:application/octet-stream;base64," + Base64.encode(csv);
 		},
 		/**
@@ -937,6 +533,7 @@
 		 * @return {String} 변환된 data uri 링크
 		 */
 		svgToBase64: function (xml) {
+			var Base64 = jui.include("util.base64");
 			return "data:image/svg+xml;base64," + Base64.encode(xml);
 		},
 
@@ -1054,7 +651,10 @@
 		 *
 		 * @return {String}
 		 */
-		btoa: Base64.encode,
+		btoa: function(input) {
+			var Base64 = jui.include("util.base64");
+			return Base64.encode(input);
+		},
 		/**
 		 * @method atob
 		 *
@@ -1062,7 +662,10 @@
 		 *
 		 * @return {String}
 		 */
-		atob: Base64.decode,
+		atob: function(input) {
+			var Base64 = jui.include("util.base64");
+			return Base64.decode(input);
+		},
 
 		/**
 		 * implement async loop without blocking ui

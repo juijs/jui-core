@@ -5,11 +5,9 @@
 <META charset="UTF-8">
 <title>[JUI Library] - JavaScript/Table/API</title>	
 
-
-<link rel="stylesheet" href="../../dist/jui.css" />
 <script src="../../lib/jquery-1.8.0.min.js"></script>
-<script src="../../lib/jquery.binder.js"></script>
 <script src="../../js/base.js"></script>
+<script src="../../js/util/math.js"></script>
 <script src="../../js/util/color.js"></script>
 <script src="../../js/util/svgbase.js"></script>
 <script src="../../js/util/svg3d.js"></script>
@@ -108,9 +106,9 @@ jui.ready([ "util.svg" ], function(SVGUtil) {
     //--------------------------------------
 
     svg4.defs(function() {
-        this.path({
+        svg4.path({
             id: "myTextPath"
-        }).moveTo(70, 50).lowercase().arc(1, 1, 0, false, false, 100, 0).close();
+        }).moveTo(70, 50).arc(1, 1, 0, false, false, 100, 0);
     });
 
     svg4.text({
@@ -118,7 +116,7 @@ jui.ready([ "util.svg" ], function(SVGUtil) {
         y: 100,
         style: "stoke: #000000;"
     }, function() {
-        this.textPath({
+        svg4.textPath({
             "xlink:href": "#myTextPath"
         }, "Text along a curved path...");
     });
