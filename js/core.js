@@ -1,6 +1,5 @@
-jui.define("core", [ "util.base", "manager", "event", "collection" ],
-    function(_, UIManager, UIEvent, UICollection) {
-    var $ = jui.jQuery;
+jui.define("core", [ "util.base", "jquery", "manager", "event", "collection" ],
+    function(_, $, UIManager, UIEvent, UICollection) {
 
 	/** 
 	 * @class core

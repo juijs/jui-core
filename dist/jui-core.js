@@ -1,5 +1,5 @@
-(function ($, window, nodeGlobal) {
-	var global = {},
+(function (window, nodeGlobal) {
+	var global = { jquery: jQuery || null },
 		globalFunc = {},
 		globalClass = {};
 
@@ -53,14 +53,14 @@
 		 * @return {Number}
 		 */
 		scrollWidth: function () {
-			var isJUI = ($(".jui").size() > 0 && this.browser.webkit) ? true : false;
+			var isJUI = (jQuery(".jui").size() > 0 && this.browser.webkit) ? true : false;
 
-			var div = $('<div style="width:50px;height:50px;overflow:hidden;position:absolute;top:-200px;left:-200px;"><div style="height:100px;"></div></div>');
-			$('body').append(div);
-			var w1 = $('div', div).innerWidth();
+			var div = jQuery('<div style="width:50px;height:50px;overflow:hidden;position:absolute;top:-200px;left:-200px;"><div style="height:100px;"></div></div>');
+			jQuery('body').append(div);
+			var w1 = jQuery('div', div).innerWidth();
 			div.css('overflow-y', 'auto');
-			var w2 = $('div', div).innerWidth();
-			$(div).remove();
+			var w2 = jQuery('div', div).innerWidth();
+			jQuery(div).remove();
 
 			return (isJUI) ? 10 : (w1 - w2);
 		},
@@ -1088,8 +1088,6 @@
 	 */
 	window.jui = nodeGlobal.jui = {
 
-		jQuery: $,
-
 		/**
 		 * @method ready
 		 *
@@ -1107,7 +1105,7 @@
 			}
 
 			if ($ != null) {
-				$(load);
+				jQuery(load);
 			} else {
 				utility.ready(document, load);
 			}
@@ -1340,11 +1338,7 @@
 			return globalOpts;
 		}
 	};
-})(
-	(typeof(jQuery) !== "undefined") ? jQuery : null,
-	window,
-	(typeof(global) !== "undefined") ? global : window
-);
+})(window, (typeof(global) !== "undefined") ? global : window);
 
 jui.define("manager", [ "util.base" ], function(_) {
 
@@ -1621,8 +1615,7 @@ jui.define("manager", [ "util.base" ], function(_) {
 
     return UIManager;
 });
-jui.define("event", [ "util.base" ], function(_) {
-    var $ = jui.jQuery;
+jui.define("event", [ "util.base", "jquery" ], function(_, $) {
 
     var UIEvent = function () {
         var list = [];
@@ -1745,9 +1738,8 @@ jui.define("collection", [], function() {
 
     return UICollection;
 });
-jui.define("core", [ "util.base", "manager", "event", "collection" ],
-    function(_, UIManager, UIEvent, UICollection) {
-    var $ = jui.jQuery;
+jui.define("core", [ "util.base", "jquery", "manager", "event", "collection" ],
+    function(_, $, UIManager, UIEvent, UICollection) {
 
 	/** 
 	 * @class core

@@ -1,5 +1,4 @@
-jui.define("event", [ "util.base" ], function(_) {
-    var $ = jui.jQuery;
+jui.define("event", [ "util.base", "jquery" ], function(_, $) {
 
     var UIEvent = function () {
         var list = [];
