@@ -1,5 +1,4 @@
 jui.define("manager", [ "util.base" ], function(_) {
-    var $ = jui.jQuery;
 
     /**
      * @class core.UIManager
@@ -151,7 +150,7 @@ jui.define("manager", [ "util.base" ], function(_) {
             for(var key in uiObj) {
                 var func = uiObj[key];
 
-                if(typeof(func) == "function" && $.inArray(key, exFuncList) == -1) {
+                if(typeof(func) == "function" && _.inArray(key, exFuncList) == -1) {
                     (function(funcName, funcObj, funcIndex, funcChildIndex) {
                         uiObj.__proto__[funcName] = function() {
                             var nStart = Date.now();

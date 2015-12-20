@@ -39,13 +39,14 @@
 			mozilla: (typeof window.mozInnerScreenX != "undefined") ? true : false,
 			msie: (window.navigator.userAgent.indexOf("Trident") != -1) ? true : false
 		},
+
 		/**
 		 * @property {Boolean} isTouch
 		 * check touch device
 		 */
 		isTouch: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(window.navigator.userAgent),
 
-		//-- Functions
+
 		/**
 		 * @method scrollWidth
 		 * returns scroll width for body
@@ -63,6 +64,7 @@
 
 			return (isJUI) ? 10 : (w1 - w2);
 		},
+
 		/**
 		 * @method inherit
 		 *
@@ -90,6 +92,7 @@
 				return this.constructor.prototype[method].apply(this, args);
 			}
 		},
+
 		/**
 		 * @method extend
 		 * implements object extend
@@ -124,13 +127,14 @@
 
 			return origin;
 		},
+
 		/**
 		 * convert px to integer
 		 * @param {String or Number} px
 		 * @return {Number}
 		 */
 		pxToInt: function (px) {
-			if (typeof(px) == "string" && px.indexOf("px") != -1) {
+			if (this.typeCheck("string", px) && px.indexOf("px") != -1) {
 				return parseInt(px.split("px").join(""));
 			}
 
@@ -155,6 +159,7 @@
 
 			return clone;
 		},
+
 		/**
 		 * @method deepClone
 		 * implements object deep clone
@@ -190,6 +195,7 @@
 
 			return value;
 		},
+
 		/**
 		 * @method sort
 		 * use QuickSort
@@ -200,6 +206,7 @@
 			var QuickSort = jui.include("util.sort");
 			return new QuickSort(array);
 		},
+
 		/**
 		 * @method runtime
 		 *
@@ -215,6 +222,7 @@
 
 			console.log(name + " : " + (nEnd - nStart) + "ms");
 		},
+
 		/**
 		 * @method template
 		 * parsing template string
@@ -227,6 +235,7 @@
 			if (!obj) return tpl(html, null, globalOpts.template);
 			else return tpl(html, obj, globalOpts.template);
 		},
+
 		/**
 		 * @method resize
 		 * add event in window resize event
@@ -245,6 +254,7 @@
 
 			window.onresize = after_resize;
 		},
+
 		/**
 		 * @method index
 		 *
@@ -256,6 +266,7 @@
 			var KeyParser = jui.include("util.keyparser");
 			return new KeyParser();
 		},
+
 		/**
 		 * @method chunk
 		 * split array by length
@@ -274,6 +285,7 @@
 
 			return chunks;
 		},
+
 		/**
 		 * @method typeCheck
 		 * check data  type
@@ -363,6 +375,7 @@
 				}
 			}
 		},
+
 		/**
 		 * @method dataToCsv
 		 *
@@ -434,6 +447,7 @@
 
 			return csv;
 		},
+
 		/**
 		 * @method fileToCsv
 		 *
@@ -446,7 +460,7 @@
 			var reader = new FileReader();
 
 			reader.onload = function (readerEvt) {
-				if (typeof(callback) == "function") {
+				if (utility.typeCheck("function", callback)) {
 					callback(readerEvt.target.result);
 				}
 			};
@@ -1055,7 +1069,7 @@
 
 		for (var key in global) {
 			if (key.indexOf(parent) != -1) {
-				if (utility.typeCheck(["function", "object"], global[key])) {
+				if (utility.typeCheck([ "function", "object" ], global[key])) {
 					var child = key.split(parent).join("");
 
 					if (child.indexOf(".") == -1) {

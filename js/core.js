@@ -31,14 +31,14 @@ jui.define("core", [ "util.base", "manager", "event", "collection" ],
          * @return {Mixed}
          */
         this.emit = function(type, args) {
-            if(typeof(type) != "string") return;
+            if(!_.typeCheck("string", type)) return;
             var result;
 
             for(var i = 0; i < this.event.length; i++) {
                 var e = this.event[i];
 
                 if(e.type == type.toLowerCase()) {
-                    var arrArgs = (typeof(args) == "object" && args.length) ? args : [ args ];
+                    var arrArgs = _.typeCheck("array", args) ? args : [ args ];
                     result = e.callback.apply(this, arrArgs);
                 }
             }
@@ -54,7 +54,7 @@ jui.define("core", [ "util.base", "manager", "event", "collection" ],
          * @param {Function} callback
          */
         this.on = function(type, callback) {
-            if(typeof(type) != "string" || typeof(callback) != "function") return;
+            if(!_.typeCheck("string", type) || !_.typeCheck("function", callback)) return;
             this.event.push({ type: type.toLowerCase(), callback: callback, unique: false  });
         }
 
@@ -70,8 +70,8 @@ jui.define("core", [ "util.base", "manager", "event", "collection" ],
             for(var i = 0; i < this.event.length; i++) {
                 var e = this.event[i];
 
-                if ((typeof(type) == "function" && e.callback != type) ||
-                    (typeof(type) == "string" && e.type != type.toLowerCase())) {
+                if ((_.typeCheck("function", type) && e.callback != type) ||
+                    (_.typeCheck("string", type) && e.type != type.toLowerCase())) {
                     event.push(e);
                 }
             }
@@ -88,6 +88,7 @@ jui.define("core", [ "util.base", "manager", "event", "collection" ],
          * @param {Function} callback
          */
         this.addEvent = function() {
+            if(!this.listen) return;
             this.listen.add(arguments);
         }
 
@@ -99,6 +100,7 @@ jui.define("core", [ "util.base", "manager", "event", "collection" ],
          * @param {String} Dom event type
          */
         this.addTrigger = function(selector, type) {
+            if(!this.listen) return;
             this.listen.trigger(selector, type);
         }
 
@@ -141,7 +143,7 @@ jui.define("core", [ "util.base", "manager", "event", "collection" ],
             this.__proto__[name] = function() {
                 var args = arguments;
 
-                if(typeof(callback) == "function") {
+                if(_.typeCheck("function", callback)) {
                     // before 콜백이 false가 이날 경우에만 실행 한다.
                     if(callback.apply(this, args) !== false) {
                         return ui.apply(this, args);
@@ -169,7 +171,7 @@ jui.define("core", [ "util.base", "manager", "event", "collection" ],
                     obj = ui.apply(this, args);
 
                 // 실행 함수의 리턴 값이 false일 경우에는 after 콜백을 실행하지 않는다.
-                if(typeof(callback) == "function" && obj !== false) {
+                if(_.typeCheck("function", callback) && obj !== false) {
                     callback.apply(this, args);
                 }
 
@@ -194,7 +196,7 @@ jui.define("core", [ "util.base", "manager", "event", "collection" ],
                 var self = this,
                     args = arguments;
 
-                if(typeof(callObj.before) == "function") {
+                if(_.typeCheck("function", callObj.before)) {
                     callObj.before.apply(self, args);
                 }
 
@@ -210,7 +212,7 @@ jui.define("core", [ "util.base", "manager", "event", "collection" ],
             function callFunc(self, args) {
                 var obj = ui.apply(self, args);
 
-                if(typeof(callObj.after) == "function" && obj !== false) { // callAfter와 동일
+                if(_.typeCheck("function", callObj.after) && obj !== false) { // callAfter와 동일
                     callObj.after.apply(self, args);
                 }
             }
@@ -250,7 +252,7 @@ jui.define("core", [ "util.base", "manager", "event", "collection" ],
          * @param {Mixed} value
          */
         this.setOption = function(key, value) {
-            if(typeof(key) == "object") {
+            if(_.typeCheck("object", key)) {
                 for(var k in key) {
                     this.options[k] = key[k];
                 }
@@ -265,15 +267,19 @@ jui.define("core", [ "util.base", "manager", "event", "collection" ],
          *
          */
         this.destroy = function() {
-            if(!this.__proto__) return;
-
-            for(var i = 0; i < this.listen.size(); i++) {
-                var obj = this.listen.get(i);
-                $(obj.target).off(obj.type);
+            // DOM 이벤트 관리 객체가 있을 경우
+            if(this.listen) {
+                for (var i = 0; i < this.listen.size(); i++) {
+                    var obj = this.listen.get(i);
+                    $(obj.target).off(obj.type);
+                }
             }
 
-            for(var key in this.__proto__) {
-                delete this.__proto__[key];
+            // 생성된 메소드 메모리에서 제거
+            if(this.__proto__) {
+                for (var key in this.__proto__) {
+                    delete this.__proto__[key];
+                }
             }
         }
 	};
@@ -299,8 +305,6 @@ jui.define("core", [ "util.base", "manager", "event", "collection" ],
             mainObj.init.prototype.tpl = {};
             /** @property {Array} event Custom events */
             mainObj.init.prototype.event = new Array(); // Custom Event
-            /** @property {Object} listen Dom events */
-            mainObj.init.prototype.listen = new UIEvent(); // DOM Event
             /** @property {Integer} timestamp UI Instance creation time*/
             mainObj.init.prototype.timestamp = new Date().getTime();
             /** @property {Integer} index Index of UI instance*/
@@ -308,9 +312,12 @@ jui.define("core", [ "util.base", "manager", "event", "collection" ],
             /** @property {Class} module Module class */
             mainObj.init.prototype.module = UI;
 
-            // Template Settings (jQuery loaded)
+            // @Deprecated, Markup-based Template Settings (jQuery loaded)
             if($ != null) {
-                $("script").each(function (i) { // Markup
+                /** @property {Object} listen Dom events */
+                mainObj.init.prototype.listen = new UIEvent();
+
+                $("script").each(function (i) {
                     if (selector == $(this).data("jui") || selector == $(this).data("vo") || selector instanceof HTMLElement) {
                         var tplName = $(this).data("tpl");
 
@@ -321,19 +328,20 @@ jui.define("core", [ "util.base", "manager", "event", "collection" ],
                         opts.tpl[tplName] = $(this).html();
                     }
                 });
+            }
 
-                for (var name in opts.tpl) { // Script
-                    var tplHtml = opts.tpl[name];
+            // Script-based Template Settings
+            for (var name in opts.tpl) {
+                var tplHtml = opts.tpl[name];
 
-                    if (_.typeCheck("string", tplHtml) && tplHtml != "") {
-                        mainObj.init.prototype.tpl[name] = _.template(tplHtml);
-                    }
+                if (_.typeCheck("string", tplHtml) && tplHtml != "") {
+                    mainObj.init.prototype.tpl[name] = _.template(tplHtml);
                 }
             }
 
             var uiObj = new mainObj.init();
 
-            // Event Setting
+            // Custom Event Setting
             for(var key in opts.event) {
                 uiObj.on(key, opts.event[key]);
             }
