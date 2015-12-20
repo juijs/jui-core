@@ -1,5 +1,7 @@
 (function (window, nodeGlobal) {
-	var global = { jquery: jQuery || null },
+	var global = {
+			jquery: (typeof(jQuery) != "undefined") ? jQuery : null
+		},
 		globalFunc = {},
 		globalClass = {};
 
@@ -53,14 +55,14 @@
 		 * @return {Number}
 		 */
 		scrollWidth: function () {
-			var isJUI = (jQuery(".jui").size() > 0 && this.browser.webkit) ? true : false;
+			var isJUI = (global.jquery(".jui").size() > 0 && this.browser.webkit) ? true : false;
 
-			var div = jQuery('<div style="width:50px;height:50px;overflow:hidden;position:absolute;top:-200px;left:-200px;"><div style="height:100px;"></div></div>');
-			jQuery('body').append(div);
-			var w1 = jQuery('div', div).innerWidth();
+			var div = global.jquery('<div style="width:50px;height:50px;overflow:hidden;position:absolute;top:-200px;left:-200px;"><div style="height:100px;"></div></div>');
+			global.jquery('body').append(div);
+			var w1 = global.jquery('div', div).innerWidth();
 			div.css('overflow-y', 'auto');
-			var w2 = jQuery('div', div).innerWidth();
-			jQuery(div).remove();
+			var w2 = global.jquery('div', div).innerWidth();
+			global.jquery(div).remove();
 
 			return (isJUI) ? 10 : (w1 - w2);
 		},
@@ -895,7 +897,7 @@
 
 			// Make sure it's not a disconnected DOM node
 			/*/
-			if ( !jQuery.contains( docElem, elem ) ) {
+			if ( !global.jquery.contains( docElem, elem ) ) {
 				return box;
 			}
 			/**/
@@ -1043,7 +1045,11 @@
 				var modules = getModules(depends[i]);
 
 				if (modules == null) {
-					throw new Error("JUI_CRITICAL_ERR: '" + depends[i] + "' is not loaded");
+					if(depends[i] == "jquery"){
+						args.push(null);
+					} else {
+						throw new Error("JUI_CRITICAL_ERR: '" + depends[i] + "' is not loaded");
+					}
 				} else {
 					args.push(modules);
 				}
@@ -1104,8 +1110,8 @@
 				throw new Error("JUI_CRITICAL_ERR: Invalid parameter type of the function");
 			}
 
-			if ($ != null) {
-				jQuery(load);
+			if (global.jquery != null) {
+				global.jquery(load);
 			} else {
 				utility.ready(document, load);
 			}
@@ -1288,7 +1294,11 @@
 				var modules = getModules(name);
 
 				if (modules == null) {
-					throw new Error("JUI_CRITICAL_ERR: '" + name + "' is not loaded");
+					if(name == "jquery") {
+						return null;
+					} else {
+						throw new Error("JUI_CRITICAL_ERR: '" + name + "' is not loaded");
+					}
 				} else {
 					return modules;
 				}
