@@ -297,6 +297,10 @@ jui.ready([ "util.base" ], function(_) {
     QUnit.test("[유틸리티 함수] - trim", function(assert) {
         assert.ok(_.trim("   text") == "text", "해당 문자열 공백 제거 확인");
     });
+
+    QUnit.test("[유틸리티 함수] - param", function(assert) {
+        assert.ok(_.param({ name: "Hong", age: 15 }) == "name=Hong&age=15", "해당 문자열 직렬화 확인");
+    });
 });
 </script>
 
