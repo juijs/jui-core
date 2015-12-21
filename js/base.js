@@ -1107,11 +1107,10 @@
 		 * @param {String} name 모듈 로드와 상속에 사용될 이름을 정한다.
 		 * @param {Array} depends 'define'이나 'defineUI'로 정의된 클래스나 객체를 인자로 받을 수 있다.
 		 * @param {Function} callback UI 클래스를 해당 콜백 함수 내에서 클래스 형태로 구현하고 리턴해야 한다.
-		 * @param {String} parent 'depends'와 달리 'define'으로 정의된 클래스만 상속받을 수 있다.
 		 */
 		defineUI: function (name, depends, callback, parent) {
-			if (!utility.typeCheck("string", name) || !utility.typeCheck("array", depends) || !utility.typeCheck("function", callback) || !utility.typeCheck(["string", "undefined"], parent)) {
-
+			if (!utility.typeCheck("string", name) || !utility.typeCheck("array", depends) ||
+				!utility.typeCheck("function", callback) || !utility.typeCheck(["string", "undefined"], parent)) {
 				throw new Error("JUI_CRITICAL_ERR: Invalid parameter type of the function");
 			}
 
@@ -1119,8 +1118,8 @@
 				throw new Error("JUI_CRITICAL_ERR: '" + name + "' is already exist");
 			}
 
-			if (utility.typeCheck("undefined", parent)) { // 기본적으로 'core' 클래스를 상속함
-				parent = "core";
+			if (utility.typeCheck("undefined", parent)) { // 기본적으로 'event' 클래스를 상속함
+				parent = "event";
 			}
 
 			if (!utility.typeCheck("function", globalClass[parent])) {
@@ -1138,7 +1137,7 @@
 			utility.inherit(uiFunc, globalClass[parent]);
 
 			// UI 고유 설정
-			global[name] = globalClass["core"].init({
+			global[name] = globalClass[parent].init({
 				type: name,
 				"class": uiFunc
 			});
@@ -1152,6 +1151,58 @@
 					return global[name]
 				});
 			}
+		},
+
+		createUIObject: function (UI, selector, index, elem, options, afterHook) {
+			var mainObj = new UI["class"]();
+
+			// Check Options
+			var opts = jui.defineOptions(UI["class"], options || {});
+
+			// Public Properties
+			mainObj.init.prototype = mainObj;
+			/** @property {String/HTMLElement} selector */
+			mainObj.init.prototype.selector = selector;
+			/** @property {HTMLElement} root */
+			mainObj.init.prototype.root = elem;
+			/** @property {Object} options */
+			mainObj.init.prototype.options = opts;
+			/** @property {Object} tpl Templates */
+			mainObj.init.prototype.tpl = {};
+			/** @property {Array} event Custom events */
+			mainObj.init.prototype.event = new Array(); // Custom Event
+			/** @property {Integer} timestamp UI Instance creation time*/
+			mainObj.init.prototype.timestamp = new Date().getTime();
+			/** @property {Integer} index Index of UI instance*/
+			mainObj.init.prototype.index = index;
+			/** @property {Class} module Module class */
+			mainObj.init.prototype.module = UI;
+
+			// UI 객체 프로퍼티를 외부에서 정의할 수 있음 (jQuery 의존성 제거를 위한 코드)
+			if(utility.typeCheck("function", afterHook)) {
+				afterHook(mainObj, opts);
+			}
+
+			// Script-based Template Settings
+			for (var name in opts.tpl) {
+				var tplHtml = opts.tpl[name];
+
+				if (utility.typeCheck("string", tplHtml) && tplHtml != "") {
+					mainObj.init.prototype.tpl[name] = utility.template(tplHtml);
+				}
+			}
+
+			var uiObj = new mainObj.init();
+
+			// Custom Event Setting
+			for(var key in opts.event) {
+				uiObj.on(key, opts.event[key]);
+			}
+
+			// 엘리먼트 객체에 jui 속성 추가
+			elem.jui = uiObj;
+
+			return uiObj;
 		},
 
 		/**

@@ -1,5 +1,5 @@
-jui.define("core", [ "util.base", "jquery", "manager", "event", "collection" ],
-    function(_, $, UIManager, UIEvent, UICollection) {
+jui.define("core", [ "util.base", "manager", "collection" ],
+    function(_, UIManager, UICollection) {
 
 	/** 
 	 * @class core
@@ -8,18 +8,6 @@ jui.define("core", [ "util.base", "jquery", "manager", "event", "collection" ],
      * @alias UICore
 	 */
 	var UICore = function() {
-        var vo = null;
-
-        /**
-         * @method find
-         * Get the child element of the root element
-         *
-         * @param {String/HTMLElement} Selector
-         * @returns {*|jQuery}
-         */
-        this.find = function(selector) {
-            return $(this.root).find(selector);
-        }
 
         /**
          * @method emit
@@ -76,31 +64,6 @@ jui.define("core", [ "util.base", "jquery", "manager", "event", "collection" ],
             }
 
             this.event = event;
-        }
-
-        /**
-         * @method addEvent
-         * Defines a browser event of a DOM element
-         *
-         * @param {String/HTMLElement} selector
-         * @param {String} type Dom event type
-         * @param {Function} callback
-         */
-        this.addEvent = function() {
-            if(!this.listen) return;
-            this.listen.add(arguments);
-        }
-
-        /**
-         * @method addTrigger
-         * Generates an applicable event to a DOM element
-         *
-         * @param {String/HTMLElement} Selector
-         * @param {String} Dom event type
-         */
-        this.addTrigger = function(selector, type) {
-            if(!this.listen) return;
-            this.listen.trigger(selector, type);
         }
 
         /**
@@ -229,21 +192,6 @@ jui.define("core", [ "util.base", "jquery", "manager", "event", "collection" ],
         }
 
         /**
-         * @method setVo
-         * Dynamically defines the template method of a UI
-         *
-         * @deprecated
-         */
-        this.setVo = function() { // @Deprecated
-            if(!this.options.vo) return;
-
-            if(vo != null) vo.reload();
-            vo = $(this.selector).jbinder();
-
-            this.bind = vo;
-        }
-
-        /**
          * @method setOption
          * Dynamically defines the options of a UI
          *
@@ -266,15 +214,6 @@ jui.define("core", [ "util.base", "jquery", "manager", "event", "collection" ],
          *
          */
         this.destroy = function() {
-            // DOM 이벤트 관리 객체가 있을 경우
-            if(this.listen) {
-                for (var i = 0; i < this.listen.size(); i++) {
-                    var obj = this.listen.get(i);
-                    $(obj.target).off(obj.type);
-                }
-            }
-
-            // 생성된 메소드 메모리에서 제거
             if(this.__proto__) {
                 for (var key in this.__proto__) {
                     delete this.__proto__[key];
@@ -283,102 +222,26 @@ jui.define("core", [ "util.base", "jquery", "manager", "event", "collection" ],
         }
 	};
 
-
     UICore.build = function(UI) {
 
-        function createUIObject(selector, index, elem, options) {
-            var mainObj = new UI["class"]();
-
-            // Check Options
-            var opts = jui.defineOptions(UI["class"], options || {});
-
-            // Public Properties
-            mainObj.init.prototype = mainObj;
-            /** @property {String/HTMLElement} selector */
-            mainObj.init.prototype.selector = selector;
-            /** @property {HTMLElement} root */
-            mainObj.init.prototype.root = elem;
-            /** @property {Object} options */
-            mainObj.init.prototype.options = opts;
-            /** @property {Object} tpl Templates */
-            mainObj.init.prototype.tpl = {};
-            /** @property {Array} event Custom events */
-            mainObj.init.prototype.event = new Array(); // Custom Event
-            /** @property {Integer} timestamp UI Instance creation time*/
-            mainObj.init.prototype.timestamp = new Date().getTime();
-            /** @property {Integer} index Index of UI instance*/
-            mainObj.init.prototype.index = index;
-            /** @property {Class} module Module class */
-            mainObj.init.prototype.module = UI;
-
-            // @Deprecated, Markup-based Template Settings (jQuery loaded)
-            if($ != null) {
-                /** @property {Object} listen Dom events */
-                mainObj.init.prototype.listen = new UIEvent();
-
-                $("script").each(function (i) {
-                    if (selector == $(this).data("jui") || selector == $(this).data("vo") || selector instanceof HTMLElement) {
-                        var tplName = $(this).data("tpl");
-
-                        if (tplName == "") {
-                            throw new Error("JUI_CRITICAL_ERR: 'data-tpl' property is required");
-                        }
-
-                        opts.tpl[tplName] = $(this).html();
-                    }
-                });
-            }
-
-            // Script-based Template Settings
-            for (var name in opts.tpl) {
-                var tplHtml = opts.tpl[name];
-
-                if (_.typeCheck("string", tplHtml) && tplHtml != "") {
-                    mainObj.init.prototype.tpl[name] = _.template(tplHtml);
-                }
-            }
-
-            var uiObj = new mainObj.init();
-
-            // Custom Event Setting
-            for(var key in opts.event) {
-                uiObj.on(key, opts.event[key]);
-            }
-
-            // 엘리먼트 객체에 jui 속성 추가
-            elem.jui = uiObj;
-
-            return uiObj;
-        }
-
         return function(selector, options) {
-            var list = [];
+            var list = [],
+                elemList = [];
 
-            // jQuery loaded
-            if($ != null) {
-                var $root = $(selector || "<div />");
-
-                $root.each(function (index) {
-                    list[index] = createUIObject($root.selector, index, this, options);
-                });
+            if(_.typeCheck("string", selector)) {
+                if (_.startsWith(selector, "#")) {
+                    elemList.push(document.getElementById(selector.substr(1)));
+                } else if (_.startsWith(selector, ".")) {
+                    elemList = document.getElementsByClassName(selector.substr(1));
+                }
+            } else if(_.typeCheck("object", selector)) {
+                elemList.push(selector);
             } else {
-                var elemList = [];
+                elemList.push(document.createElement("div"));
+            }
 
-                if(_.typeCheck("string", selector)) {
-                    if (_.startsWith(selector, "#")) {
-                        elemList.push(document.getElementById(selector.substr(1)));
-                    } else if (_.startsWith(selector, ".")) {
-                        elemList = document.getElementsByClassName(selector.substr(1));
-                    }
-                } else if(_.typeCheck("object", selector)) {
-                    elemList.push(selector);
-                } else {
-                    elemList.push(document.createElement("div"));
-                }
-
-                for(var i = 0, len = elemList.length; i < len; i++) {
-                    list[i] = createUIObject(selector, i, elemList[i], options);
-                }
+            for(var i = 0, len = elemList.length; i < len; i++) {
+                list[i] = jui.createUIObject(UI, selector, i, elemList[i], options);
             }
 
             // UIManager에 데이터 입력
@@ -418,15 +281,7 @@ jui.define("core", [ "util.base", "jquery", "manager", "event", "collection" ],
              * @cfg {Object} [event={}]
              * Defines a DOM event to be used in a UI
              */
-            event: {},
-
-            /**
-             * @cfg {Object} [vo=null]
-             * Configures a binding object of a markup
-             *
-             * @deprecated
-             */
-            vo: null
+            event: {}
         }
     }
 
@@ -436,7 +291,7 @@ jui.define("core", [ "util.base", "jquery", "manager", "event", "collection" ],
      * @extends core.UIManager
      * @singleton
      */
-	window.jui = (typeof(jui) == "object") ? _.extend(jui, UIManager) : UIManager;
+	window.jui = (typeof(jui) == "object") ? _.extend(jui, UIManager, true) : UIManager;
 	
 	return UICore;
 });

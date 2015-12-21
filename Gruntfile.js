@@ -6,9 +6,9 @@ module.exports = function(grunt) {
 
         // related ui
         "js/manager.js",
-        "js/event.js",
         "js/collection.js",
         "js/core.js",
+        "js/event.js",
 
         // util
         "js/util/sort.js",

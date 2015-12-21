@@ -1,6 +1,7 @@
-jui.define("event", [ "util.base", "jquery" ], function(_, $) {
+jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
+    function($, _, UIManager, UICollection) {
 
-    var UIEvent = function () {
+    var DOMEventListener = function() {
         var list = [];
 
         function settingEventAnimation(e) {
@@ -96,5 +97,139 @@ jui.define("event", [ "util.base", "jquery" ], function(_, $) {
         }
     }
 
+    var UIEvent = function () {
+        var vo = null;
+
+        /**
+         * @method find
+         * Get the child element of the root element
+         *
+         * @param {String/HTMLElement} Selector
+         * @returns {*|jQuery}
+         */
+        this.find = function(selector) {
+            return $(this.root).find(selector);
+        }
+
+        /**
+         * @method addEvent
+         * Defines a browser event of a DOM element
+         *
+         * @param {String/HTMLElement} selector
+         * @param {String} type Dom event type
+         * @param {Function} callback
+         */
+        this.addEvent = function() {
+            this.listen.add(arguments);
+        }
+
+        /**
+         * @method addTrigger
+         * Generates an applicable event to a DOM element
+         *
+         * @param {String/HTMLElement} Selector
+         * @param {String} Dom event type
+         */
+        this.addTrigger = function(selector, type) {
+            this.listen.trigger(selector, type);
+        }
+
+        /**
+         * @method setVo
+         * Dynamically defines the template method of a UI
+         *
+         * @deprecated
+         */
+        this.setVo = function() { // @Deprecated
+            if(!this.options.vo) return;
+
+            if(vo != null) vo.reload();
+            vo = $(this.selector).jbinder();
+
+            this.bind = vo;
+        }
+
+        /**
+         * @method destroy
+         * Removes all events set in a UI obejct and the DOM element
+         *
+         */
+        this.destroy = function() {
+            for (var i = 0; i < this.listen.size(); i++) {
+                var obj = this.listen.get(i);
+                $(obj.target).off(obj.type);
+            }
+
+            // 생성된 메소드 메모리에서 제거
+            if(this.__proto__) {
+                for (var key in this.__proto__) {
+                    delete this.__proto__[key];
+                }
+            }
+        }
+    }
+
+    UIEvent.build = function(UI) {
+
+        return function(selector, options) {
+            var list = [],
+                $root = $(selector || "<div />");
+
+            $root.each(function (index) {
+                list[index] = jui.createUIObject(UI, $root.selector, index, this, options, function(mainObj, opts) {
+                    /** @property {Object} listen Dom events */
+                    mainObj.init.prototype.listen = new DOMEventListener();
+
+                    $("script").each(function (i) {
+                        if (selector == $(this).data("jui") || selector == $(this).data("vo") || selector instanceof HTMLElement) {
+                            var tplName = $(this).data("tpl");
+
+                            if (tplName == "") {
+                                throw new Error("JUI_CRITICAL_ERR: 'data-tpl' property is required");
+                            }
+
+                            opts.tpl[tplName] = $(this).html();
+                        }
+                    });
+                });
+            });
+
+            // UIManager에 데이터 입력
+            UIManager.add(new UICollection(UI.type, selector, options, list));
+
+            // 객체가 없을 경우에는 null을 반환 (기존에는 빈 배열을 반환)
+            if(list.length == 0) {
+                return null;
+            } else if(list.length == 1) {
+                return list[0];
+            }
+
+            return list;
+        }
+    }
+
+    UIEvent.init = function(UI) {
+        var uiObj = null;
+
+        if(typeof(UI) === "object") {
+            uiObj = UIEvent.build(UI);
+            UIManager.addClass({ type: UI.type, "class": uiObj });
+        }
+
+        return uiObj;
+    }
+
+    UIEvent.setup = function() {
+        return {
+            /**
+             * @cfg {Object} [vo=null]
+             * Configures a binding object of a markup
+             *
+             * @deprecated
+             */
+            vo: null
+        }
+    }
+
     return UIEvent;
-});
+}, "core");
