@@ -45,13 +45,13 @@ module.exports = function(grunt) {
             // jui all 
             dist : {
                 src : base_src,
-                dest : "dist/jui-core.js"
+                dest : "dist/core.js"
             }
         },
         uglify: {
             dist : {
                 files : {
-                    "dist/jui-core.min.js" : [ "dist/jui-core.js" ]
+                    "dist/core.min.js" : [ "dist/core.js" ]
                 }
             }
         },
