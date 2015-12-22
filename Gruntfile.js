@@ -1,30 +1,4 @@
 module.exports = function(grunt) {
-
-    var base_src = [
-        // core
-        "js/base.js",
-
-        // related ui
-        "js/manager.js",
-        "js/collection.js",
-        "js/core.js",
-        "js/event.js",
-
-        // util
-        "js/util/sort.js",
-        "js/util/keyparser.js",
-        "js/util/base64.js",
-        "js/util/template.js",
-        "js/util/math.js",
-        "js/util/transform.js",
-        "js/util/time.js",
-        "js/util/scale.js",
-        "js/util/color.js",
-        "js/util/svgbase.js",
-        "js/util/svg3d.js",
-        "js/util/svg.js"
-    ];
-
     grunt.initConfig({
         watch : {
             scripts : {
@@ -44,7 +18,30 @@ module.exports = function(grunt) {
         concat : {
             // jui all 
             dist : {
-                src : base_src,
+                src : [
+                    // core
+                    "js/base.js",
+
+                    // related ui
+                    "js/manager.js",
+                    "js/collection.js",
+                    "js/core.js",
+                    "js/event.js",
+
+                    // util
+                    "js/util/sort.js",
+                    "js/util/keyparser.js",
+                    "js/util/base64.js",
+                    "js/util/template.js",
+                    "js/util/math.js",
+                    "js/util/transform.js",
+                    "js/util/time.js",
+                    "js/util/scale.js",
+                    "js/util/color.js",
+                    "js/util/svgbase.js",
+                    "js/util/svg3d.js",
+                    "js/util/svg.js"
+                ],
                 dest : "dist/core.js"
             }
         },

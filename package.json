@@ -1,7 +1,7 @@
 {
   "name": "jui-core",
   "version": "2.0.0",
-  "description": "JENNIFER UI is all free. a simple, fast, many: JUI is all-in-one desktop UI framework. Bootstrap support, Independent style & script components, SVG-based chart components.",
+  "description": "The core framework provided by the JUI for implementing such a grid and chart.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -12,16 +12,14 @@
   },
   "keywords": [
     "HTML5",
+    "NodeJS",
     "CSS",
     "JS",
     "JavaScript",
     "SVG",
-    "chart",
-    "framework",
-    "bootstrap",
-    "front-end",
-    "frontend",
-    "web development",
+    "Chart",
+    "Framework",
+    "Web Development",
     "free",
     "MIT"
   ],
@@ -63,16 +61,12 @@
     "dependencies": {
       "jquery": ">1.8.0"
     },
-    "main": "jui-core.min.js",
+    "main": "dist/core.min.js",
     "shim": {
       "deps": [
         "jquery"
       ],
-      "exports": "jui"
+      "exports": "jui-core"
     }
-  },
-  "dependencies": {
-    "jsdom": "~3.1.0",
-    "jquery": "~2.1.3"
   }
 }
