@@ -1093,8 +1093,13 @@
 					args = getDepends(depends);
 				} else {
 					// @Deprecated 기존의 레거시를 위한 코드
-					var ui = getModules("ui");
-					args = [ ui, ui, utility ];
+					var ui = getModules("ui"),
+						uix = {};
+
+					utility.extend(uix, ui);
+					utility.extend(uix, getModules("grid"));
+
+					args = [ ui, uix, utility ];
 				}
 
 				callback.apply(null, args);
