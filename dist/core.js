@@ -1092,7 +1092,9 @@
 				if (depends) {
 					args = getDepends(depends);
 				} else {
-					args = [ getModules("ui"), getModules("uix"), utility ];
+					// @Deprecated 기존의 레거시를 위한 코드
+					var ui = getModules("ui");
+					args = [ ui, ui, utility ];
 				}
 
 				callback.apply(null, args);
