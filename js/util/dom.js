@@ -15,6 +15,7 @@ jui.define("util.dom", [ "util.base" ], function(_) {
 
             return [];
         },
+
         each: function(selectorOrElements, callback) {
             if(!_.typeCheck("function", callback)) return;
 
@@ -32,6 +33,7 @@ jui.define("util.dom", [ "util.base" ], function(_) {
                 });
             }
         },
+
         attr: function(selectorOrElements, keyOrAttributes) {
             if(!_.typeCheck([ "string", "array" ], selectorOrElements))
                 return;
@@ -50,10 +52,56 @@ jui.define("util.dom", [ "util.base" ], function(_) {
                 }
             }
         },
+
         remove: function(selectorOrElements) {
             this.each(selectorOrElements, function() {
                 this.parentNode.removeChild(this);
             });
+        },
+
+        offset: function(elem) {
+            function isWindow(obj) {
+                /* jshint eqeqeq: false */
+                return obj != null && obj == obj.window;
+            }
+
+            function getWindow(elem) {
+                return isWindow(elem) ?
+                    elem :
+                    elem.nodeType === 9 ?
+                    elem.defaultView || elem.parentWindow :
+                        false;
+            }
+
+            var docElem, win,
+                box = { top: 0, left: 0 },
+                doc = elem && elem.ownerDocument;
+
+            if ( !doc ) {
+                return;
+            }
+
+            docElem = doc.documentElement;
+
+            // Make sure it's not a disconnected DOM node
+            /*/
+             if ( !global.jquery.contains( docElem, elem ) ) {
+             return box;
+             }
+             /**/
+
+            // If we don't have gBCR, just use 0,0 rather than error
+            // BlackBerry 5, iOS 3 (original iPhone)
+            var strundefined = typeof undefined;
+            if ( typeof elem.getBoundingClientRect !== strundefined ) {
+                box = elem.getBoundingClientRect();
+            }
+            win = getWindow( doc );
+
+            return {
+                top: box.top  + ( win.pageYOffset || docElem.scrollTop )  - ( docElem.clientTop  || 0 ),
+                left: box.left + ( win.pageXOffset || docElem.scrollLeft ) - ( docElem.clientLeft || 0 )
+            };
         }
     }
 });
