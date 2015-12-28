@@ -22,13 +22,8 @@ module.exports = function(grunt) {
                     // core
                     "js/base.js",
 
-                    // related ui
-                    "js/manager.js",
-                    "js/collection.js",
-                    "js/core.js",
-                    "js/event.js",
-
                     // util
+                    "js/util/dom.js",
                     "js/util/sort.js",
                     "js/util/keyparser.js",
                     "js/util/base64.js",
@@ -40,7 +35,13 @@ module.exports = function(grunt) {
                     "js/util/color.js",
                     "js/util/svgbase.js",
                     "js/util/svg3d.js",
-                    "js/util/svg.js"
+                    "js/util/svg.js",
+
+                    // related ui
+                    "js/manager.js",
+                    "js/collection.js",
+                    "js/core.js",
+                    "js/event.js"
                 ],
                 dest : "dist/core.js"
             }
@@ -60,5 +61,5 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-contrib-watch");
     grunt.registerTask("js", [ "concat", "uglify" ]);
     grunt.registerTask("test", [ "qunit" ]);
-    grunt.registerTask("default", [ "test", "js" ]);
+    grunt.registerTask("default", [ "js", "test" ]);
 };

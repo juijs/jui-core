@@ -1,5 +1,5 @@
-jui.define("core", [ "util.base", "manager", "collection" ],
-    function(_, UIManager, UICollection) {
+jui.define("core", [ "util.base", "util.dom", "manager", "collection" ],
+    function(_, $, UIManager, UICollection) {
 
 	/** 
 	 * @class core
@@ -229,11 +229,7 @@ jui.define("core", [ "util.base", "manager", "collection" ],
                 elemList = [];
 
             if(_.typeCheck("string", selector)) {
-                if (_.startsWith(selector, "#")) {
-                    elemList.push(document.getElementById(selector.substr(1)));
-                } else if (_.startsWith(selector, ".")) {
-                    elemList = document.getElementsByClassName(selector.substr(1));
-                }
+                elemList = $.find(selector);
             } else if(_.typeCheck("object", selector)) {
                 elemList.push(selector);
             } else {

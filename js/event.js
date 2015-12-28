@@ -5,7 +5,7 @@ jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
         var list = [];
 
         function settingEventAnimation(e) {
-            var pfx = ["webkit", "moz", "MS", "o", ""];
+            var pfx = [ "webkit", "moz", "MS", "o", "" ];
 
             for (var p = 0; p < pfx.length; p++) {
                 var type = e.type;
@@ -48,16 +48,16 @@ jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
         }
 
         this.add = function (args) {
-            var e = {target: args[0], type: args[1]};
+            var e = { target: args[0], type: args[1] };
 
             if (_.typeCheck("function", args[2])) {
-                e = $.extend(e, {callback: args[2]});
+                e = $.extend(e, { callback: args[2] });
             } else if (_.typeCheck("string", args[2])) {
-                e = $.extend(e, {children: args[2], callback: args[3]});
+                e = $.extend(e, { children: args[2], callback: args[3] });
             }
 
             // 이벤트 유형을 배열로 변경
-            var eventTypes = _.typeCheck("array", e.type) ? e.type : [e.type];
+            var eventTypes = _.typeCheck("array", e.type) ? e.type : [ e.type ];
 
             // 이벤트 유형에 따른 이벤트 설정
             for (var i = 0; i < eventTypes.length; i++) {
