@@ -1,22 +1,19 @@
 ## Getting Started
 
-#### Install
+#### Loading resources
 JUI core is now available without loading the jQuery.
 ```html
 <script src="dist/core.min.js"></script>
 ```
 
-#### Install with Bower
+#### Installing in command
 ```
+npm install jui-core
 bower install jui-core
-```
-
-#### Install with JamJS
-```
 jamjs install jui-core
 ```
 
-#### Build
+#### To build the project
 Build using a grunt in JUI Library
 ```
 grunt       // Build all processes
