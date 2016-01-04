@@ -83,7 +83,6 @@ jui.define("util.base64", [], function() {
         _utf8_encode: function (string) {
             string = string.replace(/\r\n/g, "\n");
 
-            // BOM 코드 적용 (UTF-8 관련)
             var utftext = String.fromCharCode(239) + String.fromCharCode(187) + String.fromCharCode(191);
 
             for (var n = 0; n < string.length; n++) {
