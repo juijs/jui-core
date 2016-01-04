@@ -1,5 +1,10 @@
 jui.define("collection", [], function() {
 
+    /**
+     * @class core.UICollection
+     * @private
+     * @singleton
+     */
     var UICollection = function (type, selector, options, list) {
         this.type = type;
         this.selector = selector;
@@ -16,7 +21,6 @@ jui.define("collection", [], function() {
         }
     }
 
-    // 배열 클래스 상속
     UICollection.prototype = Object.create(Array.prototype);
 
     return UICollection;

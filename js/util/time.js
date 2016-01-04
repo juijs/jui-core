@@ -1,7 +1,11 @@
 jui.define("util.time", [ "util.base" ], function(_) {
 
 	/**
-	 * time 객체 
+	 * @class util.time
+	 *
+	 * Time Utility
+	 *
+	 * @singleton
 	 * 
 	 */
 	var self = {
@@ -22,6 +26,16 @@ jui.define("util.time", [ "util.base" ], function(_) {
 		milliseconds : "milliseconds",
 		weeks : "weeks",
 
+		/**
+		 * @method diff
+		 *
+		 * caculate time difference from a to b
+		 *
+		 * @param type
+		 * @param a
+		 * @param b
+		 * @returns {number}
+		 */
 		diff : function (type, a, b) {
 			var milliseconds =  (+a) - (+b);
 
@@ -39,11 +53,13 @@ jui.define("util.time", [ "util.base" ], function(_) {
 		},
 
 		/**
-		 * 시간 더하기 
-		 * var date = new Date(); 
-		 * 
-		 * time.add(date, time.hours, 1); 		// 현재시간에서 1시간 추가  
-		 * time.add(date, time.hours, 1, time.minutes, 2); 		// 현재시간에서 1시간 2분 추가   
+		 * @method add
+		 *
+		 * add time
+		 *
+		 * 		var date = new Date();
+		 * 		time.add(date, time.hours, 1); 		// add an hour on now
+		 * 		time.add(date, time.hours, 1, time.minutes, 2); 		// add an hour and 2 minutes on now
 		 * 
  		 * @param {Object} date
 		 */
@@ -85,7 +101,9 @@ jui.define("util.time", [ "util.base" ], function(_) {
 		},
 		
 		/**
-		 * jui.util.dateFormat 의 alias 
+		 * @method format
+		 *
+		 * {util.dateFormat} 's alias
 		 * 
 		 * @param {Object} date
 		 * @param {Object} format

@@ -3,10 +3,10 @@ jui.define("util.sort", [], function() {
     /**
      * @class QuickSort
      *
-     * Äü Á¤·Ä
+     * QuickSort
      *
      * @param {Array} array
-     * @param {Boolean} isClone  isClone ÀÌ true ÀÌ¸é, ÇØ´ç ¹è¿­À» ÂüÁ¶ÇÏÁö ¾Ê°í º¹»çÇØ¼­ Ã³¸®
+     * @param {Boolean} isClone isClone ì´ true ì´ë©´, í•´ë‹¹ ë°°ì—´ì„ ì°¸ì¡°í•˜ì§€ ì•Šê³  ë³µì‚¬í•´ì„œ ì²˜ë¦¬
      * @constructor
      * @private
      */

@@ -9,6 +9,13 @@ jui.define("util.color", [ "util.math" ], function(math) {
 
 		regex  : /(linear|radial)\((.*)\)(.*)/i,
 
+		/**
+		 * @method format
+		 *
+		 * @param {Object} obj  obj has r, g, b and a attributes
+		 * @param {"hex"/"rgb"} type  format string type
+		 * @returns {*}
+		 */
 		format : function(obj, type) {
 			if (type == 'hex') {
 				var r = obj.r.toString(16);
@@ -163,6 +170,16 @@ jui.define("util.color", [ "util.math" ], function(math) {
 			};
 		},
 
+		/**
+		 * @method RGBtoHSV
+		 *
+		 * convert rgb to hsv
+		 *
+		 * @param {Number} R  red color value
+		 * @param {Number} G  green color value
+		 * @param {Number} B  blue color value
+		 * @return {Object}  hsv color code
+		 */
 		RGBtoHSV : function (R, G, B) {
 
 			var R1 = R / 255;
@@ -242,9 +259,9 @@ jui.define("util.color", [ "util.math" ], function(math) {
 		/**
 		 * @method parse
 		 *
-		 * color 파싱
+		 * gradient color string parsing
 		 *
-		 * @param color
+		 * @param {String} color
 		 * @returns {*}
 		 */
 		parse : function(color) {
@@ -256,7 +273,6 @@ jui.define("util.color", [ "util.math" ], function(math) {
 		 *
 		 * gradient parser
 		 *
-		 *      @example
 		 *      linear(left) #fff,#000
 		 *      linear(right) #fff,50 yellow,black
 		 *      radial(50%,50%,50%,50,50)

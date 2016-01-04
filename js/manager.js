@@ -58,7 +58,7 @@ jui.define("manager", [ "util.base" ], function(_) {
             if(_.typeCheck("integer", key)) {
                 return instances[key];
             } else if(_.typeCheck("string", key)) {
-                // ¼¿·ºÅÍ °´Ã¼ °Ë»ö
+                // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼ ï¿½Ë»ï¿½
                 for(var i = 0; i < instances.length; i++) {
                     var uiSet = instances[i];
 
@@ -67,7 +67,7 @@ jui.define("manager", [ "util.base" ], function(_) {
                     }
                 }
 
-                // ¸ðµâ °´Ã¼ °Ë»ö
+                // ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼ ï¿½Ë»ï¿½
                 var result = [];
                 for(var i = 0; i < instances.length; i++) {
                     var uiSet = instances[i];
@@ -99,7 +99,7 @@ jui.define("manager", [ "util.base" ], function(_) {
          * @return {Object} Removed instance
          */
         this.remove = function(index) {
-            if(_.typeCheck("integer", index)) { // UI °´Ã¼ ÀÎµ¦½º
+            if(_.typeCheck("integer", index)) { // UI ï¿½ï¿½Ã¼ ï¿½Îµï¿½ï¿½ï¿½
                 return instances.splice(index, 1)[0];
             }
         }
@@ -269,7 +269,7 @@ jui.define("manager", [ "util.base" ], function(_) {
 
             return cls["class"](selector, options);
         }
-    }
+    };
 
     return UIManager;
 });

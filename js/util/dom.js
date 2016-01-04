@@ -1,4 +1,12 @@
 jui.define("util.dom", [ "util.base" ], function(_) {
+
+    /**
+     * @class util.dom
+     *
+     * pure dom utility
+     *
+     * @singleton
+     */
     return {
         find: function() {
             var args = arguments;

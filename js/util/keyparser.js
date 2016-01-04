@@ -3,7 +3,7 @@ jui.define("util.keyparser", [], function() {
     /**
      * @class KeyParser
      *
-     * 0.0.1 Çü½ÄÀÇ Å° ¹®ÀÚ¿­À» Á¦¾îÇÏ´Â Å¬·¡½º
+     * 0.0.1 í˜•ì‹ì˜ í‚¤ ë¬¸ìì—´ì„ ì œì–´í•˜ëŠ” í´ë˜ìŠ¤
      *
      * @private
      * @constructor
@@ -29,7 +29,7 @@ jui.define("util.keyparser", [], function() {
          * @param {String} index
          * @return {Array}
          */
-        this.getIndexList = function (index) { // Æ®¸® ±¸Á¶ÀÇ ¸ğµç Å°¸¦ ¹è¿­ ÇüÅÂ·Î ¹İÈ¯
+        this.getIndexList = function (index) { // Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Å°ï¿½ï¿½ ï¿½è¿­ ï¿½ï¿½ï¿½Â·ï¿½ ï¿½ï¿½È¯
             var resIndex = [], strIndex = "" + index;
 
             if (strIndex.length == 1) {
@@ -73,7 +73,7 @@ jui.define("util.keyparser", [], function() {
          * @param {String} index
          * @return {String}
          */
-        this.getNextIndex = function (index) { // ÇöÀç ÀÎµ¦½º¿¡¼­ +1
+        this.getNextIndex = function (index) { // ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ +1
             var indexList = this.getIndexList(index),
                 no = indexList.pop() + 1;
 

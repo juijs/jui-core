@@ -56,17 +56,15 @@ jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
                 e = $.extend(e, { children: args[2], callback: args[3] });
             }
 
-            // ÀÌº¥Æ® À¯ÇüÀ» ¹è¿­·Î º¯°æ
             var eventTypes = _.typeCheck("array", e.type) ? e.type : [ e.type ];
 
-            // ÀÌº¥Æ® À¯Çü¿¡ µû¸¥ ÀÌº¥Æ® ¼³Á¤
             for (var i = 0; i < eventTypes.length; i++) {
                 e.type = eventTypes[i]
 
                 if (e.type.toLowerCase().indexOf("animation") != -1)
                     settingEventAnimation(e);
                 else {
-                    // body, window, document °æ¿ì¿¡¸¸ ÀÌº¥Æ® ÁßÃ¸ÀÌ °¡´É
+                    // body, window, document ï¿½ï¿½ì¿¡ï¿½ï¿½ ï¿½Ìºï¿½Æ® ï¿½ï¿½Ã¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
                     if (e.target != "body" && e.target != window && e.target != document) {
                         $(e.target).off(e.type);
                     }
@@ -160,7 +158,7 @@ jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
                 $(obj.target).off(obj.type);
             }
 
-            // »ý¼ºµÈ ¸Þ¼Òµå ¸Þ¸ð¸®¿¡¼­ Á¦°Å
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Þ¼Òµï¿½ ï¿½Þ¸ð¸®¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             if(this.__proto__) {
                 for (var key in this.__proto__) {
                     delete this.__proto__[key];
@@ -194,10 +192,10 @@ jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
                 });
             });
 
-            // UIManager¿¡ µ¥ÀÌÅÍ ÀÔ·Â
+            // UIManagerï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ô·ï¿½
             UIManager.add(new UICollection(UI.type, selector, options, list));
 
-            // °´Ã¼°¡ ¾øÀ» °æ¿ì¿¡´Â nullÀ» ¹ÝÈ¯ (±âÁ¸¿¡´Â ºó ¹è¿­À» ¹ÝÈ¯)
+            // ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ì¿¡ï¿½ï¿½ nullï¿½ï¿½ ï¿½ï¿½È¯ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½è¿­ï¿½ï¿½ ï¿½ï¿½È¯)
             if(list.length == 0) {
                 return null;
             } else if(list.length == 1) {
