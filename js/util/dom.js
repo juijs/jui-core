@@ -1,4 +1,12 @@
-jui.define("util.dom", [ "util.base" ], function(_) {
+jui.define("util.dom", [ ], function() {
+
+    var regForId = /^#([\w-]+)$/;
+    var regForClass = /^.([\w-]+)$/;
+    var regForTag = /^([\w-]+)$/;
+
+    //
+    // reference to https://plainjs.com
+
 
     var ElementPrototype = Element.prototype;
 
@@ -19,20 +27,114 @@ jui.define("util.dom", [ "util.base" ], function(_) {
             return el;
         };
 
+    var hasClass, addClass, removeClass;
+
+    if ('classList' in document.documentElement) {
+        hasClass = function (element, className) {
+            return element.classList.contains(className);
+        };
+
+        addClass = function (element, className) {
+            element.classList.add(className);
+        };
+
+        removeClass = function (element, className) {
+            element.classList.remove(className);
+        };
+    } else {
+        hasClass = function (element, className) {
+            return new RegExp('\\b'+ className+'\\b').test(element.className);
+        };
+        addClass = function (element, className) {
+            if (!hasClass(element, className)) { element.className += ' ' + className; }
+        };
+        removeClass = function (el, className) {
+            element.className = element.className.replace(new RegExp('\\b'+ className+'\\b', 'g'), '');
+        };
+    }
+
+    var addEvent, removeEvent;
+
+    if (window.attachEvent) {
+        addEvent = function (element, type, handler) {
+            element.attachEvent('on'+type, handler);
+        };
+
+        removeEvent = function (element, type, handler) {
+            element.detachEvent('on'+type, handler);
+        }
+    } else {
+        addEvent = function (element, type, handler) {
+            element.addEventListener(type, handler);;
+        };
+
+        removeEvent = function (element, type, handler) {
+            element.removeEventListener(type, handler)
+        }
+    }
+
+    var triggerEvent;
+
+    if ('createEvent' in document) {
+        triggerEvent = function (element, type) { // modern browsers, IE9+
+            var e = document.createEvent('HTMLEvents');
+            element.initEvent(type, false, true);
+            element.dispatchEvent(e);
+        }
+    } else {
+        triggerEvent = function (element, type) {
+            // IE 8
+            var e = document.createEventObject();
+            e.eventType = type;
+            element.fireEvent('on'+e.eventType, e);
+        }
+    }
+
+
     /**
      * @class util.dom
      *
      * pure dom utility
      *
+     *      dom("#id") is equals to dom.id('id');
+     *
+     *      dom(".class") is equals to dom.className("class");
+     *
+     *      dom("tag") is equals to dom.tag('tag');
+     *
+     *      dom(".class > tag > li:first-child") is equals to dom.find(".class > tag > li:first-child");
+     *
      * @singleton
      */
-    return {
+    function dom(selector, context) {
+
+        var result = regForId.exec(selector);
+
+        if (result) {
+            return dom.id(result[1], context);
+        }
+
+        result = regForClass.exec(selector);
+        if (result) {
+            return dom.className(result[1], context);
+        }
+
+        result = regForTag.exec(selector);
+        if (result) {
+            return dom.tag(result[1], context);
+        }
+
+        return dom.find(selector, context);
+    }
+
+    var feature = {
 
         /**
          * @method create
          *
          * create element by option
          *
+         *      // 1. set options
          *      dom.create({
          *          tag : 'div',
          *          style : {
@@ -48,15 +150,29 @@ jui.define("util.dom", [ "util.base" ], function(_) {
          *          ]
          *     });
          *
+         *     // 2. set string same to  dom.create({ tag : 'div', className : 'my-class your-class' })
+         *     dom.create('div.my-class.your-class');
+         *
          * @param {Object} opt
          * @returns {Element}
          */
         create : function (opt) {
             opt = opt || {tag : 'div'};
 
+            if (typeof opt == 'string') {
+                var arr = opt.split(".");
+
+                var tag = arr.shift();
+                var className = arr.join(" ");
+
+                opt = { tag : tag, className : className };
+            }
+
             var element = document.createElement(opt.tag || 'div');
 
-            if (opt.className) element.className = opt.className;
+            if (opt.className) {
+                element.className = opt.className;
+            }
 
             if (opt.attr) {
                 var keys = Object.keys(opt.attr);
@@ -92,6 +208,18 @@ jui.define("util.dom", [ "util.base" ], function(_) {
             return element;
         },
 
+        /**
+         * @method createText
+         *
+         * create text node
+         *
+         * @param {String} text
+         * @returns {TextNode}
+         */
+        createText : function (text) {
+            return document.createTextNode(text);
+        },
+
 
         /**
          * @method html
@@ -122,7 +250,7 @@ jui.define("util.dom", [ "util.base" ], function(_) {
          */
         text : function (element, contents) {
             if (arguments.length == 1){
-                return element.textContent;
+                return element.textContent || element.innerText;
             }
 
             element.textContent = contents;
@@ -145,29 +273,50 @@ jui.define("util.dom", [ "util.base" ], function(_) {
 
             do {
                 if (!filter || filter(element)) {
-                    arr.push(element);
+                    arr[arr.length] = element;
                 }
             } while(element = element.nextSibling);
 
             return arr;
         },
 
-        nextSiblings: function(element, filter) {
+        next : function (element, filter) {
+            while(element = element.nextSibling) {
+                if (!filter || filter(element)) {
+                    return element;
+                }
+            }
+
+            return null;
+        },
+
+        nextAll: function(element, filter) {
             var arr = [];
             while(element = element.nextSibling) {
                 if (!filter || filter(element)) {
-                    arr.push(element);
+                    arr[arr.length] = element;
                 }
             }
 
             return arr;
         },
 
-        prevSiblings: function(element, filter) {
+
+        prev: function(element, filter) {
+            while(element = element.previousSibling) {
+                if (!filter || filter(element)) {
+                    return element;
+                }
+            }
+
+            return null;
+        },
+
+        prevAll: function(element, filter) {
             var arr = [];
             while(element = element.previousSibling) {
                 if (!filter || filter(element)) {
-                    arr.push(element);
+                    arr[arr.length] = element;
                 }
             }
 
@@ -176,6 +325,373 @@ jui.define("util.dom", [ "util.base" ], function(_) {
 
         closest: function (element, selector) {
             return closest.call(element, selector);
+        },
+
+        /**
+         * @method children
+         *
+         * get chlid nodes for fast performance
+         *
+         * @param {Element} element
+         * @param {Function] [filter=undefined]
+         * @returns {*}
+         */
+        children : function (element, filter) {
+            return this.siblings(element.firstChild, filter);
+        },
+
+        /**
+         * @method replace
+         *
+         * replace element to new element
+         *
+         * @param {Element} element
+         * @param {Element} newElement
+         */
+        replace : function (element, newElement) {
+          element.parentNode.replaceChild(newElement, element);
+        },
+
+        /**
+         * @method unwrap
+         *
+         * unwrap a dom element
+         *
+         * @param {Element} element
+         */
+        unwrap : function (element) {
+          var parent = element.parentNode;
+
+          while(parent.firstChild) {
+              parent.insertBefore(element.firstChild, el);
+          }
+
+          this.remove(element);
+        },
+
+        /**
+         * @method clone
+         *
+         * create a deep copy of a DOM element
+         *
+         * @param {Element} element
+         * @returns {Element}
+         */
+        clone : function (element, isCopyChildNodes) {
+            isCopyChildNodes = typeof isCopyChildNodes == 'undefined' ? true : isCopyChildNodes;
+            return element.cloneNode(isCopyChildNodes);
+        },
+
+        /**
+         * @method wrap
+         *
+         *      dom.wrap(element, dom.create('div'));
+         *
+         * @param element
+         * @param wrapElement
+         */
+        wrap : function (element, wrapElement) {
+          this.before(element, wrapElement);
+          this.append(wrapElement, element);
+        },
+
+
+        /**
+         * @method empty
+         *
+         * remove all child nodes of an element from the DOM
+         *
+         * @param element
+         */
+        empty : function (element) {
+          element.innerHTML = "";
+        },
+
+        /**
+         * @method remove
+         *
+         * remove an element from the DOM tree
+         *
+         * @param {Element} element
+         */
+        remove : function (element) {
+            element.parentNode.removeChild(element);
+        },
+
+        /**
+         * @method hasClass
+         *
+         *
+         *
+         * @param {Element} element
+         * @param {String} className
+         * @returns {*}
+         */
+        hasClass : function (element, className) {
+            return hasClass(element, className);
+        },
+
+        /**
+         * @method addClass
+         *
+         * @param {Element} element
+         * @param {String} className
+         */
+        addClass : function (element, className) {
+            addClass(element, className);
+        },
+
+        /**
+         * @method removeClass
+         *
+         * @param {Element} element
+         * @param {String} className
+         */
+        removeClass : function (element, className) {
+            removeClass(element, className);
+        },
+
+
+        /**
+         * @method toggleClass
+         *
+         *
+         *
+         * @param element
+         * @param className
+         */
+        toggleClass : function (element, className) {
+            if (hasClass(element, className)) {
+                removeClass(element, className);
+            } else {
+                addClass(element, className);
+            }
+        },
+
+        /**
+         * @method after
+         *
+         * insert new element after an existing one in the DOM tree
+         *
+         * @param {Element} element
+         * @param {Element} newElement
+         */
+        after : function (element, newElement) {
+            element.parentNode.insertBefore(newElement, this.next(element));
+        },
+
+        /**
+         * @method before
+         *
+         * insert new element before an existing one in the DOM tree
+         *
+         * @param {Element} element
+         * @param {Element} newElement
+         */
+        before : function (element, newElement) {
+            element.parentNode.insertBefore(newElement, element);
+        },
+
+        /**
+         * @method append
+         *
+         *
+         * @param {Element} element
+         * @param {Element} newChildElement
+         */
+        append : function (element, newChildElement) {
+            element.appendChild(newChildElement);
+        },
+
+        /**
+         * @method prepend
+         *
+         *
+         * @param {Element} element
+         * @param {Element} newChildElement
+         */
+        prepend : function (element, newChildElement) {
+            this.before(element.firstChild, newChildElement);
+        },
+
+        /**
+         * @method css
+         *
+         * get the computed style properties of element
+         *
+         *      //1. get all style
+         *      var allStyle = dom.css(element);
+         *      console.log(allStyle.backgroundColor);
+         *
+         *      //2. get one property
+         *      console.log(dom.css(element, 'background-color');
+         *
+         *      //3. set style properties
+         *      dom.css(element, { 'background-color': 'yellow' });
+         *
+         * @param element
+         * @param key
+         * @returns {*}
+         */
+        css : function (element, styles) {
+            var style = window.getComputedStyle ? getComputedStyle(element, null) : element.currentStyle;
+
+            if (typeof styles === 'string') {
+                return style[styles];
+            } else if (typeof styles === 'object') {
+                for(var k in styles) {
+                    element.style[k] = styles[k];
+                }
+            }
+
+            return style;
+        },
+
+        /**
+         * @method position
+         *
+         * Get the offset position of an element relative to its parent
+         *
+         * @param {Element} element
+         * @returns {{top: (Number|number), left: (Number|number)}}
+         */
+        position: function (element) {
+            return { top : element.offsetTop, left : element.offsetLeft };
+        },
+
+
+        /**
+         * @method offset
+         *
+         * Get the position of an element relative to the document
+         *
+         * @param {Element} element
+         * @returns {{top: *, left: *}}
+         */
+        offset : function (element) {
+
+            var rect = element.getBoundingClientRect(),
+                scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
+                scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            return {
+                top: rect.top + scrollTop,
+                left: rect.left + scrollLeft
+            };
+
+        },
+
+        outerWidth: function(element) {
+            return element.offsetWidth;
+        },
+        outerHeight : function (element) {
+            return element.offsetHeight;
+        },
+
+        /**
+         * @method width
+         *
+         * get width of element, including only padding but without border
+         *
+         * @param element
+         * @returns {*}
+         */
+        innerWidth : function (element) {
+            if (element == window || element == document) {
+                return window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+            }
+            return element.clientWidth;
+        },
+        /**
+         * @method height
+         *
+         * get height of element, including only padding but without border
+         *
+         * @param element
+         * @returns {*}
+         */
+        innerHeight: function (element) {
+            if (element == window || element == document) {
+                return window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+            }
+            return element.clientHeight;
+        },
+
+        // box-sizing:border-box; 여부에 따라서 width 를 구하는 공식이 달라진다
+        width : function (element, width) {
+
+        },
+
+        height : function (element, height) {
+
+        },
+
+        /**
+         * @method on
+         *
+         * add event listener at element
+         *
+         * @param {Element} element
+         * @param {String} type event's name
+         * @param {Function} handler
+         */
+        on : function (element, type, handler) {
+            if (arguments.length == 3) {
+                addEvent(element, type, handler);
+            } else if (arguments.length == 4) {
+                var selector = handler;
+                var handler = arguments[3];
+
+                addEvent(element, type, function (e) {
+                    if (matches.call(e.target || e.srcElement, selector)) {
+                        handler(e);
+                    }
+                });
+
+            }
+
+        },
+
+        /**
+         * @method off
+         *
+         * remove event handler in  listener
+         *
+         * @param {Element} element
+         * @param {String} type event's name
+         * @param {Function} handler
+         */
+        off : function (element, type, handler) {
+            removeEvent(element, type, handler);
+        },
+
+        /**
+         * @method trigger
+         *
+         * trigger event
+         *
+         * @param element
+         * @param type
+         */
+        trigger : function (element, type, args) {
+            triggerEvent(element, type, args);
+        },
+
+        show : function (element, value) {
+            element.style.display = value;
+        },
+
+        hide : function (element) {
+            element.style.display = 'none';
+        },
+
+        toggle: function (element, value) {
+            var display = this.css(element, 'display');
+
+            if (display == 'none') {
+                this.show(element, value);
+            } else {
+                this.hide(element);
+            }
         },
 
         /**
@@ -216,12 +732,12 @@ jui.define("util.dom", [ "util.base" ], function(_) {
         },
 
         /**
-         * @method one
+         * @method findOne
          *
-         * find one element by querySelector
+         * find one element by selector
          *
          */
-        one : function (selector, parent) {
+        findOne : function (selector, parent) {
           return  (parent || document).querySelector(selector);
         },
 
@@ -230,22 +746,10 @@ jui.define("util.dom", [ "util.base" ], function(_) {
          *
          * find elements by selector
          *
-         * @returns {*}
+         * @returns {NodeList}
          */
-        find: function() {
-            var args = arguments;
-
-            if(args.length == 1) {
-                if(_.typeCheck("string", args[0])) {
-                    return document.querySelectorAll(args[0]);
-                }
-            } else if(args.length == 2) {
-                if(_.typeCheck("object", args[0]) && _.typeCheck("string", args[1])) {
-                    return args[0].querySelectorAll(args[1]);
-                }
-            }
-
-            return [];
+        find: function(selector, parent) {
+            return  (parent || document).querySelectorAll(selector);
         },
 
         /**
@@ -320,6 +824,18 @@ jui.define("util.dom", [ "util.base" ], function(_) {
                     element.setAttribute(attrKey, attrValue);
                 }
             }
+        },
+
+        /**
+         * @method removeAttr
+         *
+         * remove attribute
+         *
+         * @param {Element} element
+         * @param {String} key
+         */
+        removeAttr : function (element, key) {
+          element.removeAttribute(key);
         },
 
         /**
@@ -419,5 +935,11 @@ jui.define("util.dom", [ "util.base" ], function(_) {
                 left: box.left + ( win.pageXOffset || docElem.scrollLeft ) - ( docElem.clientLeft || 0 )
             };
         }
+    };
+
+    for(var k in feature) {
+        dom[k] = feature[k];
     }
+
+    return dom;
 });
