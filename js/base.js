@@ -51,10 +51,10 @@
 		/**
 		 * @method inherit
 		 *
-		 * 프로토타입 기반의 상속 제공
+		 * support prototype based inherit system
 		 *
-		 * @param {Function} ctor base Class
-		 * @param {Function} superCtor super Class
+		 * @param {Function} ctor Base Class
+		 * @param {Function} superCtor Super Class
 		 */
 		inherit: function (ctor, superCtor) {
 			if (!this.typeCheck("function", ctor) || !this.typeCheck("function", superCtor)) return;
@@ -112,7 +112,10 @@
 		},
 
 		/**
+		 * @method pxToInt
+		 *
 		 * convert px to integer
+		 *
 		 * @param {String or Number} px
 		 * @return {Number}
 		 */
@@ -633,10 +636,10 @@
 		/**
 		 * @method createId
 		 *
-		 * 유니크 아이디 생성
+		 * create unique id
 		 *
 		 * @param {String} key  prefix string
-		 * @return {String} 생성된 아이디 문자열
+		 * @return {String} random id string
 		 */
 		createId: function (key) {
 			return [key || "id", (+new Date), Math.round(Math.random() * 100) % 100].join("-");
@@ -644,7 +647,7 @@
 		/**
 		 * @method btoa
 		 *
-		 * Base64 인코딩
+		 * encoding input string to base64
 		 *
 		 * @return {String}
 		 */
@@ -655,7 +658,7 @@
 		/**
 		 * @method atob
 		 *
-		 * Base64 디코딩
+		 * decoding base64 string to value
 		 *
 		 * @return {String}
 		 */
@@ -665,11 +668,13 @@
 		},
 
 		/**
+		 * @method timeLoop
+		 *
 		 * implement async loop without blocking ui
 		 *
-		 * @param total
-		 * @param context
-		 * @returns {Function}
+		 * @param {Number} total  loop run count
+		 * @param {Object} context
+		 * @return {Function}
 		 */
 		timeLoop : function(total, context) {
 
@@ -695,11 +700,11 @@
 		/**
 		 * @method loop
 		 *
-		 * 최적화된 루프 생성 (5단계로 나눔)
+		 * create optimized loop (step by 5 )
 		 *
-		 * @param {Number} total
+		 * @param {Number} total	total loop count
 		 * @param {Object} [context=null]
-		 * @return {Function} 최적화된 루프 콜백 (index, groupIndex 2가지 파라미터를 받는다.)
+		 * @return {Function(index, groupIndex)}
 		 */
 		loop: function (total, context) {
 			var start = 0,
@@ -808,6 +813,7 @@
 
 		/**
 		 * @method startsWith
+		 *
 		 * Check that it matches the starting string search string.
 		 *
 		 * @param {String} string
@@ -822,6 +828,7 @@
 
 		/**
 		 * @method endsWith
+		 *
 		 * Check that it matches the end of a string search string.
 		 *
 		 * @param {String} string
@@ -1255,7 +1262,7 @@
 		/**
 		 * @method ready
 		 *
-		 * ready 타임에 실행될 callback 정의
+		 * define callback to be executed at ready event
 		 *
 		 * @param {Function} callback
 		 */
@@ -1289,15 +1296,15 @@
 		/**
 		 * @method defineUI
 		 *
-		 * 사용자가 실제로 사용할 수 있는 UI 클래스를 정의
+		 * define UI Class
 		 *
-		 * @param {String} name 모듈 로드와 상속에 사용될 이름을 정한다.
-		 * @param {Array} depends 'define'이나 'defineUI'로 정의된 클래스나 객체를 인자로 받을 수 있다.
-		 * @param {Function} callback UI 클래스를 해당 콜백 함수 내에서 클래스 형태로 구현하고 리턴해야 한다.
+		 * @param {String} name set module name (ex : "ui.button")
+		 * @param {Array} depends specify dependency module list
+		 * @param {Function} callback  UI Class Callback UI 클래스를 해당 콜백 함수 내에서 클래스 형태로 구현하고 리턴해야 한다.
 		 */
 		defineUI: function (name, depends, callback, parent) {
 			if (!utility.typeCheck("string", name) || !utility.typeCheck("array", depends) ||
-				!utility.typeCheck("function", callback) || !utility.typeCheck([ "string", "undefined" ], parent)) {
+				!utility.typeCheck("function", callback) || !utility.typeCheck(["string", "undefined"], parent)) {
 				throw new Error("JUI_CRITICAL_ERR: Invalid parameter type of the function");
 			}
 
@@ -1333,6 +1340,7 @@
 			globalFunc[name] = true;
 
 			// support AMD module
+			// @Deprecated  it will be replaced by different module system
 			if (typeof define == "function" && define.amd) {
 				define(name, function () {
 					return global[name]
@@ -1359,7 +1367,7 @@
 			/** @property {Array} event Custom events */
 			mainObj.init.prototype.event = new Array(); // Custom Event
 			/** @property {Integer} timestamp UI Instance creation time*/
-			mainObj.init.prototype.timestamp = new Date().getTime();
+			mainObj.init.prototype.timestamp = (+new Date());
 			/** @property {Integer} index Index of UI instance*/
 			mainObj.init.prototype.index = index;
 			/** @property {Class} module Module class */
@@ -1386,7 +1394,7 @@
 				uiObj.on(key, opts.event[key]);
 			}
 
-			// 엘리먼트 객체에 jui 속성 추가
+			// add jui instance
 			elem.jui = uiObj;
 
 			return uiObj;
@@ -1395,12 +1403,12 @@
 		/**
 		 * @method define
 		 *
-		 * UI 클래스에서 사용될 클래스를 정의하고, 자유롭게 상속할 수 있는 클래스를 정의
+		 * define module
 		 *
-		 * @param {String} name 모듈 로드와 상속에 사용될 이름을 정한다.
-		 * @param {Array} depends 'define'이나 'defineUI'로 정의된 클래스나 객체를 인자로 받을 수 있다.
+		 * @param {String} name module name
+		 * @param {Array} depends dependency module list
 		 * @param {Function} callback UI 클래스를 해당 콜백 함수 내에서 클래스 형태로 구현하고 리턴해야 한다.
-		 * @param {String} parent 상속받을 클래스
+		 * @param {String} parent parent module name
 		 */
 		define: function (name, depends, callback, parent) {
 			if (!utility.typeCheck("string", name) || !utility.typeCheck("array", depends) || !utility.typeCheck("function", callback) || !utility.typeCheck(["string", "undefined"], parent)) {
@@ -1429,6 +1437,7 @@
 			globalFunc[name] = true;
 
 			// support AMD module
+			// @Deprecated  it will be replaced by different module system
 			if (typeof define == "function" && define.amd) {
 				define(name, function () {
 					return global[name]
@@ -1439,7 +1448,7 @@
 		/**
 		 * @method defineOptions
 		 *
-		 * 모듈 기본 옵션 정의
+		 * define module default options
 		 *
 		 * @param {Object} Module
 		 * @param {Object} options
@@ -1486,9 +1495,14 @@
 		},
 
 		/**
-		 * define과 defineUI로 정의된 클래스 또는 객체를 가져온다.
+		 * @method include
 		 *
-		 * @param name 가져온 클래스 또는 객체의 이름
+		 * get module by name
+		 *
+		 * 		var ModuleClass = jui.include("ui.module");
+		 * 		new ModuleClass({ options });
+		 *
+		 * @param {String} name module name
 		 * @return {*}
 		 */
 		include: function (name) {
@@ -1513,6 +1527,8 @@
 		},
 
 		/**
+		 * @method includeAll
+		 *
 		 * define과 defineUI로 정의된 모든 클래스와 객체를 가져온다.
 		 *
 		 * @return {Array}
@@ -1528,6 +1544,8 @@
 		},
 
 		/**
+		 * @method log
+		 *
 		 * 설정된 jui 관리 화면을 윈도우 팝업으로 띄운다.
 		 *
 		 * @param logUrl
@@ -1547,6 +1565,12 @@
 			return jui_mng;
 		},
 
+		/**
+		 * @method setup
+		 *
+		 * @param {Object} options
+		 * @returns {{template: {evaluate: RegExp, interpolate: RegExp, escape: RegExp}, logUrl: string}}
+		 */
 		setup: function (options) {
 			if (utility.typeCheck("object", options)) {
 				globalOpts = utility.extend(globalOpts, options);

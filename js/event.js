@@ -64,7 +64,6 @@ jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
                 if (e.type.toLowerCase().indexOf("animation") != -1)
                     settingEventAnimation(e);
                 else {
-                    // body, window, document ��쿡�� �̺�Ʈ ��ø�� ����
                     if (e.target != "body" && e.target != window && e.target != document) {
                         $(e.target).off(e.type);
                     }
@@ -162,7 +161,6 @@ jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
                 $(obj.target).off(obj.type);
             }
 
-            // ������ �޼ҵ� �޸𸮿��� ����
             if(this.__proto__) {
                 for (var key in this.__proto__) {
                     delete this.__proto__[key];

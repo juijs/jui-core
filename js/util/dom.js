@@ -1,5 +1,24 @@
 jui.define("util.dom", [ "util.base" ], function(_) {
 
+    var ElementPrototype = Element.prototype;
+
+    var matches = ElementPrototype.matches ||
+        ElementPrototype.matchesSelector ||
+        ElementPrototype.webkitMatchesSelector ||
+        ElementPrototype.msMatchesSelector ||
+        function(selector) {
+            var node = this, nodes = (node.parentNode || node.document).querySelectorAll(selector), i = -1;
+            while (nodes[++i] && nodes[i] != node);
+            return !!nodes[i];
+        };
+
+    var closest = ElementPrototype.closest ||
+        function(selector) {
+            var el = this;
+            while (!matches.call(el, selector)) el = el.parentNode;
+            return el;
+        };
+
     /**
      * @class util.dom
      *
@@ -8,6 +27,211 @@ jui.define("util.dom", [ "util.base" ], function(_) {
      * @singleton
      */
     return {
+
+        /**
+         * @method create
+         *
+         * create element by option
+         *
+         *      dom.create({
+         *          tag : 'div',
+         *          style : {
+         *             marginLeft : '0px',
+         *             'z-index' : 10
+         *          },
+         *          className : 'test main',
+         *          html : 'wow html',
+         *          text : 'this is text',
+         *          children : [
+         *              { tag : 'p', className : 'description', html : yellow },
+         *              .....
+         *          ]
+         *     });
+         *
+         * @param {Object} opt
+         * @returns {Element}
+         */
+        create : function (opt) {
+            opt = opt || {tag : 'div'};
+
+            var element = document.createElement(opt.tag || 'div');
+
+            if (opt.className) element.className = opt.className;
+
+            if (opt.attr) {
+                var keys = Object.keys(opt.attr);
+                for(var i = 0, len = keys.length; i < len; i++) {
+                    var key = keys[i];
+                    element.setAttribute(key, opt.attr[key]);
+                }
+            }
+
+            if (opt.style) {
+                var s = element.style;
+                for(var k in opt.style) {
+                     s[k] = opt.style[k];
+                }
+            }
+
+            if (opt.html) {
+                element.innerHTML = html;
+            } else if (opt.text) {
+                element.textContent = html;
+            }
+
+            if (opt.children && opt.children.length) {
+                var fragment = document.createDocumentFragment();
+
+                for(var i = 0, len = opt.children.length; i < len; i++) {
+                    fragment.appendChild(this.create(opt.children[i]));
+                }
+
+                element.appendChild(fragment);
+            }
+
+            return element;
+        },
+
+
+        /**
+         * @method html
+         *
+         * get or set  html string
+         *
+         * @param {Element} element
+         * @param {String} contents
+         *
+         * @returns {*}
+         */
+        html : function (element, contents) {
+            if (arguments.length == 1){
+                return element.innerHTML;
+            }
+
+            element.innerHTML = contents;
+        },
+
+        /**
+         * @method text
+         *
+         * get or set text string
+         *
+         * @param element
+         * @param contents
+         * @returns {*}
+         */
+        text : function (element, contents) {
+            if (arguments.length == 1){
+                return element.textContent;
+            }
+
+            element.textContent = contents;
+        },
+
+        /**
+         * @method matches
+         *
+         * get matched element
+         *
+         * @param selector
+         * @returns {*}
+         */
+        matches : function (element, selector) {
+            return matches.call(element, selector);
+        },
+
+        siblings: function(element, filter) {
+          var arr = [], first = element.parentNode.firstChild;
+
+            do {
+                if (!filter || filter(element)) {
+                    arr.push(element);
+                }
+            } while(element = element.nextSibling);
+
+            return arr;
+        },
+
+        nextSiblings: function(element, filter) {
+            var arr = [];
+            while(element = element.nextSibling) {
+                if (!filter || filter(element)) {
+                    arr.push(element);
+                }
+            }
+
+            return arr;
+        },
+
+        prevSiblings: function(element, filter) {
+            var arr = [];
+            while(element = element.previousSibling) {
+                if (!filter || filter(element)) {
+                    arr.push(element);
+                }
+            }
+
+            return arr;
+        },
+
+        closest: function (element, selector) {
+            return closest.call(element, selector);
+        },
+
+        /**
+         * @method id
+         *
+         * get element by id
+         *
+         * @return {Element}
+         */
+        id : function (id) {
+            return document.getElementById(id);
+        },
+
+        /**
+         * @method tag
+         *
+         * find elements by tag name
+         *
+         * @param {String} tagName
+         * @param {Element} [parent=document] parent element,
+         * @return {ElementList}
+         */
+        tag : function (tagName, parent) {
+           return (parent || document).getElementsByTagName(tagName);
+        },
+
+        /**
+         * @method className
+         *
+         * find elements by class name
+         *
+         * @param {String} className
+         * @param {Element} [parent=document]  parent element
+         * @returns {NodeList}
+         */
+        className : function (className, parent) {
+            return (parent || document).getElementsByClassName(className);
+        },
+
+        /**
+         * @method one
+         *
+         * find one element by querySelector
+         *
+         */
+        one : function (selector, parent) {
+          return  (parent || document).querySelector(selector);
+        },
+
+        /**
+         * @method find
+         *
+         * find elements by selector
+         *
+         * @returns {*}
+         */
         find: function() {
             var args = arguments;
 
@@ -24,6 +248,14 @@ jui.define("util.dom", [ "util.base" ], function(_) {
             return [];
         },
 
+        /**
+         * @method each
+         *
+         * loop for element list
+         *
+         * @param selectorOrElements
+         * @param callback
+         */
         each: function(selectorOrElements, callback) {
             if(!_.typeCheck("function", callback)) return;
 
@@ -36,9 +268,85 @@ jui.define("util.dom", [ "util.base" ], function(_) {
             }
 
             if(elements != null) {
-                Array.prototype.forEach.call(elements, function(el, i) {
-                    callback.apply(el, [ i, el ]);
-                });
+
+                for(var i = 0, len = elements.length; i < len; i++) {
+                    var el = elements[i];
+                    callback.apply(el, [i, el]);
+                }
+            }
+        },
+
+        /**
+         * @method get
+         *
+         * get attributes
+         *
+         *      // 1. get attribute
+         *      dom.get(element, 'title');
+         *
+         *      // 2. set attribute
+         *      dom.set(element, { title : 'value' });
+         *
+         * @param {Element} element
+         * @param {String} key
+         * @returns {string}
+         */
+        get : function (element, key) {
+            return element.getAttribute(key);
+        },
+
+        /**
+         * @method set
+         *
+         * set attributes
+         *
+         *      dom.set(element, { title : 'value' });
+         *
+         * @param {Element} element
+         * @param {String} values
+         */
+        set: function (element, values) {
+
+            var elements = element.length ? element : [element];
+            values = values || {};
+            var keys = Object.keys(values);
+
+            for(var index = 0, elementCount = elements.length; index < elementCount; index++) {
+                var element = elements[i];
+
+                for(var i = 0, len = keys.length; i < len; i++ ) {
+                    var attrKey = keys[i];
+                    var attrValue = values[attrKey];
+                    element.setAttribute(attrKey, attrValue);
+                }
+            }
+        },
+
+        /**
+         * @method data
+         *
+         * set dataset values
+         *
+         *      dom.data(element, 'title');     // get element.dataset.title or element.data-title attribute
+         *
+         *      dom.data(element, { title : 'value' });   // set data values
+         *
+         * @param element
+         * @param one
+         * @returns {*|string}
+         */
+        data: function (element, one) {
+            one = one || {};
+            if (typeof one === 'string') {
+                return element.dataset[one] || this.get(element, 'data-' + one);
+            } else if (typeof one === 'object') {
+                var keys = Object.keys(one);
+                for(var i = 0, len = keys.length; i < len; i++) {
+                    var key = keys[i];
+                    var value = one[key];
+                    element.dataset[key] = value;
+                }
+
             }
         },
 

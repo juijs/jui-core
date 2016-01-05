@@ -22,9 +22,31 @@ jui.ready([ "util.dom" ], function($) {
         assert.ok($.find("#child").length == 0, "엘리먼트 삭제 확인");
     });
 
+    QUnit.test("[유틸리티 함수] - create", function (assert) {
+        var dom = $.create({
+            attr : {
+              title : 'haha'
+            },
+            style : {
+                color : 'yellow'
+            },
+            className : 'main test',
+            children : [
+                { style : { background : 'yellow' }}
+            ]
+        });
+
+        assert.ok(dom.style.color === 'yellow', "style 속성 지정 확인");
+        assert.ok(dom.nodeName === 'DIV', "tagName 확인");
+        assert.ok(dom.className === 'main test', "className 확인");
+        assert.ok(dom.firstChild.style.background === 'yellow', "Child 생성 확인");
+        assert.ok($.attr(dom, 'title') === 'haha', "attr 생성 확인");
+    });
+
     QUnit.testDone(function() {
         $.remove("#root");
     });
+
 });
 </script>
 

@@ -18,8 +18,8 @@ jui.defineUI("base.ui.select", [], function() {
   
    var UI = function() {
      
-     this.init = function() {
-       console.log('base.ui.select init called');
+     this.init = function(a) {
+       console.log('base.ui.select init called', a);
      }
      
      this.start = function() {
@@ -43,7 +43,7 @@ jui.defineUI("test.ui.select", [], function() {
       
       this.init = function() {
         
-        this.super('init');
+        this.super('init', [1]);
         
         console.log('test.ui.select init called.');
         
