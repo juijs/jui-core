@@ -1297,7 +1297,7 @@
 		 */
 		defineUI: function (name, depends, callback, parent) {
 			if (!utility.typeCheck("string", name) || !utility.typeCheck("array", depends) ||
-				!utility.typeCheck("function", callback) || !utility.typeCheck(["string", "undefined"], parent)) {
+				!utility.typeCheck("function", callback) || !utility.typeCheck([ "string", "undefined" ], parent)) {
 				throw new Error("JUI_CRITICAL_ERR: Invalid parameter type of the function");
 			}
 
@@ -1323,8 +1323,8 @@
 			// 상속
 			utility.inherit(uiFunc, globalClass[parent]);
 
-			// UI 고유 설정
-			global[name] = globalClass[parent].init({
+			// TODO: 차트 빌더를 제외하고, 무조건 event 클래스에 정의된 init 메소드를 호출함
+			global[name] = globalClass[parent != "core" ? "event" : "core"].init({
 				type: name,
 				"class": uiFunc
 			});

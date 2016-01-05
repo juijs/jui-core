@@ -1297,7 +1297,7 @@
 		 */
 		defineUI: function (name, depends, callback, parent) {
 			if (!utility.typeCheck("string", name) || !utility.typeCheck("array", depends) ||
-				!utility.typeCheck("function", callback) || !utility.typeCheck(["string", "undefined"], parent)) {
+				!utility.typeCheck("function", callback) || !utility.typeCheck([ "string", "undefined" ], parent)) {
 				throw new Error("JUI_CRITICAL_ERR: Invalid parameter type of the function");
 			}
 
@@ -1323,8 +1323,8 @@
 			// 상속
 			utility.inherit(uiFunc, globalClass[parent]);
 
-			// UI 고유 설정
-			global[name] = globalClass[parent].init({
+			// TODO: 차트 빌더를 제외하고, 무조건 event 클래스에 정의된 init 메소드를 호출함
+			global[name] = globalClass[parent != "core" ? "event" : "core"].init({
 				type: name,
 				"class": uiFunc
 			});
@@ -1930,7 +1930,6 @@ jui.define("util.base64", [], function() {
         _utf8_encode: function (string) {
             string = string.replace(/\r\n/g, "\n");
 
-            // BOM �ڵ� ���� (UTF-8 ����)
             var utftext = String.fromCharCode(239) + String.fromCharCode(187) + String.fromCharCode(191);
 
             for (var n = 0; n < string.length; n++) {
@@ -6002,6 +6001,10 @@ jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
         }
     }
 
+    /**
+     * @deprecated
+     * Later the jquery dependency should be removed.
+     */
     var UIEvent = function () {
         var vo = null;
 
@@ -6099,10 +6102,8 @@ jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
                 });
             });
 
-            // UIManager�� ������ �Է�
             UIManager.add(new UICollection(UI.type, selector, options, list));
 
-            // ��ü�� ���� ��쿡�� null�� ��ȯ (�������� �� �迭�� ��ȯ)
             if(list.length == 0) {
                 return null;
             } else if(list.length == 1) {

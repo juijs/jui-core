@@ -95,6 +95,10 @@ jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
         }
     }
 
+    /**
+     * @deprecated
+     * Later the jquery dependency should be removed.
+     */
     var UIEvent = function () {
         var vo = null;
 
@@ -192,10 +196,8 @@ jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
                 });
             });
 
-            // UIManager�� ������ �Է�
             UIManager.add(new UICollection(UI.type, selector, options, list));
 
-            // ��ü�� ���� ��쿡�� null�� ��ȯ (�������� �� �迭�� ��ȯ)
             if(list.length == 0) {
                 return null;
             } else if(list.length == 1) {
