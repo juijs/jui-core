@@ -1,7 +1,7 @@
 jui.define("util.dom", [ ], function() {
 
     var regForId = /^#([\w-]+)$/;
-    var regForClass = /^.([\w-]+)$/;
+    var regForClass = /^\.([\w-]+)$/;
     var regForTag = /^([\w-]+)$/;
 
     //
@@ -90,6 +90,631 @@ jui.define("util.dom", [ ], function() {
         }
     }
 
+    // Util Function
+    var each = function (arr, callback, context) {
+        for(var i = 0, len = arr.length; i < len; i++) {
+            callback.call(context, arr[i], i);
+        }
+    };
+
+    var merge = function (arr) {
+        var total = [];
+        each(arr, function (list) {
+            each(list, function (item) {
+                total.push(item);
+            });
+        });
+
+        return total;
+    };
+
+    /**
+     * @class util.DomChain
+     *
+     * dom chaining class
+     *
+     * @private
+     * @param {String|Array} selector
+     * @param {Element|DomChain} context
+     * @constructor
+     */
+    function DomChain(selector, context) {
+
+        var result, list = [];
+
+        if (typeof selector == 'string') {
+
+            if (selector.indexOf("<") > -1) {
+                list = feature.create(selector, false);
+            } else if (result = regForId.exec(selector)) {
+                list = [dom.id(result[1], context)];
+            } else if (result = regForClass.exec(selector)) {
+                list = dom.className(result[1], context);
+            } else if (result = regForTag.exec(selector)) {
+                list = dom.tag(result[1], context);
+            } else {
+                list = dom.find(selector, context);
+            }
+        } else if (selector.length) {
+            list = selector;
+        } else if (selector.nodeType) {
+            list = [selector];
+        }
+
+        for(var i = 0, len = list.length; i < len; i++) {
+            this[i] = list[i];
+        }
+        this.length = list.length;
+        this.context = context;
+        this.selector = selector;
+    }
+
+    DomChain.prototype = {
+
+        domchain : true,
+
+        /**
+         * @method html
+         *
+         *      // get html
+         *      dom("#id").html();
+         *
+         *      // set html
+         *      dom("#id").html("html text");
+         *
+         *
+         * @param contents
+         * @returns {*}
+         */
+        html : function (contents) {
+            if (arguments.length) {
+                this.each(function (el){
+                   feature.html(el, contents);
+                });
+                return this;
+            } else {
+                return this.length > 0 && feature.html(this[0]);
+            }
+        },
+
+        /**
+         * @method text
+         *
+         *      // get text
+         *      dom("#id").html();
+         *
+         *      // set text
+         *      dom("#id").html("html text");
+         *
+         * @param {String} contents
+         * @returns {*}
+         */
+        text : function (contents) {
+            if (arguments.length) {
+                this.each(function (el){  feature.text(el, contents); });
+                return this;
+            } else {
+                return this.length > 0 && feature.text(this[0]);
+            }
+        },
+
+        /**
+         * @method unwrap
+         *
+         *      dom("#id").unwrap();
+         *
+         * @returns {DomChain}
+         */
+        unwrap : function () {
+            this.each(function(el) {
+                feature.unwrap(el);
+            });
+
+            return this;
+        },
+
+        /**
+         * @method wrap
+         *
+         *      dom("#id").wrap(dom.create('div'));
+         *
+         *      dom("#id").wrap(dom("#id2"));
+         *
+         * @param wrapElement
+         */
+        wrap : function (wrapElement) {
+            var self = this;
+            new DomChain(wrapElement).each(function(wrapEl) {
+                self.each(function(el) {
+                    feature.wrap(el, wrapEl);
+                });
+            });
+        },
+
+        /**
+         * @method empty
+         *
+         * empty string
+         *
+         * @returns {DomChain}
+         */
+        empty : function () {
+            this.each(function(el) {
+               feature.empty(el);
+            });
+            return this;
+        },
+
+
+        /**
+         * @method remove
+         *
+         * remove an element from the DOM tree
+         *
+         * @returns {DomChain}
+         */
+        remove : function () {
+            this.each(function(el) {
+                feature.remove(el);
+            });
+
+            return this;
+        },
+
+        /**
+         * @method hasClass
+         *
+         * check element has class name
+         *
+         * @param {String} className
+         * @returns {Boolean}
+         */
+        hasClass : function (className) {
+            if (this.length > 0) {
+                feature.hasClass(this[0], className);
+            }
+            return false;
+        },
+
+        /**
+         * @method addClass
+         *
+         * @param {String} className
+         * @returns {DomChain}
+         */
+        addClass : function (className) {
+            this.each(function(el){
+                feature.addClass(el, className);
+            });
+
+            return  this;
+        },
+
+        /**
+         * @method removeClass
+         *
+         *      dom(".my-class").removeClass("my-class");
+         *
+         * @param {String} className
+         */
+        removeClass: function (className) {
+            this.each(function(el){
+                feature.removeClass(el, className);
+            });
+
+            return  this;
+        },
+
+        /**
+         * @method toggleClass
+         *
+         *      dom("#id").toggleClass("my-class");
+         *
+         * @param {String} className
+         */
+        toggleClass : function (className) {
+            this.each(function(el){
+                feature.toggleClass(el, className);
+            });
+
+            return this;
+        },
+
+        /**
+         * @method after
+         *
+         *      dom("#id").after($("#id2"));
+         *
+         *      dom("#id").after(dom.createText("text"));
+         *
+         *      dom("#id").after(dom.create("div"));
+         *
+         * @param newElement
+         */
+        after : function(newElement) {
+
+            if (typeof newElement == 'string') {
+                var cloneElement = newElement;
+            } else {
+                var cloneElement = newElement.domchain ? newElement.fragment() : feature.clone(newElement);
+            }
+
+            this.each(function(el) {
+                feature.after(el, cloneElement);
+            });
+
+            return this;
+        },
+
+        /**
+         * @method before
+         *
+         *      dom("#id").before($("#id2"));
+         *
+         *      dom("#id").before(dom.createText("text"));
+         *
+         *      dom("#id").before(dom.create('div'));
+         *
+         * @param newElement
+         * @returns {DomChain}
+         */
+        before : function (newElement) {
+
+            if (typeof newElement == 'string') {
+                var cloneElement = newElement;
+            } else {
+                var cloneElement = newElement.domchain ? newElement.fragment() : feature.clone(newElement);
+            }
+
+            this.each(function(el) {
+                feature.before(el, cloneElement);
+            });
+
+            return this;
+        },
+
+        fragment : function () {
+            return feature.createFragment(this);
+        },
+
+        /**
+         * @method append
+         *
+         *      dom("#id").append(dom("#id2"));
+         *
+         *      dom("#id").append(1, 2, 3);
+         *
+         *      dom("#id").append(dom.create('div'), dom.create('span'), dom.create('h1'));
+         *
+         * @param newElement
+         * @returns {DomChain}
+         */
+        append : function (newElement) {
+
+            if (typeof newElement == 'string') {
+                var cloneElement = newElement;
+            } else {
+                var cloneElement = newElement.domchain ? newElement.fragment() : feature.clone(newElement);
+            }
+
+            this.each(function(el) {
+                feature.append(el, cloneElement);
+            });
+
+            return this;
+        },
+
+        appendTo : function (selector) {
+            var dom = new DomChain(selector);
+            console.log(dom);
+            return dom.append(this);
+        },
+
+        prepend: function (newElement) {
+
+            if (typeof newElement == 'string') {
+                var cloneElement = newElement;
+            } else {
+                var cloneElement = newElement.domchain ? newElement.fragment() : feature.clone(newElement);
+            }
+
+            this.each(function(el) {
+                feature.prepend(el, cloneElement);
+            });
+
+            return this;
+        },
+
+        prependTo : function (selector) {
+            return new DomChain(selector).prepend(this);
+        },
+
+        /**
+         * @method css
+         *
+         *      dom("#id").css("background-color");
+         *
+         *      dom("#id").css("background-color", 'yellow');
+         *
+         *      dom("#id").css({ "background-color" : "yellow" });
+         *
+         *
+         * @param {String|Object} key
+         * @param {Mixed} [value=undefined]
+         * @returns {*}
+         */
+        css : function (key, value) {
+
+            var styles = key;
+
+            if (typeof key == 'string') {
+                if (arguments.length == 1) {
+                    return feature.css(this[0], key);
+                } else if (arguments.length == 2) {
+                    styles = {};
+                    styles[key] = value;
+                }
+            }
+
+            this.each(function(el) {
+                feature.css(el, styles);
+            });
+
+            return this;
+        },
+
+        position: function() {
+            return this.length > 0 && feature.position(this[0]);
+        },
+
+        offset: function () {
+            return this.length > 0 && feature.offset(this[0]);
+        },
+
+        outerWidth: function() {
+            return this.length> 0 && feature.outerWidth(this[0]);
+        },
+
+        outerHeight: function() {
+            return this.length> 0 && feature.outerHeight(this[0]);
+        },
+
+        /**
+         * @method on
+         *
+         * add event listener at element
+         *
+         * @param type
+         * @param handler
+         */
+        on : function (type, handler) {
+
+            var args = arguments.length == 2 ? [null, type, handler] : [null, arguments[0], arguments[1], arguments[2]];
+
+            this.each(function(el) {
+                args[0] = el;
+                feature.on.apply(this, args);
+            });
+
+
+            return this;
+        },
+
+        /**
+         * @method off
+         *
+         * @param type
+         * @param handler
+         */
+        off : function (type, handler) {
+            this.each(function(el) {
+                feature.off(el, type, handler);
+            });
+
+            return this;
+        },
+
+        /**
+         * @method trigger
+         *
+         * @param type
+         * @param args
+         */
+        trigger : function (type, args) {
+            this.each(function(el) {
+              feature.trigger(el, type, args);
+            });
+
+            return this;
+        },
+
+        show: function (value) {
+          this.each(function(el) {
+             feature.show(el, value);
+          });
+
+          return this;
+        },
+
+        /**
+         * @method hide
+         *
+         * @returns {DomChain}
+         */
+        hide : function () {
+            this.each(function(el) {
+                feature.hide(el);
+            });
+
+            return this;
+        },
+
+        toggle : function() {
+            this.each(function(el) {
+                feature.toggle(el);
+            });
+
+            return this;
+        },
+
+        val : function (value) {
+            if (this.length == 0) return;
+
+            var node = this[0];
+
+            // get value
+            if (arguments.length == 0) {
+
+                var value;
+
+                if (node.nodeName == "SELECT") {
+                    value = node.options[node.selectedIndex].value;
+                } else {
+                    value = node.value;
+                }
+
+                return value;
+            }
+            // set value
+            else if (arguments.length == 1) {
+                var values = Array.isArray(value) ? value : [value ];
+
+                if (node.nodeName == "SELECT") {
+                    var selected = false;
+                    each(node.options, function(opt, i) {
+                        if (values.indexOf(opt.value) > -1) {
+                            opt.selected = true;
+                            selected = true;
+                        }
+                    });
+
+                    if (!selected) {
+                        node.selectedIndex = -1;
+                    }
+                } else if (node.type == "checkbox" || node.type == "radio") {
+                    node.checked = (node.value === value);
+                } else {
+                    node.value = value;
+                }
+
+            }
+
+            return this;
+        },
+
+        /**
+         * @method next
+         *
+         *      dom("#id").next();
+         *
+         * @param {Function] [filter=undefined]
+         * @returns {util.DomChain}
+         */
+        next: function (filter) {
+            return new DomChain(this.map(function(el) {
+                return feature.next(el, filter);
+            }));
+        },
+
+        /**
+         * @method prev
+         *
+         *      dom("#id").prev();
+         *
+         * @param {Function] [filter=undefined]
+         * @returns {util.DomChain}
+         */
+        prev: function (filter) {
+            return new DomChain(this.map(function(el) {
+                return feature.prev(el, filter);
+            }));
+        },
+
+        closest: function (selector) {
+            return new DomChain(this.length > 0 && feature.closest(this[0], selector));
+        },
+
+        children : function () {
+            return new DomChain(merge(this.map(function (el, i) {
+                return feature.children(el);
+            })));
+        },
+
+        each : function (callback) {
+            each(this, callback, this);
+            return this;
+        },
+
+        map : function (callback) {
+            var list = [];
+            this.each(function(el, i) {
+                list[list.length] = callback.call(this, el, i);
+            });
+
+            return list;
+        },
+
+
+        filter : function (callback) {
+            var list = [];
+            this.each(function(el, i) {
+
+                var result = callback.call(this, el, i);
+
+                if (result) {
+                    list[list.length] = el;
+                }
+            });
+
+            return list;
+        },
+
+        attr : function (attrs) {
+            if (typeof attrs == 'string') {
+                return this.length > 0 && feature.get(this[0], attrs);
+            } else {
+                this.each(function (el, i) {
+                    feature.set(el, attrs);
+                });
+
+                return this;
+            }
+        },
+
+        removeAttr : function (key) {
+            if (this.length > 0) {
+                feature.removeAttr(this[0], key);
+            }
+
+            return this;
+        },
+
+        data: function (datas) {
+            if (typeof datas == 'string') {
+                return this.length > 0 && feature.data(this[0], datas);
+            } else {
+                this.each(function (el, i) {
+                    feature.data(el, datas);
+                });
+
+                return this;
+            }
+        },
+
+        eq : function (index) {
+            var i = (index < 0) ? this.length + index : index;
+            return new DomChain(this[i]);
+        },
+
+        first : function () {
+            return this.eq(0);
+        },
+
+        last : function () {
+            return this.eq(-1);
+        }
+    };
+
 
     /**
      * @class util.dom
@@ -107,24 +732,7 @@ jui.define("util.dom", [ ], function() {
      * @singleton
      */
     function dom(selector, context) {
-
-        var result = regForId.exec(selector);
-
-        if (result) {
-            return dom.id(result[1], context);
-        }
-
-        result = regForClass.exec(selector);
-        if (result) {
-            return dom.className(result[1], context);
-        }
-
-        result = regForTag.exec(selector);
-        if (result) {
-            return dom.tag(result[1], context);
-        }
-
-        return dom.find(selector, context);
+        return new DomChain(selector, context || document);
     }
 
     var feature = {
@@ -156,14 +764,31 @@ jui.define("util.dom", [ ], function() {
          * @param {Object} opt
          * @returns {Element}
          */
-        create : function (opt) {
+        create : function (opt, isFragment) {
             opt = opt || {tag : 'div'};
+            isFragment = typeof isFragment == 'undefined' ? true : isFragment;
 
             if (typeof opt == 'string') {
-                var arr = opt.split(".");
+                var str  = opt.trim();
 
-                var tag = arr.shift();
-                var className = arr.join(" ");
+                if (str.indexOf("<") == 0) {
+                    // html parser
+                    var fakeDom = document.createElement('div');
+                    fakeDom.innerHTML = str;
+
+                    var list = this.children(fakeDom);
+                    this.remove(fakeDom);
+
+                    if (isFragment) {
+                        return this.createFragment(list);
+                    } else {
+                        return list;
+                    }
+                } else {
+                    // tag
+                    tag = str;
+                    className = "";
+                }
 
                 opt = { tag : tag, className : className };
             }
@@ -220,6 +845,28 @@ jui.define("util.dom", [ ], function() {
             return document.createTextNode(text);
         },
 
+        /**
+         * @method createFragment
+         *
+         * create fragment object
+         *
+         * @param {Array|Eleemnt} list
+         * @returns {DocumentFragment}
+         */
+        createFragment : function (list) {
+            var target = list;
+
+            if (!target.length) {
+                target = [target];
+            }
+
+            var fragment = document.createDocumentFragment();
+            for(var i = 0, len = target.length; i < len ;i++) {
+                fragment.appendChild(target[i]);
+            }
+
+            return fragment;
+        },
 
         /**
          * @method html
@@ -415,7 +1062,9 @@ jui.define("util.dom", [ ], function() {
          * @param {Element} element
          */
         remove : function (element) {
-            element.parentNode.removeChild(element);
+            if (element.parentNode) {
+                element.parentNode.removeChild(element);
+            }
         },
 
         /**
@@ -477,7 +1126,12 @@ jui.define("util.dom", [ ], function() {
          * @param {Element} newElement
          */
         after : function (element, newElement) {
-            element.parentNode.insertBefore(newElement, this.next(element));
+            if (typeof newChildElement == 'string') {
+                element.insertAdjacentHTML("afterend", newChildElement);
+            } else {
+                element.parentNode.insertBefore(newElement, this.next(element));
+            }
+
         },
 
         /**
@@ -489,7 +1143,11 @@ jui.define("util.dom", [ ], function() {
          * @param {Element} newElement
          */
         before : function (element, newElement) {
-            element.parentNode.insertBefore(newElement, element);
+            if (typeof newChildElement == 'string') {
+                element.insertAdjacentHTML("beforebegin", newChildElement);
+            } else {
+                element.parentNode.insertBefore(newElement, element);
+            }
         },
 
         /**
@@ -500,7 +1158,13 @@ jui.define("util.dom", [ ], function() {
          * @param {Element} newChildElement
          */
         append : function (element, newChildElement) {
-            element.appendChild(newChildElement);
+            if (typeof newChildElement == 'string') {
+                element.insertAdjacentHTML("beforeend", newChildElement);
+            } else {
+                console.log(element, newChildElement);
+                element.appendChild(newChildElement);
+            }
+
         },
 
         /**
@@ -511,7 +1175,11 @@ jui.define("util.dom", [ ], function() {
          * @param {Element} newChildElement
          */
         prepend : function (element, newChildElement) {
-            this.before(element.firstChild, newChildElement);
+            if (typeof newChildElement == 'string') {
+                element.insertAdjacentHTML("afterbegin", newChildElement);
+            } else {
+                this.before(element.firstChild, newChildElement);
+            }
         },
 
         /**
@@ -616,7 +1284,6 @@ jui.define("util.dom", [ ], function() {
             return element.clientHeight;
         },
 
-        // box-sizing:border-box; 여부에 따라서 width 를 구하는 공식이 달라진다
         width : function (element, width) {
 
         },
@@ -885,11 +1552,12 @@ jui.define("util.dom", [ ], function() {
             }
         },
 
+        /*
         remove: function(selectorOrElements) {
             this.each(selectorOrElements, function() {
                 this.parentNode.removeChild(this);
             });
-        },
+        }, */
 
         offset: function(elem) {
             function isWindow(obj) {

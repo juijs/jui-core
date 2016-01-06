@@ -7,7 +7,8 @@
 
 <script src="../../lib/qunit-1.14.0.js"></script>
 <script src="../../lib/jquery-1.8.0.min.js"></script>
-<script src="../../dist/core.js"></script>
+<script src="../../js/base.js"></script>
+<script src="../../js/util/dom.js"></script>
 
 <script>
 
@@ -18,7 +19,7 @@ jui.ready([ "util.dom" ], function($) {
     });
 
     QUnit.test("[유틸리티 함수] - remove", function(assert) {
-        $.remove("#child");
+        $.remove($.id('child'));
         assert.ok($.find("#child").length == 0, "엘리먼트 삭제 확인");
     });
 
@@ -41,6 +42,12 @@ jui.ready([ "util.dom" ], function($) {
         assert.ok(dom.className === 'main test', "className 확인");
         assert.ok(dom.firstChild.style.background === 'yellow', "Child 생성 확인");
         assert.ok($.attr(dom, 'title') === 'haha', "attr 생성 확인");
+    });
+
+    QUnit.test('[유틸리티 함수] - class test ', function (assert) {
+        var dom = $.create("div.class");
+
+        assert.ok($.hasClass(dom, "class"), "has class test");
     });
 
     QUnit.testDone(function() {

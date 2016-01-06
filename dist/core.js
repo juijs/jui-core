@@ -51,10 +51,10 @@
 		/**
 		 * @method inherit
 		 *
-		 * 프로토타입 기반의 상속 제공
+		 * support prototype based inherit system
 		 *
-		 * @param {Function} ctor base Class
-		 * @param {Function} superCtor super Class
+		 * @param {Function} ctor Base Class
+		 * @param {Function} superCtor Super Class
 		 */
 		inherit: function (ctor, superCtor) {
 			if (!this.typeCheck("function", ctor) || !this.typeCheck("function", superCtor)) return;
@@ -112,7 +112,10 @@
 		},
 
 		/**
+		 * @method pxToInt
+		 *
 		 * convert px to integer
+		 *
 		 * @param {String or Number} px
 		 * @return {Number}
 		 */
@@ -633,10 +636,10 @@
 		/**
 		 * @method createId
 		 *
-		 * 유니크 아이디 생성
+		 * create unique id
 		 *
 		 * @param {String} key  prefix string
-		 * @return {String} 생성된 아이디 문자열
+		 * @return {String} random id string
 		 */
 		createId: function (key) {
 			return [key || "id", (+new Date), Math.round(Math.random() * 100) % 100].join("-");
@@ -644,7 +647,7 @@
 		/**
 		 * @method btoa
 		 *
-		 * Base64 인코딩
+		 * encoding input string to base64
 		 *
 		 * @return {String}
 		 */
@@ -655,7 +658,7 @@
 		/**
 		 * @method atob
 		 *
-		 * Base64 디코딩
+		 * decoding base64 string to value
 		 *
 		 * @return {String}
 		 */
@@ -665,11 +668,13 @@
 		},
 
 		/**
+		 * @method timeLoop
+		 *
 		 * implement async loop without blocking ui
 		 *
-		 * @param total
-		 * @param context
-		 * @returns {Function}
+		 * @param {Number} total  loop run count
+		 * @param {Object} context
+		 * @return {Function}
 		 */
 		timeLoop : function(total, context) {
 
@@ -695,11 +700,11 @@
 		/**
 		 * @method loop
 		 *
-		 * 최적화된 루프 생성 (5단계로 나눔)
+		 * create optimized loop (step by 5 )
 		 *
-		 * @param {Number} total
+		 * @param {Number} total	total loop count
 		 * @param {Object} [context=null]
-		 * @return {Function} 최적화된 루프 콜백 (index, groupIndex 2가지 파라미터를 받는다.)
+		 * @return {Function(index, groupIndex)}
 		 */
 		loop: function (total, context) {
 			var start = 0,
@@ -808,6 +813,7 @@
 
 		/**
 		 * @method startsWith
+		 *
 		 * Check that it matches the starting string search string.
 		 *
 		 * @param {String} string
@@ -822,6 +828,7 @@
 
 		/**
 		 * @method endsWith
+		 *
 		 * Check that it matches the end of a string search string.
 		 *
 		 * @param {String} string
@@ -1255,7 +1262,7 @@
 		/**
 		 * @method ready
 		 *
-		 * ready 타임에 실행될 callback 정의
+		 * define callback to be executed at ready event
 		 *
 		 * @param {Function} callback
 		 */
@@ -1289,15 +1296,15 @@
 		/**
 		 * @method defineUI
 		 *
-		 * 사용자가 실제로 사용할 수 있는 UI 클래스를 정의
+		 * define UI Class
 		 *
-		 * @param {String} name 모듈 로드와 상속에 사용될 이름을 정한다.
-		 * @param {Array} depends 'define'이나 'defineUI'로 정의된 클래스나 객체를 인자로 받을 수 있다.
-		 * @param {Function} callback UI 클래스를 해당 콜백 함수 내에서 클래스 형태로 구현하고 리턴해야 한다.
+		 * @param {String} name set module name (ex : "ui.button")
+		 * @param {Array} depends specify dependency module list
+		 * @param {Function} callback  UI Class Callback UI 클래스를 해당 콜백 함수 내에서 클래스 형태로 구현하고 리턴해야 한다.
 		 */
 		defineUI: function (name, depends, callback, parent) {
 			if (!utility.typeCheck("string", name) || !utility.typeCheck("array", depends) ||
-				!utility.typeCheck("function", callback) || !utility.typeCheck([ "string", "undefined" ], parent)) {
+				!utility.typeCheck("function", callback) || !utility.typeCheck(["string", "undefined"], parent)) {
 				throw new Error("JUI_CRITICAL_ERR: Invalid parameter type of the function");
 			}
 
@@ -1333,6 +1340,7 @@
 			globalFunc[name] = true;
 
 			// support AMD module
+			// @Deprecated  it will be replaced by different module system
 			if (typeof define == "function" && define.amd) {
 				define(name, function () {
 					return global[name]
@@ -1359,7 +1367,7 @@
 			/** @property {Array} event Custom events */
 			mainObj.init.prototype.event = new Array(); // Custom Event
 			/** @property {Integer} timestamp UI Instance creation time*/
-			mainObj.init.prototype.timestamp = new Date().getTime();
+			mainObj.init.prototype.timestamp = (+new Date());
 			/** @property {Integer} index Index of UI instance*/
 			mainObj.init.prototype.index = index;
 			/** @property {Class} module Module class */
@@ -1386,7 +1394,7 @@
 				uiObj.on(key, opts.event[key]);
 			}
 
-			// 엘리먼트 객체에 jui 속성 추가
+			// add jui instance
 			elem.jui = uiObj;
 
 			return uiObj;
@@ -1395,12 +1403,12 @@
 		/**
 		 * @method define
 		 *
-		 * UI 클래스에서 사용될 클래스를 정의하고, 자유롭게 상속할 수 있는 클래스를 정의
+		 * define module
 		 *
-		 * @param {String} name 모듈 로드와 상속에 사용될 이름을 정한다.
-		 * @param {Array} depends 'define'이나 'defineUI'로 정의된 클래스나 객체를 인자로 받을 수 있다.
+		 * @param {String} name module name
+		 * @param {Array} depends dependency module list
 		 * @param {Function} callback UI 클래스를 해당 콜백 함수 내에서 클래스 형태로 구현하고 리턴해야 한다.
-		 * @param {String} parent 상속받을 클래스
+		 * @param {String} parent parent module name
 		 */
 		define: function (name, depends, callback, parent) {
 			if (!utility.typeCheck("string", name) || !utility.typeCheck("array", depends) || !utility.typeCheck("function", callback) || !utility.typeCheck(["string", "undefined"], parent)) {
@@ -1429,6 +1437,7 @@
 			globalFunc[name] = true;
 
 			// support AMD module
+			// @Deprecated  it will be replaced by different module system
 			if (typeof define == "function" && define.amd) {
 				define(name, function () {
 					return global[name]
@@ -1439,7 +1448,7 @@
 		/**
 		 * @method defineOptions
 		 *
-		 * 모듈 기본 옵션 정의
+		 * define module default options
 		 *
 		 * @param {Object} Module
 		 * @param {Object} options
@@ -1486,9 +1495,14 @@
 		},
 
 		/**
-		 * define과 defineUI로 정의된 클래스 또는 객체를 가져온다.
+		 * @method include
 		 *
-		 * @param name 가져온 클래스 또는 객체의 이름
+		 * get module by name
+		 *
+		 * 		var ModuleClass = jui.include("ui.module");
+		 * 		new ModuleClass({ options });
+		 *
+		 * @param {String} name module name
 		 * @return {*}
 		 */
 		include: function (name) {
@@ -1513,6 +1527,8 @@
 		},
 
 		/**
+		 * @method includeAll
+		 *
 		 * define과 defineUI로 정의된 모든 클래스와 객체를 가져온다.
 		 *
 		 * @return {Array}
@@ -1528,6 +1544,8 @@
 		},
 
 		/**
+		 * @method log
+		 *
 		 * 설정된 jui 관리 화면을 윈도우 팝업으로 띄운다.
 		 *
 		 * @param logUrl
@@ -1547,6 +1565,12 @@
 			return jui_mng;
 		},
 
+		/**
+		 * @method setup
+		 *
+		 * @param {Object} options
+		 * @returns {{template: {evaluate: RegExp, interpolate: RegExp, escape: RegExp}, logUrl: string}}
+		 */
 		setup: function (options) {
 			if (utility.typeCheck("object", options)) {
 				globalOpts = utility.extend(globalOpts, options);
@@ -1557,32 +1581,1435 @@
 	};
 })(window, (typeof(global) !== "undefined") ? global : window);
 
-jui.define("util.dom", [ "util.base" ], function(_) {
+jui.define("util.dom", [ ], function() {
+
+    var regForId = /^#([\w-]+)$/;
+    var regForClass = /^\.([\w-]+)$/;
+    var regForTag = /^([\w-]+)$/;
+
+    //
+    // reference to https://plainjs.com
+
+
+    var ElementPrototype = Element.prototype;
+
+    var matches = ElementPrototype.matches ||
+        ElementPrototype.matchesSelector ||
+        ElementPrototype.webkitMatchesSelector ||
+        ElementPrototype.msMatchesSelector ||
+        function(selector) {
+            var node = this, nodes = (node.parentNode || node.document).querySelectorAll(selector), i = -1;
+            while (nodes[++i] && nodes[i] != node);
+            return !!nodes[i];
+        };
+
+    var closest = ElementPrototype.closest ||
+        function(selector) {
+            var el = this;
+            while (!matches.call(el, selector)) el = el.parentNode;
+            return el;
+        };
+
+    var hasClass, addClass, removeClass;
+
+    if ('classList' in document.documentElement) {
+        hasClass = function (element, className) {
+            return element.classList.contains(className);
+        };
+
+        addClass = function (element, className) {
+            element.classList.add(className);
+        };
+
+        removeClass = function (element, className) {
+            element.classList.remove(className);
+        };
+    } else {
+        hasClass = function (element, className) {
+            return new RegExp('\\b'+ className+'\\b').test(element.className);
+        };
+        addClass = function (element, className) {
+            if (!hasClass(element, className)) { element.className += ' ' + className; }
+        };
+        removeClass = function (el, className) {
+            element.className = element.className.replace(new RegExp('\\b'+ className+'\\b', 'g'), '');
+        };
+    }
+
+    var addEvent, removeEvent;
+
+    if (window.attachEvent) {
+        addEvent = function (element, type, handler) {
+            element.attachEvent('on'+type, handler);
+        };
+
+        removeEvent = function (element, type, handler) {
+            element.detachEvent('on'+type, handler);
+        }
+    } else {
+        addEvent = function (element, type, handler) {
+            element.addEventListener(type, handler);;
+        };
+
+        removeEvent = function (element, type, handler) {
+            element.removeEventListener(type, handler)
+        }
+    }
+
+    var triggerEvent;
+
+    if ('createEvent' in document) {
+        triggerEvent = function (element, type) { // modern browsers, IE9+
+            var e = document.createEvent('HTMLEvents');
+            element.initEvent(type, false, true);
+            element.dispatchEvent(e);
+        }
+    } else {
+        triggerEvent = function (element, type) {
+            // IE 8
+            var e = document.createEventObject();
+            e.eventType = type;
+            element.fireEvent('on'+e.eventType, e);
+        }
+    }
+
+    // Util Function
+    var each = function (arr, callback, context) {
+        for(var i = 0, len = arr.length; i < len; i++) {
+            callback.call(context, arr[i], i);
+        }
+    };
+
+    var merge = function (arr) {
+        var total = [];
+        each(arr, function (list) {
+            each(list, function (item) {
+                total.push(item);
+            });
+        });
+
+        return total;
+    };
+
+    /**
+     * @class util.DomChain
+     *
+     * dom chaining class
+     *
+     * @private
+     * @param {String|Array} selector
+     * @param {Element|DomChain} context
+     * @constructor
+     */
+    function DomChain(selector, context) {
+
+        var result, list = [];
+
+        if (typeof selector == 'string') {
+
+            if (selector.indexOf("<") > -1) {
+                list = feature.create(selector, false);
+            } else if (result = regForId.exec(selector)) {
+                list = [dom.id(result[1], context)];
+            } else if (result = regForClass.exec(selector)) {
+                list = dom.className(result[1], context);
+            } else if (result = regForTag.exec(selector)) {
+                list = dom.tag(result[1], context);
+            } else {
+                list = dom.find(selector, context);
+            }
+        } else if (selector.length) {
+            list = selector;
+        } else if (selector.nodeType) {
+            list = [selector];
+        }
+
+        for(var i = 0, len = list.length; i < len; i++) {
+            this[i] = list[i];
+        }
+        this.length = list.length;
+        this.context = context;
+        this.selector = selector;
+    }
+
+    DomChain.prototype = {
+
+        domchain : true,
+
+        /**
+         * @method html
+         *
+         *      // get html
+         *      dom("#id").html();
+         *
+         *      // set html
+         *      dom("#id").html("html text");
+         *
+         *
+         * @param contents
+         * @returns {*}
+         */
+        html : function (contents) {
+            if (arguments.length) {
+                this.each(function (el){
+                   feature.html(el, contents);
+                });
+                return this;
+            } else {
+                return this.length > 0 && feature.html(this[0]);
+            }
+        },
+
+        /**
+         * @method text
+         *
+         *      // get text
+         *      dom("#id").html();
+         *
+         *      // set text
+         *      dom("#id").html("html text");
+         *
+         * @param {String} contents
+         * @returns {*}
+         */
+        text : function (contents) {
+            if (arguments.length) {
+                this.each(function (el){  feature.text(el, contents); });
+                return this;
+            } else {
+                return this.length > 0 && feature.text(this[0]);
+            }
+        },
+
+        /**
+         * @method unwrap
+         *
+         *      dom("#id").unwrap();
+         *
+         * @returns {DomChain}
+         */
+        unwrap : function () {
+            this.each(function(el) {
+                feature.unwrap(el);
+            });
+
+            return this;
+        },
+
+        /**
+         * @method wrap
+         *
+         *      dom("#id").wrap(dom.create('div'));
+         *
+         *      dom("#id").wrap(dom("#id2"));
+         *
+         * @param wrapElement
+         */
+        wrap : function (wrapElement) {
+            var self = this;
+            new DomChain(wrapElement).each(function(wrapEl) {
+                self.each(function(el) {
+                    feature.wrap(el, wrapEl);
+                });
+            });
+        },
+
+        /**
+         * @method empty
+         *
+         * empty string
+         *
+         * @returns {DomChain}
+         */
+        empty : function () {
+            this.each(function(el) {
+               feature.empty(el);
+            });
+            return this;
+        },
+
+
+        /**
+         * @method remove
+         *
+         * remove an element from the DOM tree
+         *
+         * @returns {DomChain}
+         */
+        remove : function () {
+            this.each(function(el) {
+                feature.remove(el);
+            });
+
+            return this;
+        },
+
+        /**
+         * @method hasClass
+         *
+         * check element has class name
+         *
+         * @param {String} className
+         * @returns {Boolean}
+         */
+        hasClass : function (className) {
+            if (this.length > 0) {
+                feature.hasClass(this[0], className);
+            }
+            return false;
+        },
+
+        /**
+         * @method addClass
+         *
+         * @param {String} className
+         * @returns {DomChain}
+         */
+        addClass : function (className) {
+            this.each(function(el){
+                feature.addClass(el, className);
+            });
+
+            return  this;
+        },
+
+        /**
+         * @method removeClass
+         *
+         *      dom(".my-class").removeClass("my-class");
+         *
+         * @param {String} className
+         */
+        removeClass: function (className) {
+            this.each(function(el){
+                feature.removeClass(el, className);
+            });
+
+            return  this;
+        },
+
+        /**
+         * @method toggleClass
+         *
+         *      dom("#id").toggleClass("my-class");
+         *
+         * @param {String} className
+         */
+        toggleClass : function (className) {
+            this.each(function(el){
+                feature.toggleClass(el, className);
+            });
+
+            return this;
+        },
+
+        /**
+         * @method after
+         *
+         *      dom("#id").after($("#id2"));
+         *
+         *      dom("#id").after(dom.createText("text"));
+         *
+         *      dom("#id").after(dom.create("div"));
+         *
+         * @param newElement
+         */
+        after : function(newElement) {
+
+            if (typeof newElement == 'string') {
+                var cloneElement = newElement;
+            } else {
+                var cloneElement = newElement.domchain ? newElement.fragment() : feature.clone(newElement);
+            }
+
+            this.each(function(el) {
+                feature.after(el, cloneElement);
+            });
+
+            return this;
+        },
+
+        /**
+         * @method before
+         *
+         *      dom("#id").before($("#id2"));
+         *
+         *      dom("#id").before(dom.createText("text"));
+         *
+         *      dom("#id").before(dom.create('div'));
+         *
+         * @param newElement
+         * @returns {DomChain}
+         */
+        before : function (newElement) {
+
+            if (typeof newElement == 'string') {
+                var cloneElement = newElement;
+            } else {
+                var cloneElement = newElement.domchain ? newElement.fragment() : feature.clone(newElement);
+            }
+
+            this.each(function(el) {
+                feature.before(el, cloneElement);
+            });
+
+            return this;
+        },
+
+        fragment : function () {
+            return feature.createFragment(this);
+        },
+
+        /**
+         * @method append
+         *
+         *      dom("#id").append(dom("#id2"));
+         *
+         *      dom("#id").append(1, 2, 3);
+         *
+         *      dom("#id").append(dom.create('div'), dom.create('span'), dom.create('h1'));
+         *
+         * @param newElement
+         * @returns {DomChain}
+         */
+        append : function (newElement) {
+
+            if (typeof newElement == 'string') {
+                var cloneElement = newElement;
+            } else {
+                var cloneElement = newElement.domchain ? newElement.fragment() : feature.clone(newElement);
+            }
+
+            this.each(function(el) {
+                feature.append(el, cloneElement);
+            });
+
+            return this;
+        },
+
+        appendTo : function (selector) {
+            var dom = new DomChain(selector);
+            console.log(dom);
+            return dom.append(this);
+        },
+
+        prepend: function (newElement) {
+
+            if (typeof newElement == 'string') {
+                var cloneElement = newElement;
+            } else {
+                var cloneElement = newElement.domchain ? newElement.fragment() : feature.clone(newElement);
+            }
+
+            this.each(function(el) {
+                feature.prepend(el, cloneElement);
+            });
+
+            return this;
+        },
+
+        prependTo : function (selector) {
+            return new DomChain(selector).prepend(this);
+        },
+
+        /**
+         * @method css
+         *
+         *      dom("#id").css("background-color");
+         *
+         *      dom("#id").css("background-color", 'yellow');
+         *
+         *      dom("#id").css({ "background-color" : "yellow" });
+         *
+         *
+         * @param {String|Object} key
+         * @param {Mixed} [value=undefined]
+         * @returns {*}
+         */
+        css : function (key, value) {
+
+            var styles = key;
+
+            if (typeof key == 'string') {
+                if (arguments.length == 1) {
+                    return feature.css(this[0], key);
+                } else if (arguments.length == 2) {
+                    styles = {};
+                    styles[key] = value;
+                }
+            }
+
+            this.each(function(el) {
+                feature.css(el, styles);
+            });
+
+            return this;
+        },
+
+        position: function() {
+            return this.length > 0 && feature.position(this[0]);
+        },
+
+        offset: function () {
+            return this.length > 0 && feature.offset(this[0]);
+        },
+
+        outerWidth: function() {
+            return this.length> 0 && feature.outerWidth(this[0]);
+        },
+
+        outerHeight: function() {
+            return this.length> 0 && feature.outerHeight(this[0]);
+        },
+
+        /**
+         * @method on
+         *
+         * add event listener at element
+         *
+         * @param type
+         * @param handler
+         */
+        on : function (type, handler) {
+
+            var args = arguments.length == 2 ? [null, type, handler] : [null, arguments[0], arguments[1], arguments[2]];
+
+            this.each(function(el) {
+                args[0] = el;
+                feature.on.apply(this, args);
+            });
+
+
+            return this;
+        },
+
+        /**
+         * @method off
+         *
+         * @param type
+         * @param handler
+         */
+        off : function (type, handler) {
+            this.each(function(el) {
+                feature.off(el, type, handler);
+            });
+
+            return this;
+        },
+
+        /**
+         * @method trigger
+         *
+         * @param type
+         * @param args
+         */
+        trigger : function (type, args) {
+            this.each(function(el) {
+              feature.trigger(el, type, args);
+            });
+
+            return this;
+        },
+
+        show: function (value) {
+          this.each(function(el) {
+             feature.show(el, value);
+          });
+
+          return this;
+        },
+
+        /**
+         * @method hide
+         *
+         * @returns {DomChain}
+         */
+        hide : function () {
+            this.each(function(el) {
+                feature.hide(el);
+            });
+
+            return this;
+        },
+
+        toggle : function() {
+            this.each(function(el) {
+                feature.toggle(el);
+            });
+
+            return this;
+        },
+
+        val : function (value) {
+            if (this.length == 0) return;
+
+            var node = this[0];
+
+            // get value
+            if (arguments.length == 0) {
+
+                var value;
+
+                if (node.nodeName == "SELECT") {
+                    value = node.options[node.selectedIndex].value;
+                } else {
+                    value = node.value;
+                }
+
+                return value;
+            }
+            // set value
+            else if (arguments.length == 1) {
+                var values = Array.isArray(value) ? value : [value ];
+
+                if (node.nodeName == "SELECT") {
+                    var selected = false;
+                    each(node.options, function(opt, i) {
+                        if (values.indexOf(opt.value) > -1) {
+                            opt.selected = true;
+                            selected = true;
+                        }
+                    });
+
+                    if (!selected) {
+                        node.selectedIndex = -1;
+                    }
+                } else if (node.type == "checkbox" || node.type == "radio") {
+                    node.checked = (node.value === value);
+                } else {
+                    node.value = value;
+                }
+
+            }
+
+            return this;
+        },
+
+        /**
+         * @method next
+         *
+         *      dom("#id").next();
+         *
+         * @param {Function] [filter=undefined]
+         * @returns {util.DomChain}
+         */
+        next: function (filter) {
+            return new DomChain(this.map(function(el) {
+                return feature.next(el, filter);
+            }));
+        },
+
+        /**
+         * @method prev
+         *
+         *      dom("#id").prev();
+         *
+         * @param {Function] [filter=undefined]
+         * @returns {util.DomChain}
+         */
+        prev: function (filter) {
+            return new DomChain(this.map(function(el) {
+                return feature.prev(el, filter);
+            }));
+        },
+
+        closest: function (selector) {
+            return new DomChain(this.length > 0 && feature.closest(this[0], selector));
+        },
+
+        children : function () {
+            return new DomChain(merge(this.map(function (el, i) {
+                return feature.children(el);
+            })));
+        },
+
+        each : function (callback) {
+            each(this, callback, this);
+            return this;
+        },
+
+        map : function (callback) {
+            var list = [];
+            this.each(function(el, i) {
+                list[list.length] = callback.call(this, el, i);
+            });
+
+            return list;
+        },
+
+
+        filter : function (callback) {
+            var list = [];
+            this.each(function(el, i) {
+
+                var result = callback.call(this, el, i);
+
+                if (result) {
+                    list[list.length] = el;
+                }
+            });
+
+            return list;
+        },
+
+        attr : function (attrs) {
+            if (typeof attrs == 'string') {
+                return this.length > 0 && feature.get(this[0], attrs);
+            } else {
+                this.each(function (el, i) {
+                    feature.set(el, attrs);
+                });
+
+                return this;
+            }
+        },
+
+        removeAttr : function (key) {
+            if (this.length > 0) {
+                feature.removeAttr(this[0], key);
+            }
+
+            return this;
+        },
+
+        data: function (datas) {
+            if (typeof datas == 'string') {
+                return this.length > 0 && feature.data(this[0], datas);
+            } else {
+                this.each(function (el, i) {
+                    feature.data(el, datas);
+                });
+
+                return this;
+            }
+        },
+
+        eq : function (index) {
+            var i = (index < 0) ? this.length + index : index;
+            return new DomChain(this[i]);
+        },
+
+        first : function () {
+            return this.eq(0);
+        },
+
+        last : function () {
+            return this.eq(-1);
+        }
+    };
+
 
     /**
      * @class util.dom
      *
      * pure dom utility
      *
+     *      dom("#id") is equals to dom.id('id');
+     *
+     *      dom(".class") is equals to dom.className("class");
+     *
+     *      dom("tag") is equals to dom.tag('tag');
+     *
+     *      dom(".class > tag > li:first-child") is equals to dom.find(".class > tag > li:first-child");
+     *
      * @singleton
      */
-    return {
-        find: function() {
-            var args = arguments;
+    function dom(selector, context) {
+        return new DomChain(selector, context || document);
+    }
 
-            if(args.length == 1) {
-                if(_.typeCheck("string", args[0])) {
-                    return document.querySelectorAll(args[0]);
+    var feature = {
+
+        /**
+         * @method create
+         *
+         * create element by option
+         *
+         *      // 1. set options
+         *      dom.create({
+         *          tag : 'div',
+         *          style : {
+         *             marginLeft : '0px',
+         *             'z-index' : 10
+         *          },
+         *          className : 'test main',
+         *          html : 'wow html',
+         *          text : 'this is text',
+         *          children : [
+         *              { tag : 'p', className : 'description', html : yellow },
+         *              .....
+         *          ]
+         *     });
+         *
+         *     // 2. set string same to  dom.create({ tag : 'div', className : 'my-class your-class' })
+         *     dom.create('div.my-class.your-class');
+         *
+         * @param {Object} opt
+         * @returns {Element}
+         */
+        create : function (opt, isFragment) {
+            opt = opt || {tag : 'div'};
+            isFragment = typeof isFragment == 'undefined' ? true : isFragment;
+
+            if (typeof opt == 'string') {
+                var str  = opt.trim();
+
+                if (str.indexOf("<") == 0) {
+                    // html parser
+                    var fakeDom = document.createElement('div');
+                    fakeDom.innerHTML = str;
+
+                    var list = this.children(fakeDom);
+                    this.remove(fakeDom);
+
+                    if (isFragment) {
+                        return this.createFragment(list);
+                    } else {
+                        return list;
+                    }
+                } else {
+                    // tag
+                    tag = str;
+                    className = "";
                 }
-            } else if(args.length == 2) {
-                if(_.typeCheck("object", args[0]) && _.typeCheck("string", args[1])) {
-                    return args[0].querySelectorAll(args[1]);
+
+                opt = { tag : tag, className : className };
+            }
+
+            var element = document.createElement(opt.tag || 'div');
+
+            if (opt.className) {
+                element.className = opt.className;
+            }
+
+            if (opt.attr) {
+                var keys = Object.keys(opt.attr);
+                for(var i = 0, len = keys.length; i < len; i++) {
+                    var key = keys[i];
+                    element.setAttribute(key, opt.attr[key]);
                 }
             }
 
-            return [];
+            if (opt.style) {
+                var s = element.style;
+                for(var k in opt.style) {
+                     s[k] = opt.style[k];
+                }
+            }
+
+            if (opt.html) {
+                element.innerHTML = html;
+            } else if (opt.text) {
+                element.textContent = html;
+            }
+
+            if (opt.children && opt.children.length) {
+                var fragment = document.createDocumentFragment();
+
+                for(var i = 0, len = opt.children.length; i < len; i++) {
+                    fragment.appendChild(this.create(opt.children[i]));
+                }
+
+                element.appendChild(fragment);
+            }
+
+            return element;
         },
 
+        /**
+         * @method createText
+         *
+         * create text node
+         *
+         * @param {String} text
+         * @returns {TextNode}
+         */
+        createText : function (text) {
+            return document.createTextNode(text);
+        },
+
+        /**
+         * @method createFragment
+         *
+         * create fragment object
+         *
+         * @param {Array|Eleemnt} list
+         * @returns {DocumentFragment}
+         */
+        createFragment : function (list) {
+            var target = list;
+
+            if (!target.length) {
+                target = [target];
+            }
+
+            var fragment = document.createDocumentFragment();
+            for(var i = 0, len = target.length; i < len ;i++) {
+                fragment.appendChild(target[i]);
+            }
+
+            return fragment;
+        },
+
+        /**
+         * @method html
+         *
+         * get or set  html string
+         *
+         * @param {Element} element
+         * @param {String} contents
+         *
+         * @returns {*}
+         */
+        html : function (element, contents) {
+            if (arguments.length == 1){
+                return element.innerHTML;
+            }
+
+            element.innerHTML = contents;
+        },
+
+        /**
+         * @method text
+         *
+         * get or set text string
+         *
+         * @param element
+         * @param contents
+         * @returns {*}
+         */
+        text : function (element, contents) {
+            if (arguments.length == 1){
+                return element.textContent || element.innerText;
+            }
+
+            element.textContent = contents;
+        },
+
+        /**
+         * @method matches
+         *
+         * get matched element
+         *
+         * @param selector
+         * @returns {*}
+         */
+        matches : function (element, selector) {
+            return matches.call(element, selector);
+        },
+
+        siblings: function(element, filter) {
+          var arr = [], first = element.parentNode.firstChild;
+
+            do {
+                if (!filter || filter(element)) {
+                    arr[arr.length] = element;
+                }
+            } while(element = element.nextSibling);
+
+            return arr;
+        },
+
+        next : function (element, filter) {
+            while(element = element.nextSibling) {
+                if (!filter || filter(element)) {
+                    return element;
+                }
+            }
+
+            return null;
+        },
+
+        nextAll: function(element, filter) {
+            var arr = [];
+            while(element = element.nextSibling) {
+                if (!filter || filter(element)) {
+                    arr[arr.length] = element;
+                }
+            }
+
+            return arr;
+        },
+
+
+        prev: function(element, filter) {
+            while(element = element.previousSibling) {
+                if (!filter || filter(element)) {
+                    return element;
+                }
+            }
+
+            return null;
+        },
+
+        prevAll: function(element, filter) {
+            var arr = [];
+            while(element = element.previousSibling) {
+                if (!filter || filter(element)) {
+                    arr[arr.length] = element;
+                }
+            }
+
+            return arr;
+        },
+
+        closest: function (element, selector) {
+            return closest.call(element, selector);
+        },
+
+        /**
+         * @method children
+         *
+         * get chlid nodes for fast performance
+         *
+         * @param {Element} element
+         * @param {Function] [filter=undefined]
+         * @returns {*}
+         */
+        children : function (element, filter) {
+            return this.siblings(element.firstChild, filter);
+        },
+
+        /**
+         * @method replace
+         *
+         * replace element to new element
+         *
+         * @param {Element} element
+         * @param {Element} newElement
+         */
+        replace : function (element, newElement) {
+          element.parentNode.replaceChild(newElement, element);
+        },
+
+        /**
+         * @method unwrap
+         *
+         * unwrap a dom element
+         *
+         * @param {Element} element
+         */
+        unwrap : function (element) {
+          var parent = element.parentNode;
+
+          while(parent.firstChild) {
+              parent.insertBefore(element.firstChild, el);
+          }
+
+          this.remove(element);
+        },
+
+        /**
+         * @method clone
+         *
+         * create a deep copy of a DOM element
+         *
+         * @param {Element} element
+         * @returns {Element}
+         */
+        clone : function (element, isCopyChildNodes) {
+            isCopyChildNodes = typeof isCopyChildNodes == 'undefined' ? true : isCopyChildNodes;
+            return element.cloneNode(isCopyChildNodes);
+        },
+
+        /**
+         * @method wrap
+         *
+         *      dom.wrap(element, dom.create('div'));
+         *
+         * @param element
+         * @param wrapElement
+         */
+        wrap : function (element, wrapElement) {
+          this.before(element, wrapElement);
+          this.append(wrapElement, element);
+        },
+
+
+        /**
+         * @method empty
+         *
+         * remove all child nodes of an element from the DOM
+         *
+         * @param element
+         */
+        empty : function (element) {
+          element.innerHTML = "";
+        },
+
+        /**
+         * @method remove
+         *
+         * remove an element from the DOM tree
+         *
+         * @param {Element} element
+         */
+        remove : function (element) {
+            if (element.parentNode) {
+                element.parentNode.removeChild(element);
+            }
+        },
+
+        /**
+         * @method hasClass
+         *
+         *
+         *
+         * @param {Element} element
+         * @param {String} className
+         * @returns {*}
+         */
+        hasClass : function (element, className) {
+            return hasClass(element, className);
+        },
+
+        /**
+         * @method addClass
+         *
+         * @param {Element} element
+         * @param {String} className
+         */
+        addClass : function (element, className) {
+            addClass(element, className);
+        },
+
+        /**
+         * @method removeClass
+         *
+         * @param {Element} element
+         * @param {String} className
+         */
+        removeClass : function (element, className) {
+            removeClass(element, className);
+        },
+
+
+        /**
+         * @method toggleClass
+         *
+         *
+         *
+         * @param element
+         * @param className
+         */
+        toggleClass : function (element, className) {
+            if (hasClass(element, className)) {
+                removeClass(element, className);
+            } else {
+                addClass(element, className);
+            }
+        },
+
+        /**
+         * @method after
+         *
+         * insert new element after an existing one in the DOM tree
+         *
+         * @param {Element} element
+         * @param {Element} newElement
+         */
+        after : function (element, newElement) {
+            if (typeof newChildElement == 'string') {
+                element.insertAdjacentHTML("afterend", newChildElement);
+            } else {
+                element.parentNode.insertBefore(newElement, this.next(element));
+            }
+
+        },
+
+        /**
+         * @method before
+         *
+         * insert new element before an existing one in the DOM tree
+         *
+         * @param {Element} element
+         * @param {Element} newElement
+         */
+        before : function (element, newElement) {
+            if (typeof newChildElement == 'string') {
+                element.insertAdjacentHTML("beforebegin", newChildElement);
+            } else {
+                element.parentNode.insertBefore(newElement, element);
+            }
+        },
+
+        /**
+         * @method append
+         *
+         *
+         * @param {Element} element
+         * @param {Element} newChildElement
+         */
+        append : function (element, newChildElement) {
+            if (typeof newChildElement == 'string') {
+                element.insertAdjacentHTML("beforeend", newChildElement);
+            } else {
+                console.log(element, newChildElement);
+                element.appendChild(newChildElement);
+            }
+
+        },
+
+        /**
+         * @method prepend
+         *
+         *
+         * @param {Element} element
+         * @param {Element} newChildElement
+         */
+        prepend : function (element, newChildElement) {
+            if (typeof newChildElement == 'string') {
+                element.insertAdjacentHTML("afterbegin", newChildElement);
+            } else {
+                this.before(element.firstChild, newChildElement);
+            }
+        },
+
+        /**
+         * @method css
+         *
+         * get the computed style properties of element
+         *
+         *      //1. get all style
+         *      var allStyle = dom.css(element);
+         *      console.log(allStyle.backgroundColor);
+         *
+         *      //2. get one property
+         *      console.log(dom.css(element, 'background-color');
+         *
+         *      //3. set style properties
+         *      dom.css(element, { 'background-color': 'yellow' });
+         *
+         * @param element
+         * @param key
+         * @returns {*}
+         */
+        css : function (element, styles) {
+            var style = window.getComputedStyle ? getComputedStyle(element, null) : element.currentStyle;
+
+            if (typeof styles === 'string') {
+                return style[styles];
+            } else if (typeof styles === 'object') {
+                for(var k in styles) {
+                    element.style[k] = styles[k];
+                }
+            }
+
+            return style;
+        },
+
+        /**
+         * @method position
+         *
+         * Get the offset position of an element relative to its parent
+         *
+         * @param {Element} element
+         * @returns {{top: (Number|number), left: (Number|number)}}
+         */
+        position: function (element) {
+            return { top : element.offsetTop, left : element.offsetLeft };
+        },
+
+
+        /**
+         * @method offset
+         *
+         * Get the position of an element relative to the document
+         *
+         * @param {Element} element
+         * @returns {{top: *, left: *}}
+         */
+        offset : function (element) {
+
+            var rect = element.getBoundingClientRect(),
+                scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
+                scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            return {
+                top: rect.top + scrollTop,
+                left: rect.left + scrollLeft
+            };
+
+        },
+
+        outerWidth: function(element) {
+            return element.offsetWidth;
+        },
+        outerHeight : function (element) {
+            return element.offsetHeight;
+        },
+
+        /**
+         * @method width
+         *
+         * get width of element, including only padding but without border
+         *
+         * @param element
+         * @returns {*}
+         */
+        innerWidth : function (element) {
+            if (element == window || element == document) {
+                return window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+            }
+            return element.clientWidth;
+        },
+        /**
+         * @method height
+         *
+         * get height of element, including only padding but without border
+         *
+         * @param element
+         * @returns {*}
+         */
+        innerHeight: function (element) {
+            if (element == window || element == document) {
+                return window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+            }
+            return element.clientHeight;
+        },
+
+        width : function (element, width) {
+
+        },
+
+        height : function (element, height) {
+
+        },
+
+        /**
+         * @method on
+         *
+         * add event listener at element
+         *
+         * @param {Element} element
+         * @param {String} type event's name
+         * @param {Function} handler
+         */
+        on : function (element, type, handler) {
+            if (arguments.length == 3) {
+                addEvent(element, type, handler);
+            } else if (arguments.length == 4) {
+                var selector = handler;
+                var handler = arguments[3];
+
+                addEvent(element, type, function (e) {
+                    if (matches.call(e.target || e.srcElement, selector)) {
+                        handler(e);
+                    }
+                });
+
+            }
+
+        },
+
+        /**
+         * @method off
+         *
+         * remove event handler in  listener
+         *
+         * @param {Element} element
+         * @param {String} type event's name
+         * @param {Function} handler
+         */
+        off : function (element, type, handler) {
+            removeEvent(element, type, handler);
+        },
+
+        /**
+         * @method trigger
+         *
+         * trigger event
+         *
+         * @param element
+         * @param type
+         */
+        trigger : function (element, type, args) {
+            triggerEvent(element, type, args);
+        },
+
+        show : function (element, value) {
+            element.style.display = value;
+        },
+
+        hide : function (element) {
+            element.style.display = 'none';
+        },
+
+        toggle: function (element, value) {
+            var display = this.css(element, 'display');
+
+            if (display == 'none') {
+                this.show(element, value);
+            } else {
+                this.hide(element);
+            }
+        },
+
+        /**
+         * @method id
+         *
+         * get element by id
+         *
+         * @return {Element}
+         */
+        id : function (id) {
+            return document.getElementById(id);
+        },
+
+        /**
+         * @method tag
+         *
+         * find elements by tag name
+         *
+         * @param {String} tagName
+         * @param {Element} [parent=document] parent element,
+         * @return {ElementList}
+         */
+        tag : function (tagName, parent) {
+           return (parent || document).getElementsByTagName(tagName);
+        },
+
+        /**
+         * @method className
+         *
+         * find elements by class name
+         *
+         * @param {String} className
+         * @param {Element} [parent=document]  parent element
+         * @returns {NodeList}
+         */
+        className : function (className, parent) {
+            return (parent || document).getElementsByClassName(className);
+        },
+
+        /**
+         * @method findOne
+         *
+         * find one element by selector
+         *
+         */
+        findOne : function (selector, parent) {
+          return  (parent || document).querySelector(selector);
+        },
+
+        /**
+         * @method find
+         *
+         * find elements by selector
+         *
+         * @returns {NodeList}
+         */
+        find: function(selector, parent) {
+            return  (parent || document).querySelectorAll(selector);
+        },
+
+        /**
+         * @method each
+         *
+         * loop for element list
+         *
+         * @param selectorOrElements
+         * @param callback
+         */
         each: function(selectorOrElements, callback) {
             if(!_.typeCheck("function", callback)) return;
 
@@ -1595,9 +3022,97 @@ jui.define("util.dom", [ "util.base" ], function(_) {
             }
 
             if(elements != null) {
-                Array.prototype.forEach.call(elements, function(el, i) {
-                    callback.apply(el, [ i, el ]);
-                });
+
+                for(var i = 0, len = elements.length; i < len; i++) {
+                    var el = elements[i];
+                    callback.apply(el, [i, el]);
+                }
+            }
+        },
+
+        /**
+         * @method get
+         *
+         * get attributes
+         *
+         *      // 1. get attribute
+         *      dom.get(element, 'title');
+         *
+         *      // 2. set attribute
+         *      dom.set(element, { title : 'value' });
+         *
+         * @param {Element} element
+         * @param {String} key
+         * @returns {string}
+         */
+        get : function (element, key) {
+            return element.getAttribute(key);
+        },
+
+        /**
+         * @method set
+         *
+         * set attributes
+         *
+         *      dom.set(element, { title : 'value' });
+         *
+         * @param {Element} element
+         * @param {String} values
+         */
+        set: function (element, values) {
+
+            var elements = element.length ? element : [element];
+            values = values || {};
+            var keys = Object.keys(values);
+
+            for(var index = 0, elementCount = elements.length; index < elementCount; index++) {
+                var element = elements[i];
+
+                for(var i = 0, len = keys.length; i < len; i++ ) {
+                    var attrKey = keys[i];
+                    var attrValue = values[attrKey];
+                    element.setAttribute(attrKey, attrValue);
+                }
+            }
+        },
+
+        /**
+         * @method removeAttr
+         *
+         * remove attribute
+         *
+         * @param {Element} element
+         * @param {String} key
+         */
+        removeAttr : function (element, key) {
+          element.removeAttribute(key);
+        },
+
+        /**
+         * @method data
+         *
+         * set dataset values
+         *
+         *      dom.data(element, 'title');     // get element.dataset.title or element.data-title attribute
+         *
+         *      dom.data(element, { title : 'value' });   // set data values
+         *
+         * @param element
+         * @param one
+         * @returns {*|string}
+         */
+        data: function (element, one) {
+            one = one || {};
+            if (typeof one === 'string') {
+                return element.dataset[one] || this.get(element, 'data-' + one);
+            } else if (typeof one === 'object') {
+                var keys = Object.keys(one);
+                for(var i = 0, len = keys.length; i < len; i++) {
+                    var key = keys[i];
+                    var value = one[key];
+                    element.dataset[key] = value;
+                }
+
             }
         },
 
@@ -1620,11 +3135,12 @@ jui.define("util.dom", [ "util.base" ], function(_) {
             }
         },
 
+        /*
         remove: function(selectorOrElements) {
             this.each(selectorOrElements, function() {
                 this.parentNode.removeChild(this);
             });
-        },
+        }, */
 
         offset: function(elem) {
             function isWindow(obj) {
@@ -1670,7 +3186,13 @@ jui.define("util.dom", [ "util.base" ], function(_) {
                 left: box.left + ( win.pageXOffset || docElem.scrollLeft ) - ( docElem.clientLeft || 0 )
             };
         }
+    };
+
+    for(var k in feature) {
+        dom[k] = feature[k];
     }
+
+    return dom;
 });
 jui.define("util.sort", [], function() {
 
@@ -5970,7 +7492,6 @@ jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
                 if (e.type.toLowerCase().indexOf("animation") != -1)
                     settingEventAnimation(e);
                 else {
-                    // body, window, document ��쿡�� �̺�Ʈ ��ø�� ����
                     if (e.target != "body" && e.target != window && e.target != document) {
                         $(e.target).off(e.type);
                     }
@@ -6068,7 +7589,6 @@ jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
                 $(obj.target).off(obj.type);
             }
 
-            // ������ �޼ҵ� �޸𸮿��� ����
             if(this.__proto__) {
                 for (var key in this.__proto__) {
                     delete this.__proto__[key];

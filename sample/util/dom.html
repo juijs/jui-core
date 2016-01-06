@@ -11,12 +11,85 @@
 
 jui.ready([ "util.dom" ], function($) {
 
-    $(".jui");
+    // simple selector test
+    console.log('==> start selector test')
 
+    console.log('.jui', $.className("jui"));
+    console.log('.jui - query selector', $.find(".jui"));
+    console.log('body', $.tag("body"));
+    console.log('body - query selector', $.find("body"));
+    console.log("#yellow", $.id("yellow"));
+    console.log("#yellow - query selector", $.find("#yellow"));
+    console.log("#yellow - chain", $("#yellow"));
+
+    console.log('==> start css test')
+    // css test
+    $("#yellow").css({
+        position: 'absolute',
+        width: '100px',
+        height: '100px',
+        background: '#FF0000'
+    });
+
+    console.log($("#yellow").css('background-color'), $("#yellow").css('width'));
+
+    console.log('==> start animation test')
+    var count = 0;
+    var timer = setInterval(function() {
+        console.log('start');
+        if (count > 10) {
+            clearInterval(timer);
+            next();
+        }
+
+        $("#yellow").css('left', (Math.random() * 1000 % 1000) + 'px');
+        count++;
+    }, 1000/60);
+
+
+    function next() {
+        // next test case
+        console.log('==> start dom manipulation(dom create, append, remove)');
+
+        $("#yellow").append($.create('div'));
+        $("#yellow").append($.create('<div class="baby">yellow baby</div>'));
+        $("#yellow").append('<div class="baby2">yellow baby2</div>');
+        $("#yellow").append($.create({
+            style : {
+                position: 'absolute',
+                'border-radius' : '50%',
+                background: 'black',
+                width: '50px',
+                height: '50px'
+            }
+        }));
+
+        console.log($("<div class='love'>").append("<div class='yellow'>").appendTo("body"));
+
+        setTimeout(function() {
+            $(".love").remove();
+            next2();
+        }, 1000)
+    }
+
+    function next2() {
+        console.log('next2 => event test ');
+
+        // 이벤트 구현은  내부적으로 이벤트에 대한 callback 을 모두 가지고 있어야할 것 같다.
+        // 그래야 on 과 off 를 모두 지원할 수 있다.  멀구만 갈길이
+        // 내부 이벤트 모델이 필요하다.
+        $("button").on("click", function(e) {
+            console.log('click', 'button', e);
+            $("button").off("click");
+        });
+    }
 });
 </script>
 </head>
 <body class="jui">
-
+    <div class="event-panel">
+        <button type="button">Test Button</button>
+    </div>
+    <div id="yellow">aaa</div>
 </body>
 </html>
