@@ -97,6 +97,17 @@ jui.define("util.dom", [ ], function() {
         }
     };
 
+    var filter = function (arr, callback, context) {
+        var list = [];
+        for(var i = 0, len = arr.length; i < len; i++) {
+            if (callback.call(context, arr[i], i)) {
+                list.push(arr[i]);
+            }
+        }
+
+        return list;
+    };
+
     var merge = function (arr) {
         var total = [];
         each(arr, function (list) {
@@ -107,6 +118,32 @@ jui.define("util.dom", [ ], function() {
 
         return total;
     };
+
+    var bind = function (func, context) {
+        return function () {
+            func.apply(context, arguments);
+        };
+    }
+
+    // Event Manager
+    var events = [];
+
+    var restructEvents = function () {
+        var list = [];
+        each(events, function(eventObject) {
+            if (!eventObject.removed) {
+                list.push(eventObject);
+            }
+        })
+
+        events = list;
+    }
+
+    // on 할 때  events 에 기록 된다
+    // { element : this, type : 'keydown', selector : '' or list or 'selector', original : handler, handler : function (e) {
+    //
+    // } }
+
 
     /**
      * @class util.DomChain
@@ -759,7 +796,10 @@ jui.define("util.dom", [ ], function() {
          *     });
          *
          *     // 2. set string same to  dom.create({ tag : 'div', className : 'my-class your-class' })
-         *     dom.create('div.my-class.your-class');
+         *     dom.create('div');
+         *
+         *     // 3. set tag same to dom.create({ tag : 'div', className : 'name' })
+         *     dom.create("<div class='name'></div>");
          *
          * @param {Object} opt
          * @returns {Element}
@@ -771,6 +811,7 @@ jui.define("util.dom", [ ], function() {
             if (typeof opt == 'string') {
                 var str  = opt.trim();
 
+                // if str is start with '<' character, run html parser
                 if (str.indexOf("<") == 0) {
                     // html parser
                     var fakeDom = document.createElement('div');
@@ -1301,18 +1342,63 @@ jui.define("util.dom", [ ], function() {
          * @param {String} type event's name
          * @param {Function} handler
          */
-        on : function (element, type, handler) {
+        on : function (element, type, handler, context) {
+            var eo;
+
             if (arguments.length == 3) {
-                addEvent(element, type, handler);
+
+                eo = {
+                    element : element,
+                    type : type,
+                    context : context,
+                    originalHandler : handler
+                };
+
+                eo.handler = bind(function(e) {
+                    this.originalHandler.apply(this.context || this.element, arguments);
+                }, eo);
+
+                events.push(eo);
+
+                addEvent(eo.element, eo.type, eo.handler);
+
+
             } else if (arguments.length == 4) {
                 var selector = handler;
-                var handler = arguments[3];
+                handler = context;
+                context = arguments[4];
 
-                addEvent(element, type, function (e) {
-                    if (matches.call(e.target || e.srcElement, selector)) {
-                        handler(e);
+                eo = {
+                    element : element,
+                    type : type,
+                    context : context,
+                    selector : selector,
+                    originalHandler : handler
+                };
+
+                eo.handler = bind(function(e) {
+
+                    var target = e.target || e.srcElement;
+
+                    if (typeof this.selector == 'string') {
+                        if (matches.call(target, this.selector)) {
+                            this.originalHandler.apply(this.context || this.element, arguments);
+                        }
+                    } else if (this.selector.length) {
+                        var list = filter(this.selector, function (el) {
+                            return target === el;
+                        });
+
+                        if (list.length > 0) {
+                            this.originalHandler.apply(this.context || this.element, arguments);
+                        }
                     }
-                });
+
+                }, eo);
+
+                events.push(eo);
+
+                addEvent(eo.element, eo.type, eo.handler);
 
             }
 
@@ -1328,7 +1414,50 @@ jui.define("util.dom", [ ], function() {
          * @param {Function} handler
          */
         off : function (element, type, handler) {
-            removeEvent(element, type, handler);
+
+            var len = arguments.length;
+            var checkFilter = function () { return false };
+
+            if (len == 1) {
+                checkFilter = function (eo) {
+                    return (eo.element == element);
+                };
+
+            } else if (len == 2) {
+                checkFilter = function (eo) {
+                    return (eo.element == element && eo.type == type);
+                };
+
+            } else if (len == 3) {
+
+                if (typeof handler == 'function') {
+                    checkFilter = function (eo) {
+                        return (eo.element == element && eo.type == type && eo.originalHandler == handler);
+                    };
+                } else {
+                    checkFilter = function (eo) {
+                        return (eo.element == element && eo.type == type && eo.selector == handler);
+                    };
+                }
+
+
+            } else if (len == 4) {
+                var selector = handler;
+                handler = arguments[3];
+
+                checkFilter = function (eo) {
+                    return (eo.element == element && eo.type == type && eo.originalHandler == handler && eo.selector == selector);
+                };
+            }
+
+            each(events, function (eo) {
+                if (checkFilter(eo)) {
+                    eo.removed = true;
+                    removeEvent(eo.element, eo.type, eo.handler);
+                }
+            });
+
+            restructEvents();
         },
 
         /**
