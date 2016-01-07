@@ -235,7 +235,13 @@
 				}
 			})();
 
-			window.onresize = after_resize;
+			if (window.addEventListener) {
+				window.addEventListener("resize", after_resize);
+			} else if (object.attachEvent) {
+				window.attachEvent("onresize", after_resize);
+			} else {
+				window["onresize"] = after_resize;
+			}
 		},
 
 		/**
