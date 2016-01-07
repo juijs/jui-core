@@ -119,6 +119,39 @@ jui.ready([ "util.dom" ], function($) {
         $(".click-layer").on("click", $(".click-layer").children(), function(e) {
            console.log('this is children click ? ')
         });
+
+        $(".click-layer").on("click", function(e) {
+            console.log(e);
+        });
+    }
+
+    window.next5 = function next5() {
+        console.log('next5 --- custom event test ');
+
+        $(".click-layer").on('summernote.init', function(e) {
+            console.log('this is customevent', e);
+        });
+
+        $(".click-layer").on('mousemove', function(e) {
+            console.log('move', 'move', e);
+        });
+
+        $(".click-layer").trigger('summernote.init');
+        $(".click-layer").trigger('mousemove');
+
+
+    }
+
+    window.next6 = function next6() {
+        $(".click-layer").click();
+
+        $(".click-layer").click(function() {
+            console.log('alias handler');
+        })
+
+        $(".click-layer").click("button", function() {
+            console.log('alias handler delegate');
+        })
     }
 });
 </script>

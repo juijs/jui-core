@@ -77,16 +77,26 @@ jui.define("util.dom", [ ], function() {
 
     if ('createEvent' in document) {
         triggerEvent = function (element, type) { // modern browsers, IE9+
-            var e = document.createEvent('HTMLEvents');
-            element.initEvent(type, false, true);
-            element.dispatchEvent(e);
+
+            if (typeof element[type] == 'function') {
+                element[type]();
+            } else {
+                var e = document.createEvent('HTMLEvents');
+                e.initEvent(type, false, true);
+                element.dispatchEvent(e);
+            }
+
         }
     } else {
         triggerEvent = function (element, type) {
-            // IE 8
-            var e = document.createEventObject();
-            e.eventType = type;
-            element.fireEvent('on'+e.eventType, e);
+            if (typeof element[type] == 'function') {
+                element[type]();
+            } else {
+                // IE 8
+                var e = document.createEventObject();
+                e.eventType = type;
+                element.fireEvent('on' + e.eventType, e);
+            }
         }
     }
 
@@ -151,6 +161,11 @@ jui.define("util.dom", [ ], function() {
      * @constructor
      */
     function DomChain(selector, context) {
+
+        if (typeof selector == 'function') {
+            feature.ready(selector);
+            return;
+        }
 
         var result, list = [];
 
@@ -919,6 +934,28 @@ jui.define("util.dom", [ ], function() {
         }
     };
 
+    // alias
+    var eventNameList = (
+        "blur focus focusin focusout resize scroll " +
+        "click dblclick mousedown mouseup mousemove mouseover " +
+        "mouseout mouseenter mouseleave change select " +
+        "submit keydown keypress keyup contextmenu"
+    ).split(' ');
+
+    each(eventNameList, function( event) {
+        DomChain.prototype[event] = function(  ) {
+            var count = arguments.length;
+
+            if (count == 0) {
+                this.trigger( event );
+            } else if (count == 1) {
+                this.on(event, arguments[0]);
+            } else if (count == 2) {
+                this.on(event, arguments[0], arguments[1]);
+            }
+        };
+    });
+
 
     /**
      * @class util.dom
@@ -939,7 +976,31 @@ jui.define("util.dom", [ ], function() {
         return new DomChain(selector, context || document);
     }
 
+
+
     var feature = {
+
+        /**
+         * @method ready
+         *
+         * Running code when the document is ready
+         *
+         * @param func
+         */
+        ready : function (func) {
+            // in case the document is already rendered
+            if (document.readyState!='loading') func();
+            // modern browsers
+            else if (document.addEventListener) {
+                addEvent(document, 'DOMContentLoaded', func);
+            }
+            // IE <= 8
+            else {
+                addEvent(document, 'readystatechange', function() {
+                    if (document.readyState == 'complete') func();
+                });
+            }
+        },
 
         /**
          * @method create
@@ -1671,16 +1732,35 @@ jui.define("util.dom", [ ], function() {
          * @param element
          * @param type
          */
-        trigger : function (element, type, args) {
-            triggerEvent(element, type, args);
+        trigger : function (element, type, data) {
+            triggerEvent(element, type, data);
         },
 
+        /**
+         * @method show
+         *
+         * show element
+         *
+         * @param element
+         * @param value
+         */
         show : function (element, value) {
-            element.style.display = value;
+            element.style.display = value || 'block';
+
+            return this;
         },
 
+        /**
+         * @method hide
+         *
+         * hide element
+         *
+         * @param element
+         */
         hide : function (element) {
             element.style.display = 'none';
+
+            return this;
         },
 
         toggle: function (element, value) {
@@ -1691,6 +1771,8 @@ jui.define("util.dom", [ ], function() {
             } else {
                 this.hide(element);
             }
+
+            return this;
         },
 
         /**
@@ -1937,9 +2019,10 @@ jui.define("util.dom", [ ], function() {
         }
     };
 
-    for(var k in feature) {
-        dom[k] = feature[k];
-    }
+
+    each(Object.keys(feature), function(key) {
+        dom[key] = feature[key];
+    });
 
     return dom;
 });
