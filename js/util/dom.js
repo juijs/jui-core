@@ -125,7 +125,7 @@ jui.define("util.dom", [ ], function() {
         };
     }
 
-    // Event Manager
+    // Event List Manager
     var events = [];
 
     var restructEvents = function () {
@@ -134,15 +134,10 @@ jui.define("util.dom", [ ], function() {
             if (!eventObject.removed) {
                 list.push(eventObject);
             }
-        })
+        });
 
         events = list;
     }
-
-    // on 할 때  events 에 기록 된다
-    // { element : this, type : 'keydown', selector : '' or list or 'selector', original : handler, handler : function (e) {
-    //
-    // } }
 
 
     /**
@@ -521,8 +516,18 @@ jui.define("util.dom", [ ], function() {
          *
          * add event listener at element
          *
-         * @param type
-         * @param handler
+         *      // add click event
+         *      $("#id").on("click", function(e) {
+         *
+         *      });
+         *
+         *      // add click event with delegate
+         *      $("#id").on("click", ".btn" or element, function (e) {
+         *          console.log('.btn element', e.target, '#id element', this);
+         *      });
+         *
+         * @param {String} type
+         * @param {Function} handler
          */
         on : function (type, handler) {
 
@@ -530,7 +535,7 @@ jui.define("util.dom", [ ], function() {
 
             this.each(function(el) {
                 args[0] = el;
-                feature.on.apply(this, args);
+                feature.on.apply(feature, args);
             });
 
 
@@ -538,14 +543,68 @@ jui.define("util.dom", [ ], function() {
         },
 
         /**
+         * @method one
+         *
+         * add event that is only run once
+         *
+         * @param type
+         * @param handler
+         * @returns {DomChain}
+         */
+        one : function (type, handler) {
+
+            var args = arguments.length == 2 ? [null, type, handler] : [null, arguments[0], arguments[1], arguments[2]];
+
+            this.each(function(el) {
+                args[0] = el;
+                feature.one.apply(feature, args);
+            });
+
+            return this;
+        },
+
+        /**
          * @method off
+         *
+         * remove event
+         *
+         *      // delete all event
+         *      $("#id").off();
+         *
+         *      // delete click event
+         *      $("#id").off('click');
+         *
+         *      // delete click event for handler
+         *      $("#id").off('click', handler);
+         *
+         *      // delete click event for selector
+         *      $("#id").off('click', 'selector' or element);
+         *
+         *      // delete click event for selector with handler
+         *      $("#id").off('click', 'selector' or element, handler);
+         *
          *
          * @param type
          * @param handler
          */
         off : function (type, handler) {
+
+            var args = [];
+            var count = arguments.length;
+
+            if (count == 0) {
+                args = [null];
+            } else if (count == 1) {
+                args = [null, type];
+            } else if (count == 2) {
+                args = [null, type, handler];
+            } else if (count == 3) {
+                args = [null, arguments[3], arguments[1], arguments[2]];
+            }
+
             this.each(function(el) {
-                feature.off(el, type, handler);
+                args[0] = el;
+                feature.off.apply(feature, args);
             });
 
             return this;
@@ -576,6 +635,8 @@ jui.define("util.dom", [ ], function() {
         /**
          * @method hide
          *
+         *      $("#id").hide();
+         *
          * @returns {DomChain}
          */
         hide : function () {
@@ -586,6 +647,13 @@ jui.define("util.dom", [ ], function() {
             return this;
         },
 
+        /**
+         * @method toggle
+         *
+         *      $("#id").toggle();
+         *
+         * @returns {DomChain}
+         */
         toggle : function() {
             this.each(function(el) {
                 feature.toggle(el);
@@ -594,6 +662,20 @@ jui.define("util.dom", [ ], function() {
             return this;
         },
 
+        /**
+         * @method val
+         *
+         * get value attribute of element
+         *
+         *      $("#id").val();
+         *
+         * set value attribute
+         *
+         *      $("#id").val('test');
+         *
+         * @param {Mixed} [value=undefined]
+         * @returns {*}
+         */
         val : function (value) {
             if (this.length == 0) return;
 
@@ -648,9 +730,9 @@ jui.define("util.dom", [ ], function() {
          * @returns {util.DomChain}
          */
         next: function (filter) {
-            return new DomChain(this.map(function(el) {
+            return this.map(function(el) {
                 return feature.next(el, filter);
-            }));
+            });
         },
 
         /**
@@ -662,36 +744,75 @@ jui.define("util.dom", [ ], function() {
          * @returns {util.DomChain}
          */
         prev: function (filter) {
-            return new DomChain(this.map(function(el) {
+            return this.map(function(el) {
                 return feature.prev(el, filter);
-            }));
+            });
         },
 
         closest: function (selector) {
             return new DomChain(this.length > 0 && feature.closest(this[0], selector));
         },
 
+        /**
+         * @method children
+         *
+         * get all children in DOM tree
+         *
+         *      $(".parent").children();
+         *
+         * @returns {util.DomChain}
+         */
         children : function () {
             return new DomChain(merge(this.map(function (el, i) {
                 return feature.children(el);
             })));
         },
 
+        /**
+         * @method each
+         *
+         * traverse element in dom tree
+         *
+         *      $(".class").each(function(el) {
+         *          console.log($(el).html());
+         *      });
+         *
+         * @param {Function} callback
+         * @returns {DomChain}
+         */
         each : function (callback) {
             each(this, callback, this);
             return this;
         },
 
+        /**
+         * @method map
+         *
+         * get wrapped list from dom tree
+         *
+         * @param {Function} callback
+         * @returns {util.DomChain}
+         */
         map : function (callback) {
             var list = [];
             this.each(function(el, i) {
                 list[list.length] = callback.call(this, el, i);
             });
 
-            return list;
+            return new DomChain(list);
         },
 
 
+        /**
+         * @method filter
+         *
+         *      $(".class").filter(function(el) {
+         *          return el.nodeName == 'BUTTON';
+         *      });
+         *
+         * @param callback
+         * @returns {util.DomChain}
+         */
         filter : function (callback) {
             var list = [];
             this.each(function(el, i) {
@@ -703,9 +824,15 @@ jui.define("util.dom", [ ], function() {
                 }
             });
 
-            return list;
+            return new DomChain(list);
         },
 
+        /**
+         * @method attr
+         *
+         * @param attrs
+         * @returns {*}
+         */
         attr : function (attrs) {
             if (typeof attrs == 'string') {
                 return this.length > 0 && feature.get(this[0], attrs);
@@ -718,6 +845,14 @@ jui.define("util.dom", [ ], function() {
             }
         },
 
+        /**
+         * @method removeAttr
+         *
+         * remove attribute for element
+         *
+         * @param {String} key
+         * @returns {DomChain}
+         */
         removeAttr : function (key) {
             if (this.length > 0) {
                 feature.removeAttr(this[0], key);
@@ -726,6 +861,14 @@ jui.define("util.dom", [ ], function() {
             return this;
         },
 
+        /**
+         * @method data
+         *
+         * set or get data
+         *
+         * @param {String|Object} datas
+         * @returns {*}
+         */
         data: function (datas) {
             if (typeof datas == 'string') {
                 return this.length > 0 && feature.data(this[0], datas);
@@ -738,15 +881,39 @@ jui.define("util.dom", [ ], function() {
             }
         },
 
+        /**
+         * @method eq
+         *
+         * get element of index
+         *
+         * if index is minus, find element from last
+         *
+         * @param {Number} index
+         * @returns {util.DomChain}
+         */
         eq : function (index) {
             var i = (index < 0) ? this.length + index : index;
             return new DomChain(this[i]);
         },
 
+        /**
+         * @method first
+         *
+         * get first element in DOM tree
+         *
+         * @returns {*|util.DomChain}
+         */
         first : function () {
             return this.eq(0);
         },
 
+        /**
+         * @method last
+         *
+         * get last element in DOM tree
+         *
+         * @returns {*|util.DomChain}
+         */
         last : function () {
             return this.eq(-1);
         }
@@ -1345,6 +1512,8 @@ jui.define("util.dom", [ ], function() {
         on : function (element, type, handler, context) {
             var eo;
 
+            console.log(arguments.length, arguments);
+
             if (arguments.length == 3) {
 
                 eo = {
@@ -1356,6 +1525,11 @@ jui.define("util.dom", [ ], function() {
 
                 eo.handler = bind(function(e) {
                     this.originalHandler.apply(this.context || this.element, arguments);
+
+                    // only run once
+                    if (this.handler.one) {
+                        feature.off(this.element, this.type, this.handler);
+                    }
                 }, eo);
 
                 events.push(eo);
@@ -1394,6 +1568,11 @@ jui.define("util.dom", [ ], function() {
                         }
                     }
 
+                    // only run once
+                    if (this.handler.one) {
+                        feature.off(this.element, this.type, this.selector, this.handler);
+                    }
+
                 }, eo);
 
                 events.push(eo);
@@ -1402,6 +1581,30 @@ jui.define("util.dom", [ ], function() {
 
             }
 
+            return eo;
+
+        },
+
+        /**
+         * @method one
+         *
+         * add event that is only run once
+         *
+         *      dom.one(element, 'click', function(e) {
+         *
+         *      });
+         *
+         *      dom.one(element, 'click', '.btn', function(e) {
+         *
+         *      });
+         *
+         * @param element
+         * @param type
+         * @param handler
+         * @param context
+         */
+        one : function (element, type, handler, context) {
+            this.on.apply(this, arguments).handler.one = true ;
         },
 
         /**
@@ -1432,7 +1635,7 @@ jui.define("util.dom", [ ], function() {
 
                 if (typeof handler == 'function') {
                     checkFilter = function (eo) {
-                        return (eo.element == element && eo.type == type && eo.originalHandler == handler);
+                        return (eo.element == element && eo.type == type && eo.handler == handler);
                     };
                 } else {
                     checkFilter = function (eo) {
@@ -1446,7 +1649,7 @@ jui.define("util.dom", [ ], function() {
                 handler = arguments[3];
 
                 checkFilter = function (eo) {
-                    return (eo.element == element && eo.type == type && eo.originalHandler == handler && eo.selector == selector);
+                    return (eo.element == element && eo.type == type && eo.handler == handler && eo.selector == selector);
                 };
             }
 

@@ -75,12 +75,49 @@ jui.ready([ "util.dom" ], function($) {
     function next2() {
         console.log('next2 => event test ');
 
-        // 이벤트 구현은  내부적으로 이벤트에 대한 callback 을 모두 가지고 있어야할 것 같다.
-        // 그래야 on 과 off 를 모두 지원할 수 있다.  멀구만 갈길이
-        // 내부 이벤트 모델이 필요하다.
         $("button").on("click", function(e) {
             console.log('click', 'button', e);
             $("button").off("click");
+
+            next3();
+        });
+    }
+
+    function next3() {
+        console.log('next3 --> event test 2 ');
+
+        var $dom = $("<div />").css({
+            cursor : 'pointer',
+            'background' : 'yellow',
+            width: '100px',
+            height: '100px',
+            position: 'absolute',
+            right: '0px',
+            top: '0px'
+        }).addClass('click-layer');
+
+        $dom.appendTo('body');
+
+        $dom.one('click', function(e) {
+           console.log('yellow layer', e);
+
+            next4();
+        });
+    }
+
+    function next4() {
+        console.log('next4 ---> event delegate 1');
+
+        $("<button>test</button>").appendTo(".click-layer");
+
+        $(".click-layer").on('click', 'button', function (e) {
+           console.log(this, e.target, 'click button in click-layer');
+
+            $(this).append("<button>"+Math.floor(Math.random()*100)+"</button>");
+        });
+
+        $(".click-layer").on("click", $(".click-layer").children(), function(e) {
+           console.log('this is children click ? ')
         });
     }
 });
