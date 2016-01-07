@@ -420,6 +420,13 @@ jui.define("util.dom", [ ], function() {
             return this;
         },
 
+        /**
+         * @method fragment
+         *
+         * create document frament for DOM tree
+         *
+         * @returns {*|DocumentFragment}
+         */
         fragment : function () {
             return feature.createFragment(this);
         },
@@ -451,12 +458,27 @@ jui.define("util.dom", [ ], function() {
             return this;
         },
 
+        /**
+         * @method appendTo
+         *
+         * append element to selector
+         *
+         * @param selector
+         * @returns {*|DomChain}
+         */
         appendTo : function (selector) {
             var dom = new DomChain(selector);
-            console.log(dom);
             return dom.append(this);
         },
 
+        /**
+         * @method prepend
+         *
+         * prepend newElement to DOM tree
+         *
+         * @param newElement
+         * @returns {DomChain}
+         */
         prepend: function (newElement) {
 
             if (typeof newElement == 'string') {
@@ -472,6 +494,14 @@ jui.define("util.dom", [ ], function() {
             return this;
         },
 
+        /**
+         * @method prependTo
+         *
+         * prepend element to selector
+         *
+         * @param selector
+         * @returns {*|DomChain}
+         */
         prependTo : function (selector) {
             return new DomChain(selector).prepend(this);
         },
@@ -510,18 +540,48 @@ jui.define("util.dom", [ ], function() {
             return this;
         },
 
+        /**
+         * @method position
+         *
+         * get position
+         *
+         *      $("#id").position();
+         *
+         * @returns {boolean|*|{top, left}|{top: (Number|number), left: (Number|number)}}
+         */
         position: function() {
             return this.length > 0 && feature.position(this[0]);
         },
 
+        /**
+         * @method offset
+         *
+         *      $("#id").offset();
+         *
+         * @returns {boolean|*|{top, left}|{top: *, left: *}}
+         */
         offset: function () {
             return this.length > 0 && feature.offset(this[0]);
         },
 
+        /**
+         * @method outerWidth
+         *
+         *      $("#id").outerWidth();
+         *
+         * @returns {boolean|*}
+         */
         outerWidth: function() {
             return this.length> 0 && feature.outerWidth(this[0]);
         },
 
+        /**
+         * @method outerHeight
+         *
+         *      $("#id").outerHieght();
+         *
+         * @returns {boolean|*}
+         */
         outerHeight: function() {
             return this.length> 0 && feature.outerHeight(this[0]);
         },
@@ -639,6 +699,14 @@ jui.define("util.dom", [ ], function() {
             return this;
         },
 
+        /**
+         * @method show
+         *
+         * show element in DOM tree
+         *
+         * @param value
+         * @returns {DomChain}
+         */
         show: function (value) {
           this.each(function(el) {
              feature.show(el, value);
