@@ -109,6 +109,14 @@ jui.ready([ "util.base" ], function(_) {
     _.runtime("jui", function() {
         console.log(_.extend(origin, add, true));
     });
+
+    _.resize(function() {
+        console.log("resize 1");
+    });
+
+    _.resize(function() {
+        console.log("resize 2");
+    }, 1000);
 });
 </script>
 </head>
