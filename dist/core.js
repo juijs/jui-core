@@ -1425,6 +1425,9 @@ jui.define("util.dom.attr", [ ], function() {
         * @returns {string}
         */
        get : function (element, key) {
+
+           if (element.nodeType == 3) return;
+
            return element.getAttribute(key);
        },
 
@@ -1438,6 +1441,8 @@ jui.define("util.dom.attr", [ ], function() {
         * @returns {Object}
         */
        getAll : function (element, arr) {
+
+           if (element.nodeType == 3) return;
            var obj = {};
            each(arr, function(key) {
                obj[key] = element.getAttribute(key);
@@ -1456,6 +1461,8 @@ jui.define("util.dom.attr", [ ], function() {
         * @param {String} values
         */
        set: function (element, values) {
+
+           if (element.nodeType == 3) return;
 
            values = values || {};
            each(Object.keys(values), function(key) {
@@ -1802,7 +1809,100 @@ jui.define("util.dom.css", [ ], function() {
             } else {
                 addClass(element, className);
             }
+        },
+
+        /**
+         * @method width
+         *
+         * TODO: get or set width
+         *
+         * @param element
+         * @param width
+         */
+        width : function (element, width) {
+            var w = this.outerWidth(element);
+
+            if (arguments.length == 1) {
+                var style = this.css(element);
+
+                w -= parseFloat(style.borderLeftWidth) + parseFloat(style.paddingLeft);
+                w -= parseFloat(style.borderRightWidth) + parseFloat(style.paddingRight);
+
+                if (style.boxSizing == 'border-box') {
+                    w -= parseFloat(style.marginLeft) + parseFloat(style.marginRight);
+                }
+
+                return w;
+            } else if (arguments.length == 2) {
+                this.css(element, width);
+            }
+
+        },
+
+        /**
+         * @method height
+         *
+         * TODO: get or set height
+         *
+         * @param element
+         * @param height
+         */
+        height : function (element, height) {
+
+            var h = this.outerHeight(element);
+
+            if (arguments.length == 1) {
+                var style = this.css(element);
+
+                h -= parseFloat(style.borderTopWidth) + parseFloat(style.paddingTop);
+                h -= parseFloat(style.borderBottomWidth) + parseFloat(style.paddingBottom);
+
+                if (style.boxSizing == 'border-box') {
+                    h -= parseFloat(style.marginTop) + parseFloat(style.marginBottom);
+                }
+
+                return h;
+            } else if (arguments.length == 2) {
+                this.css(element, height);
+            }
+
+        },
+
+
+        /**
+         * @method outerWidth
+         *
+         * @param element
+         * @returns {number}
+         */
+        outerWidth: function(element, withMargin) {
+            var width = element.offsetWidth;
+
+            if (withMargin) {
+                var style = this.css(element);
+                width += parseInt(style.marginLeft) + parserInt(style.marginRight);
+            }
+
+            return width;
+        },
+
+        /**
+         * @method outerHeight
+         *
+         * @param element
+         * @returns {number}
+         */
+        outerHeight : function (element, withMargin) {
+            var height = element.offsetHeight;
+
+            if (withMargin) {
+                var style = this.css(element);
+                height += parseInt(style.marginTop) + parserInt(style.marginBottom);
+            }
+
+            return height;
         }
+
     };
 
     return CSS;
@@ -1851,19 +1951,19 @@ jui.define("util.dom.event", [ ], function() {
     var triggerEvent;
 
     if ('createEvent' in document) {
-        triggerEvent = function (element, type) { // modern browsers, IE9+
+        triggerEvent = function (element, type, data) { // modern browsers, IE9+
 
             if (typeof element[type] == 'function') {
                 element[type]();
             } else {
-                var e = document.createEvent('HTMLEvents');
-                e.initEvent(type, false, true);
+                var e = document.createEvent('CustomEvent');
+                e.initEvent(type, false, true, data);
                 element.dispatchEvent(e);
             }
 
         }
     } else {
-        triggerEvent = function (element, type) {
+        triggerEvent = function (element, type, data) {
             if (typeof element[type] == 'function') {
                 element[type]();
             } else {
@@ -2273,30 +2373,6 @@ jui.define("util.dom.manage", [ ], function() {
             if (element.parentNode) {
                 element.parentNode.removeChild(element);
             }
-        },
-
-        /**
-         * @method width
-         *
-         * TODO: get or set width
-         *
-         * @param element
-         * @param width
-         */
-        width : function (element, width) {
-
-        },
-
-        /**
-         * @method height
-         *
-         * TODO: get or set height
-         *
-         * @param element
-         * @param height
-         */
-        height : function (element, height) {
-
         }
     };
 
@@ -2373,8 +2449,8 @@ jui.define("util.dom.selector", [ ], function() {
          * find one element by selector
          *
          */
-        findOne : function (selector, parent) {
-            return  (parent || document).querySelector(selector);
+        findOne : function (context, selector) {
+            return  (context || document).querySelector(selector);
         },
 
         /**
@@ -2384,8 +2460,8 @@ jui.define("util.dom.selector", [ ], function() {
          *
          * @returns {NodeList}
          */
-        find: function(selector, parent) {
-            return  (parent || document).querySelectorAll(selector);
+        find: function(context, selector) {
+            return  (context || document).querySelectorAll(selector);
         },
 
 
@@ -2698,26 +2774,6 @@ jui.define("util.dom.core", [ "util.dom.selector", "util.dom.manage" ], function
         },
 
         /**
-         * @method outerWidth
-         *
-         * @param element
-         * @returns {number}
-         */
-        outerWidth: function(element) {
-            return element.offsetWidth;
-        },
-
-        /**
-         * @method outerHeight
-         *
-         * @param element
-         * @returns {number}
-         */
-        outerHeight : function (element) {
-            return element.offsetHeight;
-        },
-
-        /**
          * @method width
          *
          * get width of element, including only padding but without border
@@ -2754,14 +2810,14 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
     // Util Function
     var each = function (arr, callback, context) {
         for(var i = 0, len = arr.length; i < len; i++) {
-            callback.call(context, arr[i], i);
+            callback.call(context, i, arr[i]);
         }
     };
 
     var merge = function (arr) {
         var total = [];
-        each(arr, function (list) {
-            each(list, function (item) {
+        each(arr, function (i, list) {
+            each(list, function (j, item) {
                 total.push(item);
             });
         });
@@ -2833,11 +2889,18 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {*}
          */
         html : function (contents) {
+
             if (arguments.length) {
-                this.each(function (el){
-                    $manage.html(el, contents);
-                });
-                return this;
+                if (contents.domchain) {
+                    this.empty();
+                    return this.append(contents);
+                } else {
+                    this.each(function (i, el){
+                        $manage.html(el, contents);
+                    });
+                    return this;
+                }
+
             } else {
                 return this.length > 0 && $manage.html(this[0]);
             }
@@ -2857,11 +2920,33 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          */
         text : function (contents) {
             if (arguments.length) {
-                this.each(function (el){  $manage.text(el, contents); });
+                this.each(function (i, el){  $manage.text(el, contents); });
                 return this;
             } else {
                 return this.length > 0 && $manage.text(this[0]);
             }
+        },
+
+        /**
+         * @method is
+         *
+         * matches selector
+         *
+         * @param {String|Element|DomChain} selector
+         * @returns {Boolean}
+         */
+        is : function (selector) {
+            if (typeof selector == 'string') {
+                return $selector.matches(this[0], selector);
+            } else {
+                if (selector.domchain) {
+                    return this[0] === selector[0];
+                } else {
+                    return this[0] === selector;
+                }
+
+            }
+
         },
 
         /**
@@ -2872,7 +2957,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {DomChain}
          */
         unwrap : function () {
-            this.each(function(el) {
+            this.each(function(i, el) {
                 $manage.unwrap(el);
             });
 
@@ -2890,8 +2975,8 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          */
         wrap : function (wrapElement) {
             var self = this;
-            new DomChain(wrapElement).each(function(wrapEl) {
-                self.each(function(el) {
+            new DomChain(wrapElement).each(function(i, wrapEl) {
+                self.each(function(i, el) {
                     $manage.wrap(el, wrapEl);
                 });
             });
@@ -2905,7 +2990,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {DomChain}
          */
         empty : function () {
-            this.each(function(el) {
+            this.each(function(i, el) {
                 $manage.empty(el);
             });
             return this;
@@ -2920,7 +3005,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {DomChain}
          */
         remove : function () {
-            this.each(function(el) {
+            this.each(function(i, el) {
                 $manage.remove(el);
             });
 
@@ -2949,7 +3034,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {DomChain}
          */
         addClass : function (className) {
-            this.each(function(el){
+            this.each(function(i, el){
                 $css.addClass(el, className);
             });
 
@@ -2964,7 +3049,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @param {String} className
          */
         removeClass: function (className) {
-            this.each(function(el){
+            this.each(function(i, el){
                 $css.removeClass(el, className);
             });
 
@@ -2979,7 +3064,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @param {String} className
          */
         toggleClass : function (className) {
-            this.each(function(el){
+            this.each(function(i, el){
                 $css.toggleClass(el, className);
             });
 
@@ -3005,7 +3090,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
                 var cloneElement = newElement.domchain ? newElement.fragment() : $manage.clone(newElement);
             }
 
-            this.each(function(el) {
+            this.each(function(i, el) {
                 $manage.after(el, cloneElement);
             });
 
@@ -3032,7 +3117,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
                 var cloneElement = newElement.domchain ? newElement.fragment() : $manage.clone(newElement);
             }
 
-            this.each(function(el) {
+            this.each(function(i, el) {
                 $manage.before(el, cloneElement);
             });
 
@@ -3070,7 +3155,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
                 var cloneElement = newElement.domchain ? newElement.fragment() : $manage.clone(newElement);
             }
 
-            this.each(function(el) {
+            this.each(function(i, el) {
                 $manage.append(el, cloneElement);
             });
 
@@ -3106,7 +3191,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
                 var cloneElement = newElement.domchain ? newElement.fragment() : $manage.clone(newElement);
             }
 
-            this.each(function(el) {
+            this.each(function(i, el) {
                 $manage.prepend(el, cloneElement);
             });
 
@@ -3123,6 +3208,10 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          */
         prependTo : function (selector) {
             return new DomChain(selector).prepend(this);
+        },
+
+        replace : function (newElement) {
+
         },
 
         /**
@@ -3148,7 +3237,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
                     $css.css(this[0], key, value);
                 }
             } else if (typeof key == 'object') {
-                this.each(function(el) {
+                this.each(function(i, el) {
                     $css.css(el, key);
                 });
             }
@@ -3187,8 +3276,8 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          *
          * @returns {boolean|*}
          */
-        outerWidth: function() {
-            return this.length> 0 && $core.outerWidth(this[0]);
+        outerWidth: function(withMargin) {
+            return this.length> 0 && $css.outerWidth(this[0], withMargin);
         },
 
         /**
@@ -3198,9 +3287,57 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          *
          * @returns {boolean|*}
          */
-        outerHeight: function() {
-            return this.length> 0 && $core.outerHeight(this[0]);
+        outerHeight: function(withMargin) {
+            return this.length> 0 && $css.outerHeight(this[0], withMargin);
         },
+
+        innerWidth : function () {
+            return this.length > 0 && $css.innerWidth(this[0]);
+        },
+
+        innerHeight : function () {
+            return this.length > 0 && $css.innerHeight(this[0]);
+        },
+
+        /**
+         * @method width
+         *
+         * get or set width
+         *
+         * @param element
+         * @param width
+         */
+        width : function (width) {
+            var count = arguments.length;
+            if (count == 0) {
+                return $css.width(this[0]);
+            }
+
+            $css.width(this[0], width);
+
+            return this;
+        },
+
+        /**
+         * @method height
+         *
+         * get or set height
+         *
+         * @param element
+         * @param height
+         */
+        height : function (height) {
+            var count = arguments.length;
+            if (count == 0) {
+                return $css.height(this[0]);
+            }
+
+            $css.height(this[0], height);
+
+            return this;
+        },
+
+
 
         /**
          * @method on
@@ -3224,7 +3361,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
 
             var args = arguments.length == 2 ? [null, type, handler] : [null, arguments[0], arguments[1], arguments[2]];
 
-            this.each(function(el) {
+            this.each(function(i, el) {
                 args[0] = el;
                 $event.on.apply($event, args);
             });
@@ -3246,7 +3383,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
 
             var args = arguments.length == 2 ? [null, type, handler] : [null, arguments[0], arguments[1], arguments[2]];
 
-            this.each(function(el) {
+            this.each(function(i, el) {
                 args[0] = el;
                 $event.one.apply($event, args);
             });
@@ -3293,7 +3430,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
                 args = [null, arguments[3], arguments[1], arguments[2]];
             }
 
-            this.each(function(el) {
+            this.each(function(i, el) {
                 args[0] = el;
                 $event.off.apply($event, args);
             });
@@ -3308,7 +3445,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @param args
          */
         trigger : function (type, args) {
-            this.each(function(el) {
+            this.each(function(i, el) {
                 $event.trigger(el, type, args);
             });
 
@@ -3324,7 +3461,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {DomChain}
          */
         show: function (value) {
-            this.each(function(el) {
+            this.each(function(i, el) {
                 $css.show(el, value);
             });
 
@@ -3339,7 +3476,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {DomChain}
          */
         hide : function () {
-            this.each(function(el) {
+            this.each(function(i, el) {
                 $css.hide(el);
             });
 
@@ -3354,7 +3491,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {DomChain}
          */
         toggle : function() {
-            this.each(function(el) {
+            this.each(function(i, el) {
                 $css.toggle(el);
             });
 
@@ -3370,8 +3507,8 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {DomChain}
          */
         next: function (filter) {
-            return this.map(function(el) {
-                return $selector.next(el, filter);
+            return this.map(function() {
+                return $selector.next(this, filter);
             });
         },
 
@@ -3384,13 +3521,36 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {DomChain}
          */
         prev: function (filter) {
-            return this.map(function(el) {
-                return $selector.prev(el, filter);
+            return this.map(function() {
+                return $selector.prev(this, filter);
             });
         },
 
+        /**
+         * @method closest
+         *
+         * @param selector
+         * @returns {util.dom.DomChain}
+         */
         closest: function (selector) {
             return new DomChain(this.length > 0 && $selector.closest(this[0], selector));
+        },
+
+        /**
+         * @method parent
+         *
+         * get parent element for DomChain
+         *
+         *      $("id").parent().css({ ... });
+         *
+         * @returns {*}
+         */
+        parent : function () {
+            if (this[0]) {
+                return new DomChain(this[0].parentNode);
+            }
+
+            return null;
         },
 
         /**
@@ -3402,10 +3562,24 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          *
          * @returns {DomChain}
          */
-        children : function () {
-            return new DomChain(merge(this.map(function (el, i) {
-                return $selector.children(el);
-            })));
+        children : function (selector) {
+
+            if (selector) {
+                var filter = function (el) {
+                    return $selector.matches(el, selector);
+                };
+            } else {
+                var filter = function (el) {
+                    return true;
+                };
+            }
+
+
+            return this.map(function (i, el) {
+                console.log(el);
+                if (el.nodeType == 3) return [];
+                return $selector.children(el, filter);
+            }, true);
         },
 
         /**
@@ -3421,7 +3595,9 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {DomChain}
          */
         each : function (callback) {
-            each(this, callback, this);
+            each(this, function (i, el) {
+                callback.call(el, i, el);
+            });
             return this;
         },
 
@@ -3433,11 +3609,15 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @param {Function} callback
          * @returns {DomChain}
          */
-        map : function (callback) {
+        map : function (callback, isMerge) {
             var list = [];
-            this.each(function(el, i) {
-                list[list.length] = callback.call(this, el, i);
+            this.each(function(i, el) {
+                list[list.length] = callback.call(el, i, el);
             });
+
+            if (isMerge) {
+                list = merge(list);
+            }
 
             return new DomChain(list);
         },
@@ -3455,12 +3635,12 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          */
         filter : function (callback) {
             var list = [];
-            this.each(function(el, i) {
+            this.each(function(i, el) {
 
-                var result = callback.call(this, el, i);
+                var result = callback.call(el, i, el);
 
                 if (result) {
-                    list[list.length] = el;
+                    list[list.length] = this;
                 }
             });
 
@@ -3482,7 +3662,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
                 if (typeof key == 'string' || Array.isArray(key)) {
                     return $attr.attr(this[0], key);
                 } else {
-                    return this.each(function(el) {
+                    return this.each(function(i, el) {
                         $attr.attr(el, key);
                     });
                 }
@@ -3490,12 +3670,12 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
             } else if (count == 2) {
 
                 if (typeof value == 'function') {
-                    return this.each(function(el, index) {
+                    return this.each(function(index, el) {
                         var oldValue = $attr.get(el, key);
                         $attr.attr(el, key, value.call(el, index, oldValue));
                     });
                 } else {
-                    return this.each(function(el) {
+                    return this.each(function(i, el) {
                         $attr.attr(el, key, value);
                     });
                 }
@@ -3531,7 +3711,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
             if (typeof datas == 'string') {
                 return this.length > 0 && $attr.data(this[0], datas);
             } else {
-                this.each(function (el, i) {
+                this.each(function (i, el) {
                     $attr.data(el, datas);
                 });
 
@@ -3574,10 +3754,33 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          */
         last : function () {
             return this.eq(-1);
+        },
+
+        /**
+         * @method find
+         *
+         * find by selector
+         *
+         * @param selector
+         * @returns {util.dom.DomChain}
+         */
+        find : function (selector) {
+            return this.map(function() {
+                return $selector.find(this, selector);
+            }, true);
         }
+
+
     };
 
-    // alias
+    //////////////////////////////
+    // event alias
+    //
+    //  $("#id").click() is  $("#id").trigger('click');
+    //
+    //  $("#id").click(function() { });  is $("#id").on('click', function() { });
+    //
+    ////////////////////////////
     var eventNameList = (
         "blur focus focusin focusout resize scroll " +
         "click dblclick mousedown mouseup mousemove mouseover " +
@@ -3585,7 +3788,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
         "submit keydown keypress keyup contextmenu"
     ).split(' ');
 
-    each(eventNameList, function( event) {
+    each(eventNameList, function( index, event) {
         DomChain.prototype[event] = function(  ) {
             var count = arguments.length;
 
@@ -3602,48 +3805,6 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
     return DomChain;
 });
 jui.define("util.dom", [ "util.dom.domchain" ], function(DomChain) {
-
-
-
-    //
-    // reference to https://plainjs.com
-
-
-    // Util Function
-    var each = function (arr, callback, context) {
-        for(var i = 0, len = arr.length; i < len; i++) {
-            callback.call(context, arr[i], i);
-        }
-    };
-
-    var filter = function (arr, callback, context) {
-        var list = [];
-        for(var i = 0, len = arr.length; i < len; i++) {
-            if (callback.call(context, arr[i], i)) {
-                list.push(arr[i]);
-            }
-        }
-
-        return list;
-    };
-
-    var merge = function (arr) {
-        var total = [];
-        each(arr, function (list) {
-            each(list, function (item) {
-                total.push(item);
-            });
-        });
-
-        return total;
-    };
-
-    var bind = function (func, context) {
-        return function () {
-            func.apply(context, arguments);
-        };
-    }
-
 
     /**
      * @class util.dom
@@ -7837,7 +7998,7 @@ jui.define("core", [ "util.base", "util.dom", "manager", "collection" ],
                 elemList = [];
 
             if(_.typeCheck("string", selector)) {
-                elemList = $.find(selector);
+                elemList = $(selector);
             } else if(_.typeCheck("object", selector)) {
                 elemList.push(selector);
             } else {
@@ -7899,7 +8060,7 @@ jui.define("core", [ "util.base", "util.dom", "manager", "collection" ],
 	
 	return UICore;
 });
-jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
+jui.define("event", [ "util.dom", "util.base", "manager", "collection" ],
     function($, _, UIManager, UICollection) {
 
     var DOMEventListener = function() {
@@ -7952,15 +8113,15 @@ jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
             var e = { target: args[0], type: args[1] };
 
             if (_.typeCheck("function", args[2])) {
-                e = $.extend(e, { callback: args[2] });
+                e = _.extend(e, { callback: args[2] });
             } else if (_.typeCheck("string", args[2])) {
-                e = $.extend(e, { children: args[2], callback: args[3] });
+                e = _.extend(e, { children: args[2], callback: args[3] });
             }
 
             var eventTypes = _.typeCheck("array", e.type) ? e.type : [ e.type ];
 
             for (var i = 0; i < eventTypes.length; i++) {
-                e.type = eventTypes[i]
+                e.type = eventTypes[i];
 
                 if (e.type.toLowerCase().indexOf("animation") != -1)
                     settingEventAnimation(e);
@@ -8077,6 +8238,8 @@ jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
                 $root = $(selector || "<div />");
 
             $root.each(function (index) {
+
+                console.log(index);
                 list[index] = jui.createUIObject(UI, $root.selector, index, this, options, function(mainObj, opts) {
                     /** @property {Object} listen Dom events */
                     mainObj.init.prototype.listen = new DOMEventListener();

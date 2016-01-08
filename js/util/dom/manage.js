@@ -178,30 +178,6 @@ jui.define("util.dom.manage", [ ], function() {
             if (element.parentNode) {
                 element.parentNode.removeChild(element);
             }
-        },
-
-        /**
-         * @method width
-         *
-         * TODO: get or set width
-         *
-         * @param element
-         * @param width
-         */
-        width : function (element, width) {
-
-        },
-
-        /**
-         * @method height
-         *
-         * TODO: get or set height
-         *
-         * @param element
-         * @param height
-         */
-        height : function (element, height) {
-
         }
     };
 

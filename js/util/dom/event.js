@@ -42,19 +42,19 @@ jui.define("util.dom.event", [ ], function() {
     var triggerEvent;
 
     if ('createEvent' in document) {
-        triggerEvent = function (element, type) { // modern browsers, IE9+
+        triggerEvent = function (element, type, data) { // modern browsers, IE9+
 
             if (typeof element[type] == 'function') {
                 element[type]();
             } else {
-                var e = document.createEvent('HTMLEvents');
-                e.initEvent(type, false, true);
+                var e = document.createEvent('CustomEvent');
+                e.initEvent(type, false, true, data);
                 element.dispatchEvent(e);
             }
 
         }
     } else {
-        triggerEvent = function (element, type) {
+        triggerEvent = function (element, type, data) {
             if (typeof element[type] == 'function') {
                 element[type]();
             } else {

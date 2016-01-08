@@ -69,8 +69,8 @@ jui.define("util.dom.selector", [ ], function() {
          * find one element by selector
          *
          */
-        findOne : function (selector, parent) {
-            return  (parent || document).querySelector(selector);
+        findOne : function (context, selector) {
+            return  (context || document).querySelector(selector);
         },
 
         /**
@@ -80,8 +80,8 @@ jui.define("util.dom.selector", [ ], function() {
          *
          * @returns {NodeList}
          */
-        find: function(selector, parent) {
-            return  (parent || document).querySelectorAll(selector);
+        find: function(context, selector) {
+            return  (context || document).querySelectorAll(selector);
         },
 
 

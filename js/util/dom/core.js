@@ -176,26 +176,6 @@ jui.define("util.dom.core", [ "util.dom.selector", "util.dom.manage" ], function
         },
 
         /**
-         * @method outerWidth
-         *
-         * @param element
-         * @returns {number}
-         */
-        outerWidth: function(element) {
-            return element.offsetWidth;
-        },
-
-        /**
-         * @method outerHeight
-         *
-         * @param element
-         * @returns {number}
-         */
-        outerHeight : function (element) {
-            return element.offsetHeight;
-        },
-
-        /**
          * @method width
          *
          * get width of element, including only padding but without border

@@ -178,7 +178,100 @@ jui.define("util.dom.css", [ ], function() {
             } else {
                 addClass(element, className);
             }
+        },
+
+        /**
+         * @method width
+         *
+         * TODO: get or set width
+         *
+         * @param element
+         * @param width
+         */
+        width : function (element, width) {
+            var w = this.outerWidth(element);
+
+            if (arguments.length == 1) {
+                var style = this.css(element);
+
+                w -= parseFloat(style.borderLeftWidth) + parseFloat(style.paddingLeft);
+                w -= parseFloat(style.borderRightWidth) + parseFloat(style.paddingRight);
+
+                if (style.boxSizing == 'border-box') {
+                    w -= parseFloat(style.marginLeft) + parseFloat(style.marginRight);
+                }
+
+                return w;
+            } else if (arguments.length == 2) {
+                this.css(element, width);
+            }
+
+        },
+
+        /**
+         * @method height
+         *
+         * TODO: get or set height
+         *
+         * @param element
+         * @param height
+         */
+        height : function (element, height) {
+
+            var h = this.outerHeight(element);
+
+            if (arguments.length == 1) {
+                var style = this.css(element);
+
+                h -= parseFloat(style.borderTopWidth) + parseFloat(style.paddingTop);
+                h -= parseFloat(style.borderBottomWidth) + parseFloat(style.paddingBottom);
+
+                if (style.boxSizing == 'border-box') {
+                    h -= parseFloat(style.marginTop) + parseFloat(style.marginBottom);
+                }
+
+                return h;
+            } else if (arguments.length == 2) {
+                this.css(element, height);
+            }
+
+        },
+
+
+        /**
+         * @method outerWidth
+         *
+         * @param element
+         * @returns {number}
+         */
+        outerWidth: function(element, withMargin) {
+            var width = element.offsetWidth;
+
+            if (withMargin) {
+                var style = this.css(element);
+                width += parseInt(style.marginLeft) + parserInt(style.marginRight);
+            }
+
+            return width;
+        },
+
+        /**
+         * @method outerHeight
+         *
+         * @param element
+         * @returns {number}
+         */
+        outerHeight : function (element, withMargin) {
+            var height = element.offsetHeight;
+
+            if (withMargin) {
+                var style = this.css(element);
+                height += parseInt(style.marginTop) + parserInt(style.marginBottom);
+            }
+
+            return height;
         }
+
     };
 
     return CSS;

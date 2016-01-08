@@ -1,4 +1,4 @@
-jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
+jui.define("event", [ "util.dom", "util.base", "manager", "collection" ],
     function($, _, UIManager, UICollection) {
 
     var DOMEventListener = function() {
@@ -51,15 +51,15 @@ jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
             var e = { target: args[0], type: args[1] };
 
             if (_.typeCheck("function", args[2])) {
-                e = $.extend(e, { callback: args[2] });
+                e = _.extend(e, { callback: args[2] });
             } else if (_.typeCheck("string", args[2])) {
-                e = $.extend(e, { children: args[2], callback: args[3] });
+                e = _.extend(e, { children: args[2], callback: args[3] });
             }
 
             var eventTypes = _.typeCheck("array", e.type) ? e.type : [ e.type ];
 
             for (var i = 0; i < eventTypes.length; i++) {
-                e.type = eventTypes[i]
+                e.type = eventTypes[i];
 
                 if (e.type.toLowerCase().indexOf("animation") != -1)
                     settingEventAnimation(e);
@@ -176,6 +176,8 @@ jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
                 $root = $(selector || "<div />");
 
             $root.each(function (index) {
+
+                console.log(index);
                 list[index] = jui.createUIObject(UI, $root.selector, index, this, options, function(mainObj, opts) {
                     /** @property {Object} listen Dom events */
                     mainObj.init.prototype.listen = new DOMEventListener();

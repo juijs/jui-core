@@ -27,6 +27,9 @@ jui.define("util.dom.attr", [ ], function() {
         * @returns {string}
         */
        get : function (element, key) {
+
+           if (element.nodeType == 3) return;
+
            return element.getAttribute(key);
        },
 
@@ -40,6 +43,8 @@ jui.define("util.dom.attr", [ ], function() {
         * @returns {Object}
         */
        getAll : function (element, arr) {
+
+           if (element.nodeType == 3) return;
            var obj = {};
            each(arr, function(key) {
                obj[key] = element.getAttribute(key);
@@ -58,6 +63,8 @@ jui.define("util.dom.attr", [ ], function() {
         * @param {String} values
         */
        set: function (element, values) {
+
+           if (element.nodeType == 3) return;
 
            values = values || {};
            each(Object.keys(values), function(key) {

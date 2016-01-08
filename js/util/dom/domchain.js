@@ -3,14 +3,14 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
     // Util Function
     var each = function (arr, callback, context) {
         for(var i = 0, len = arr.length; i < len; i++) {
-            callback.call(context, arr[i], i);
+            callback.call(context, i, arr[i]);
         }
     };
 
     var merge = function (arr) {
         var total = [];
-        each(arr, function (list) {
-            each(list, function (item) {
+        each(arr, function (i, list) {
+            each(list, function (j, item) {
                 total.push(item);
             });
         });
@@ -82,11 +82,18 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {*}
          */
         html : function (contents) {
+
             if (arguments.length) {
-                this.each(function (el){
-                    $manage.html(el, contents);
-                });
-                return this;
+                if (contents.domchain) {
+                    this.empty();
+                    return this.append(contents);
+                } else {
+                    this.each(function (i, el){
+                        $manage.html(el, contents);
+                    });
+                    return this;
+                }
+
             } else {
                 return this.length > 0 && $manage.html(this[0]);
             }
@@ -106,11 +113,33 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          */
         text : function (contents) {
             if (arguments.length) {
-                this.each(function (el){  $manage.text(el, contents); });
+                this.each(function (i, el){  $manage.text(el, contents); });
                 return this;
             } else {
                 return this.length > 0 && $manage.text(this[0]);
             }
+        },
+
+        /**
+         * @method is
+         *
+         * matches selector
+         *
+         * @param {String|Element|DomChain} selector
+         * @returns {Boolean}
+         */
+        is : function (selector) {
+            if (typeof selector == 'string') {
+                return $selector.matches(this[0], selector);
+            } else {
+                if (selector.domchain) {
+                    return this[0] === selector[0];
+                } else {
+                    return this[0] === selector;
+                }
+
+            }
+
         },
 
         /**
@@ -121,7 +150,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {DomChain}
          */
         unwrap : function () {
-            this.each(function(el) {
+            this.each(function(i, el) {
                 $manage.unwrap(el);
             });
 
@@ -139,8 +168,8 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          */
         wrap : function (wrapElement) {
             var self = this;
-            new DomChain(wrapElement).each(function(wrapEl) {
-                self.each(function(el) {
+            new DomChain(wrapElement).each(function(i, wrapEl) {
+                self.each(function(i, el) {
                     $manage.wrap(el, wrapEl);
                 });
             });
@@ -154,7 +183,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {DomChain}
          */
         empty : function () {
-            this.each(function(el) {
+            this.each(function(i, el) {
                 $manage.empty(el);
             });
             return this;
@@ -169,7 +198,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {DomChain}
          */
         remove : function () {
-            this.each(function(el) {
+            this.each(function(i, el) {
                 $manage.remove(el);
             });
 
@@ -198,7 +227,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {DomChain}
          */
         addClass : function (className) {
-            this.each(function(el){
+            this.each(function(i, el){
                 $css.addClass(el, className);
             });
 
@@ -213,7 +242,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @param {String} className
          */
         removeClass: function (className) {
-            this.each(function(el){
+            this.each(function(i, el){
                 $css.removeClass(el, className);
             });
 
@@ -228,7 +257,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @param {String} className
          */
         toggleClass : function (className) {
-            this.each(function(el){
+            this.each(function(i, el){
                 $css.toggleClass(el, className);
             });
 
@@ -254,7 +283,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
                 var cloneElement = newElement.domchain ? newElement.fragment() : $manage.clone(newElement);
             }
 
-            this.each(function(el) {
+            this.each(function(i, el) {
                 $manage.after(el, cloneElement);
             });
 
@@ -281,7 +310,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
                 var cloneElement = newElement.domchain ? newElement.fragment() : $manage.clone(newElement);
             }
 
-            this.each(function(el) {
+            this.each(function(i, el) {
                 $manage.before(el, cloneElement);
             });
 
@@ -319,7 +348,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
                 var cloneElement = newElement.domchain ? newElement.fragment() : $manage.clone(newElement);
             }
 
-            this.each(function(el) {
+            this.each(function(i, el) {
                 $manage.append(el, cloneElement);
             });
 
@@ -355,7 +384,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
                 var cloneElement = newElement.domchain ? newElement.fragment() : $manage.clone(newElement);
             }
 
-            this.each(function(el) {
+            this.each(function(i, el) {
                 $manage.prepend(el, cloneElement);
             });
 
@@ -372,6 +401,10 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          */
         prependTo : function (selector) {
             return new DomChain(selector).prepend(this);
+        },
+
+        replace : function (newElement) {
+
         },
 
         /**
@@ -397,7 +430,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
                     $css.css(this[0], key, value);
                 }
             } else if (typeof key == 'object') {
-                this.each(function(el) {
+                this.each(function(i, el) {
                     $css.css(el, key);
                 });
             }
@@ -436,8 +469,8 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          *
          * @returns {boolean|*}
          */
-        outerWidth: function() {
-            return this.length> 0 && $core.outerWidth(this[0]);
+        outerWidth: function(withMargin) {
+            return this.length> 0 && $css.outerWidth(this[0], withMargin);
         },
 
         /**
@@ -447,9 +480,57 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          *
          * @returns {boolean|*}
          */
-        outerHeight: function() {
-            return this.length> 0 && $core.outerHeight(this[0]);
+        outerHeight: function(withMargin) {
+            return this.length> 0 && $css.outerHeight(this[0], withMargin);
         },
+
+        innerWidth : function () {
+            return this.length > 0 && $css.innerWidth(this[0]);
+        },
+
+        innerHeight : function () {
+            return this.length > 0 && $css.innerHeight(this[0]);
+        },
+
+        /**
+         * @method width
+         *
+         * get or set width
+         *
+         * @param element
+         * @param width
+         */
+        width : function (width) {
+            var count = arguments.length;
+            if (count == 0) {
+                return $css.width(this[0]);
+            }
+
+            $css.width(this[0], width);
+
+            return this;
+        },
+
+        /**
+         * @method height
+         *
+         * get or set height
+         *
+         * @param element
+         * @param height
+         */
+        height : function (height) {
+            var count = arguments.length;
+            if (count == 0) {
+                return $css.height(this[0]);
+            }
+
+            $css.height(this[0], height);
+
+            return this;
+        },
+
+
 
         /**
          * @method on
@@ -473,7 +554,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
 
             var args = arguments.length == 2 ? [null, type, handler] : [null, arguments[0], arguments[1], arguments[2]];
 
-            this.each(function(el) {
+            this.each(function(i, el) {
                 args[0] = el;
                 $event.on.apply($event, args);
             });
@@ -495,7 +576,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
 
             var args = arguments.length == 2 ? [null, type, handler] : [null, arguments[0], arguments[1], arguments[2]];
 
-            this.each(function(el) {
+            this.each(function(i, el) {
                 args[0] = el;
                 $event.one.apply($event, args);
             });
@@ -542,7 +623,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
                 args = [null, arguments[3], arguments[1], arguments[2]];
             }
 
-            this.each(function(el) {
+            this.each(function(i, el) {
                 args[0] = el;
                 $event.off.apply($event, args);
             });
@@ -557,7 +638,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @param args
          */
         trigger : function (type, args) {
-            this.each(function(el) {
+            this.each(function(i, el) {
                 $event.trigger(el, type, args);
             });
 
@@ -573,7 +654,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {DomChain}
          */
         show: function (value) {
-            this.each(function(el) {
+            this.each(function(i, el) {
                 $css.show(el, value);
             });
 
@@ -588,7 +669,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {DomChain}
          */
         hide : function () {
-            this.each(function(el) {
+            this.each(function(i, el) {
                 $css.hide(el);
             });
 
@@ -603,7 +684,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {DomChain}
          */
         toggle : function() {
-            this.each(function(el) {
+            this.each(function(i, el) {
                 $css.toggle(el);
             });
 
@@ -619,8 +700,8 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {DomChain}
          */
         next: function (filter) {
-            return this.map(function(el) {
-                return $selector.next(el, filter);
+            return this.map(function() {
+                return $selector.next(this, filter);
             });
         },
 
@@ -633,8 +714,8 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {DomChain}
          */
         prev: function (filter) {
-            return this.map(function(el) {
-                return $selector.prev(el, filter);
+            return this.map(function() {
+                return $selector.prev(this, filter);
             });
         },
 
@@ -649,6 +730,23 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
         },
 
         /**
+         * @method parent
+         *
+         * get parent element for DomChain
+         *
+         *      $("id").parent().css({ ... });
+         *
+         * @returns {*}
+         */
+        parent : function () {
+            if (this[0]) {
+                return new DomChain(this[0].parentNode);
+            }
+
+            return null;
+        },
+
+        /**
          * @method children
          *
          * get all children in DOM tree
@@ -657,10 +755,22 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          *
          * @returns {DomChain}
          */
-        children : function () {
-            return new DomChain(merge(this.map(function (el, i) {
-                return $selector.children(el);
-            })));
+        children : function (selector) {
+
+            if (selector) {
+                var filter = function (el) {
+                    return $selector.matches(el, selector);
+                };
+            } else {
+                var filter = function (el) {
+                    return true;
+                };
+            }
+
+
+            return this.map(function (i, el) {
+                return $selector.children(el, filter);
+            }, true);
         },
 
         /**
@@ -676,7 +786,9 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {DomChain}
          */
         each : function (callback) {
-            each(this, callback, this);
+            each(this, function (i, el) {
+                callback.call(el, i, el);
+            });
             return this;
         },
 
@@ -688,11 +800,15 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @param {Function} callback
          * @returns {DomChain}
          */
-        map : function (callback) {
+        map : function (callback, isMerge) {
             var list = [];
-            this.each(function(el, i) {
-                list[list.length] = callback.call(this, el, i);
+            this.each(function(i, el) {
+                list[list.length] = callback.call(el, i, el);
             });
+
+            if (isMerge) {
+                list = merge(list);
+            }
 
             return new DomChain(list);
         },
@@ -710,12 +826,12 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          */
         filter : function (callback) {
             var list = [];
-            this.each(function(el, i) {
+            this.each(function(i, el) {
 
-                var result = callback.call(this, el, i);
+                var result = callback.call(el, i, el);
 
                 if (result) {
-                    list[list.length] = el;
+                    list[list.length] = this;
                 }
             });
 
@@ -737,7 +853,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
                 if (typeof key == 'string' || Array.isArray(key)) {
                     return $attr.attr(this[0], key);
                 } else {
-                    return this.each(function(el) {
+                    return this.each(function(i, el) {
                         $attr.attr(el, key);
                     });
                 }
@@ -745,12 +861,12 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
             } else if (count == 2) {
 
                 if (typeof value == 'function') {
-                    return this.each(function(el, index) {
+                    return this.each(function(index, el) {
                         var oldValue = $attr.get(el, key);
                         $attr.attr(el, key, value.call(el, index, oldValue));
                     });
                 } else {
-                    return this.each(function(el) {
+                    return this.each(function(i, el) {
                         $attr.attr(el, key, value);
                     });
                 }
@@ -786,7 +902,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
             if (typeof datas == 'string') {
                 return this.length > 0 && $attr.data(this[0], datas);
             } else {
-                this.each(function (el, i) {
+                this.each(function (i, el) {
                     $attr.data(el, datas);
                 });
 
@@ -829,7 +945,23 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          */
         last : function () {
             return this.eq(-1);
+        },
+
+        /**
+         * @method find
+         *
+         * find by selector
+         *
+         * @param selector
+         * @returns {util.dom.DomChain}
+         */
+        find : function (selector) {
+            return this.map(function() {
+                return $selector.find(this, selector);
+            }, true);
         }
+
+
     };
 
     //////////////////////////////
@@ -847,7 +979,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
         "submit keydown keypress keyup contextmenu"
     ).split(' ');
 
-    each(eventNameList, function( event) {
+    each(eventNameList, function( index, event) {
         DomChain.prototype[event] = function(  ) {
             var count = arguments.length;
 

@@ -229,7 +229,7 @@ jui.define("core", [ "util.base", "util.dom", "manager", "collection" ],
                 elemList = [];
 
             if(_.typeCheck("string", selector)) {
-                elemList = $.find(selector);
+                elemList = $(selector);
             } else if(_.typeCheck("object", selector)) {
                 elemList.push(selector);
             } else {
