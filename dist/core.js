@@ -15,6 +15,23 @@
 		logUrl: "tool/debug.html"
 	};
 
+	var readyList = [];
+
+	function completed () {
+
+		if (document.addEventListener) {
+			document.removeEventListener( "DOMContentLoaded", completed );
+			window.removeEventListener( "load", completed );
+		}
+
+		ready();
+	}
+
+	function ready() {
+		while(readyList[0]) {
+			readyList.shift().call();
+		}
+	}
 
 	/**
 	 * @class util.base
@@ -874,233 +891,25 @@
 				( text + "" ).replace( rtrim, "" );
 		},
 
-		ready: (function() {
-			var readyList,
-				DOMContentLoaded,
-				class2type = {};
+		/**
+		 * @method ready
+		 *
+		 * Running code when the document is ready
+		 *
+		 * @param func
+		 */
+		ready : function (func) {
+			readyList.push(func);
 
-			class2type["[object Boolean]"] = "boolean";
-			class2type["[object Number]"] = "number";
-			class2type["[object String]"] = "string";
-			class2type["[object Function]"] = "function";
-			class2type["[object Array]"] = "array";
-			class2type["[object Date]"] = "date";
-			class2type["[object RegExp]"] = "regexp";
-			class2type["[object Object]"] = "object";
-
-			var ReadyObj = {
-				// Is the DOM ready to be used? Set to true once it occurs.
-				isReady: false,
-				// A counter to track how many items to wait for before
-				// the ready event fires. See #6781
-				readyWait: 1,
-				// Hold (or release) the ready event
-				holdReady: function( hold ) {
-					if ( hold ) {
-						ReadyObj.readyWait++;
-					} else {
-						ReadyObj.ready( true );
-					}
-				},
-				// Handle when the DOM is ready
-				ready: function( wait ) {
-					// Either a released hold or an DOMready/load event and not yet ready
-					if ( (wait === true && !--ReadyObj.readyWait) || (wait !== true && !ReadyObj.isReady) ) {
-						// Make sure body exists, at least, in case IE gets a little overzealous (ticket #5443).
-						if ( !document.body ) {
-							return setTimeout( ReadyObj.ready, 1 );
-						}
-
-						// Remember that the DOM is ready
-						ReadyObj.isReady = true;
-						// If a normal DOM Ready event fired, decrement, and wait if need be
-						if ( wait !== true && --ReadyObj.readyWait > 0 ) {
-							return;
-						}
-						// If there are functions bound, to execute
-						readyList.resolveWith( document, [ ReadyObj ] );
-
-						// Trigger any bound ready events
-						//if ( ReadyObj.fn.trigger ) {
-						//  ReadyObj( document ).trigger( "ready" ).unbind( "ready" );
-						//}
-					}
-				},
-				bindReady: function() {
-					if ( readyList ) {
-						return;
-					}
-					readyList = ReadyObj._Deferred();
-
-					// Catch cases where $(document).ready() is called after the
-					// browser event has already occurred.
-					if ( document.readyState === "complete" ) {
-						// Handle it asynchronously to allow scripts the opportunity to delay ready
-						return setTimeout( ReadyObj.ready, 1 );
-					}
-
-					// Mozilla, Opera and webkit nightlies currently support this event
-					if ( document.addEventListener ) {
-						// Use the handy event callback
-						document.addEventListener( "DOMContentLoaded", DOMContentLoaded, false );
-						// A fallback to window.onload, that will always work
-						window.addEventListener( "load", ReadyObj.ready, false );
-
-						// If IE event model is used
-					} else if ( document.attachEvent ) {
-						// ensure firing before onload,
-						// maybe late but safe also for iframes
-						document.attachEvent( "onreadystatechange", DOMContentLoaded );
-
-						// A fallback to window.onload, that will always work
-						window.attachEvent( "onload", ReadyObj.ready );
-
-						// If IE and not a frame
-						// continually check to see if the document is ready
-						var toplevel = false;
-
-						try {
-							toplevel = window.frameElement == null;
-						} catch(e) {}
-
-						if ( document.documentElement.doScroll && toplevel ) {
-							doScrollCheck();
-						}
-					}
-				},
-				_Deferred: function() {
-					var // callbacks list
-						callbacks = [],
-					// stored [ context , args ]
-						fired,
-					// to avoid firing when already doing so
-						firing,
-					// flag to know if the deferred has been cancelled
-						cancelled,
-					// the deferred itself
-						deferred  = {
-
-							// done( f1, f2, ...)
-							done: function() {
-								if ( !cancelled ) {
-									var args = arguments,
-										i,
-										length,
-										elem,
-										type,
-										_fired;
-									if ( fired ) {
-										_fired = fired;
-										fired = 0;
-									}
-									for ( i = 0, length = args.length; i < length; i++ ) {
-										elem = args[ i ];
-										type = ReadyObj.type( elem );
-										if ( type === "array" ) {
-											deferred.done.apply( deferred, elem );
-										} else if ( type === "function" ) {
-											callbacks.push( elem );
-										}
-									}
-									if ( _fired ) {
-										deferred.resolveWith( _fired[ 0 ], _fired[ 1 ] );
-									}
-								}
-								return this;
-							},
-
-							// resolve with given context and args
-							resolveWith: function( context, args ) {
-								if ( !cancelled && !fired && !firing ) {
-									// make sure args are available (#8421)
-									args = args || [];
-									firing = 1;
-									try {
-										while( callbacks[ 0 ] ) {
-											callbacks.shift().apply( context, args );//shifts a callback, and applies it to document
-										}
-									}
-									finally {
-										fired = [ context, args ];
-										firing = 0;
-									}
-								}
-								return this;
-							},
-
-							// resolve with this as context and given arguments
-							resolve: function() {
-								deferred.resolveWith( this, arguments );
-								return this;
-							},
-
-							// Has this deferred been resolved?
-							isResolved: function() {
-								return !!( firing || fired );
-							},
-
-							// Cancel
-							cancel: function() {
-								cancelled = 1;
-								callbacks = [];
-								return this;
-							}
-						};
-
-					return deferred;
-				},
-				type: function( obj ) {
-					return obj == null ?
-						String( obj ) :
-					class2type[ Object.prototype.toString.call(obj) ] || "object";
-				}
-			}
-			// The DOM ready check for Internet Explorer
-			function doScrollCheck() {
-				if ( ReadyObj.isReady ) {
-					return;
-				}
-
-				try {
-					// If IE is used, use the trick by Diego Perini
-					// http://javascript.nwbox.com/IEContentLoaded/
-					document.documentElement.doScroll("left");
-				} catch(e) {
-					setTimeout( doScrollCheck, 1 );
-					return;
-				}
-
-				// and execute any waiting functions
-				ReadyObj.ready();
-			}
-			// Cleanup functions for the document ready method
-			if ( document.addEventListener ) {
-				DOMContentLoaded = function() {
-					document.removeEventListener( "DOMContentLoaded", DOMContentLoaded, false );
-					ReadyObj.ready();
-				};
-
-			} else if ( document.attachEvent ) {
-				DOMContentLoaded = function() {
-					// Make sure body exists, at least, in case IE gets a little overzealous (ticket #5443).
-					if ( document.readyState === "complete" ) {
-						document.detachEvent( "onreadystatechange", DOMContentLoaded );
-						ReadyObj.ready();
-					}
-				};
-			}
-			function ready( fn ) {
-				// Attach the listeners
-				ReadyObj.bindReady();
-
-				var type = ReadyObj.type( fn );
-
-				// Add the callback
-				readyList.done( fn );//readyList is result of _Deferred()
+			// in case the document is already rendered
+			if ( document.readyState === "complete" || ( document.readyState !== "loading" && !document.documentElement.doScroll ) ) {
+				window.setTimeout(ready, 0);
+			} else if (document.addEventListener) {
+				document.addEventListener('DOMContentLoaded', completed);
+				window.addEventListener('load', completed);
 			}
 
-			return ready;
-		})(),
+		},
 
 		param: function(data) {
 			var r20 = /%20/g,
@@ -1587,34 +1396,235 @@
 	};
 })(window, (typeof(global) !== "undefined") ? global : window);
 
-jui.define("util.dom", [ ], function() {
+jui.define("util.dom.attr", [ ], function() {
 
-    var regForId = /^#([\w-]+)$/;
-    var regForClass = /^\.([\w-]+)$/;
-    var regForTag = /^([\w-]+)$/;
+    // Util Function
+    var each = function (arr, callback, context) {
+        for(var i = 0, len = arr.length; i < len; i++) {
+            callback.call(context, arr[i], i);
+        }
+    };
 
-    //
-    // reference to https://plainjs.com
+    /**
+     * @class util.dom.Attr
+     *
+     */
+   var Attr = {
 
 
-    var ElementPrototype = Element.prototype;
+       /**
+        * @method get
+        *
+        * get attributes
+        *
+        *      // 1. get attribute
+        *      dom.get(element, 'title');
+        *
+        * @param {Element} element
+        * @param {String} key
+        * @returns {string}
+        */
+       get : function (element, key) {
+           return element.getAttribute(key);
+       },
 
-    var matches = ElementPrototype.matches ||
-        ElementPrototype.matchesSelector ||
-        ElementPrototype.webkitMatchesSelector ||
-        ElementPrototype.msMatchesSelector ||
-        function(selector) {
-            var node = this, nodes = (node.parentNode || node.document).querySelectorAll(selector), i = -1;
-            while (nodes[++i] && nodes[i] != node);
-            return !!nodes[i];
-        };
+       /**
+        * @method getAll
+        *
+        *  get selected all attributes
+        *
+        * @param {Element} element
+        * @param {Array} arr
+        * @returns {Object}
+        */
+       getAll : function (element, arr) {
+           var obj = {};
+           each(arr, function(key) {
+               obj[key] = element.getAttribute(key);
+           });
+           return obj;
+       },
 
-    var closest = ElementPrototype.closest ||
-        function(selector) {
-            var el = this;
-            while (!matches.call(el, selector)) el = el.parentNode;
-            return el;
-        };
+       /**
+        * @method set
+        *
+        * set attributes
+        *
+        *      dom.set(element, { title : 'value' });
+        *
+        * @param {Element} element
+        * @param {String} values
+        */
+       set: function (element, values) {
+
+           values = values || {};
+           each(Object.keys(values), function(key) {
+               var attrKey = key;
+               var attrValue = values[attrKey];
+
+               element.setAttribute(attrKey, attrValue);
+           });
+       },
+
+       /**
+        * @method removeAttr
+        *
+        * remove attribute
+        *
+        *      dom.removeAttr(element, key);
+        *
+        *      dom.removeAttr(element, [key, key2, key3]);
+        *
+        * @param {Element} element
+        * @param {String} key
+        */
+       removeAttr : function (element, key) {
+
+           if (Array.isArray(key)) {
+               each(key, function (it) {
+                   element.removeAttribute(it);
+               });
+           } else {
+               element.removeAttribute(key);
+           }
+
+           return this;
+       },
+
+       /**
+        * @method data
+        *
+        * set dataset values
+        *
+        *      dom.data(element, 'title');     // get element.dataset.title or element.data-title attribute
+        *
+        *      dom.data(element, { title : 'value' });   // set data values
+        *
+        * @param element
+        * @param one
+        * @returns {*|string}
+        */
+       data: function (element, one) {
+           one = one || {};
+           if (typeof one === 'string') {
+               return element.dataset[one] || this.get(element, 'data-' + one);
+           } else if (typeof one === 'object') {
+               each(Object.keys(one), function(key) {
+                   var value = one[key];
+                   element.dataset[key] = value;
+               });
+           }
+       },
+
+       /**
+        * @method attr
+        *
+        * get or set attributes to element
+        *
+        *      // get attribute
+        *      dom.attr(element, key);
+        *
+        *      // get all attribute
+        *      dom.attr(element, [key, key2, key3] );
+        *
+        *      // set all attribute
+        *      dom.attr(element, { key : value, key1 : value1 } );
+        *
+        *      // set attribute
+        *      dom.attr(element, key, value );
+        *
+        * @param {Element} element
+        * @param {String} key
+        * @param {Mixed} value
+        * @returns {*|DomChain}
+        */
+       attr: function(element, key, value) {
+
+           var count = arguments.length;
+
+           if (count == 2) {
+               if (typeof key == 'string') {
+                   return this.get(element, key);
+               } else if (Array.isArray(key)) {
+                   return this.getAll(element, key);
+               } else if (typeof key == 'object') {
+                   this.set(element, key);
+               }
+
+           } else if (count == 3) {
+               var obj = {};
+               obj[key] = value;
+               this.set(element, obj);
+           }
+
+           return  this;
+       },
+
+       /**
+        * @method val
+        *
+        * get value attribute of element
+        *
+        *      $("#id").val();
+        *
+        * set value attribute
+        *
+        *      $("#id").val('test');
+        *
+        * @param {Mixed} [value=undefined]
+        * @returns {*}
+        */
+       val : function (value) {
+           if (this.length == 0) return;
+
+           var node = this[0];
+
+           // get value
+           if (arguments.length == 0) {
+
+               var value;
+
+               if (node.nodeName == "SELECT") {
+                   value = node.options[node.selectedIndex].value;
+               } else {
+                   value = node.value;
+               }
+
+               return value;
+           }
+           // set value
+           else if (arguments.length == 1) {
+               var values = Array.isArray(value) ? value : [value ];
+
+               if (node.nodeName == "SELECT") {
+                   var selected = false;
+                   each(node.options, function(opt, i) {
+                       if (values.indexOf(opt.value) > -1) {
+                           opt.selected = true;
+                           selected = true;
+                       }
+                   });
+
+                   if (!selected) {
+                       node.selectedIndex = -1;
+                   }
+               } else if (node.type == "checkbox" || node.type == "radio") {
+                   node.checked = (node.value === value);
+               } else {
+                   node.value = value;
+               }
+
+           }
+
+           return this;
+       },
+   };
+
+    return Attr;
+});
+jui.define("util.dom.css", [ ], function() {
+
+
 
     var hasClass, addClass, removeClass;
 
@@ -1637,10 +1647,186 @@ jui.define("util.dom", [ ], function() {
         addClass = function (element, className) {
             if (!hasClass(element, className)) { element.className += ' ' + className; }
         };
-        removeClass = function (el, className) {
+        removeClass = function (element, className) {
             element.className = element.className.replace(new RegExp('\\b'+ className+'\\b', 'g'), '');
         };
     }
+
+    /**
+     * @class util.dom.CSS
+     *
+     */
+    var CSS = {
+
+        /**
+         * @method css
+         *
+         * get the computed style properties of element
+         *
+         *      //1. get all style
+         *      var allStyle = dom.css(element);
+         *      allStyle.backgroundColor;
+         *
+         *      //2. get one property
+         *      dom.css(element, 'background-color');
+         *
+         *      // 3. get all properties
+         *      dom.css(element, ['background-color', 'attr']);
+         *
+         *      //3. set style properties
+         *      dom.css(element, { 'background-color': 'yellow' });
+         *
+         * @param element
+         * @param key
+         * @returns {*}
+         */
+        css : function (element, styles, value) {
+            var style = window.getComputedStyle ? getComputedStyle(element, null) : element.currentStyle;
+
+            if (typeof styles === 'string') {
+                if (arguments.length == 2) {
+                    return style[styles];
+                } else  if (arguments.length == 3){
+                    return element.style[styles] = value ;
+                }
+
+            } else if (Array.isArray(styles)) {
+                var obj = {};
+                each(styles, function(key) {
+                    obj[key] = style[key];
+                });
+                return obj;
+            } else if (typeof styles === 'object') {
+                for(var k in styles) {
+                    element.style[k] = styles[k];
+                }
+            }
+
+            return style;
+        },
+
+
+        /**
+         * @method show
+         *
+         * show element
+         *
+         * @param element
+         * @param value
+         */
+        show : function (element, value) {
+            element.style.display = value || 'block';
+
+            return this;
+        },
+
+        /**
+         * @method hide
+         *
+         * hide element
+         *
+         * @param element
+         */
+        hide : function (element) {
+            element.style.display = 'none';
+
+            return this;
+        },
+
+        /**
+         * @method toggle
+         *
+         * toggle show or hide for element
+         *
+         * @param element
+         * @param value
+         * @returns {feature}
+         */
+        toggle: function (element, value) {
+            var display = this.css(element, 'display');
+
+            if (display == 'none') {
+                this.show(element, value);
+            } else {
+                this.hide(element);
+            }
+
+            return this;
+        },
+
+        /**
+         * @method hasClass
+         *
+         *
+         *
+         * @param {Element} element
+         * @param {String} className
+         * @returns {*}
+         */
+        hasClass : function (element, className) {
+            return hasClass(element, className);
+        },
+
+        /**
+         * @method addClass
+         *
+         * @param {Element} element
+         * @param {String} className
+         */
+        addClass : function (element, className) {
+            addClass(element, className);
+        },
+
+        /**
+         * @method removeClass
+         *
+         * @param {Element} element
+         * @param {String} className
+         */
+        removeClass : function (element, className) {
+            removeClass(element, className);
+        },
+
+
+        /**
+         * @method toggleClass
+         *
+         *      $("#id").toggleClass("className");
+         *
+         * @param element
+         * @param className
+         */
+        toggleClass : function (element, className) {
+            if (hasClass(element, className)) {
+                removeClass(element, className);
+            } else {
+                addClass(element, className);
+            }
+        }
+    };
+
+    return CSS;
+});
+jui.define("util.dom.event", [ ], function() {
+
+    var ElementPrototype = Element.prototype;
+
+    var matches = ElementPrototype.matches ||
+        ElementPrototype.matchesSelector ||
+        ElementPrototype.webkitMatchesSelector ||
+        ElementPrototype.msMatchesSelector ||
+        function(selector) {
+            var node = this, nodes = (node.parentNode || node.document).querySelectorAll(selector), i = -1;
+            while (nodes[++i] && nodes[i] != node);
+            return !!nodes[i];
+        };
+
+    // Util Function
+    var each = function (arr, callback, context) {
+        for(var i = 0, len = arr.length; i < len; i++) {
+            callback.call(context, arr[i], i);
+        }
+    };
 
     var addEvent, removeEvent;
 
@@ -1654,7 +1840,7 @@ jui.define("util.dom", [ ], function() {
         }
     } else {
         addEvent = function (element, type, handler) {
-            element.addEventListener(type, handler);;
+            element.addEventListener(type, handler);
         };
 
         removeEvent = function (element, type, handler) {
@@ -1666,666 +1852,681 @@ jui.define("util.dom", [ ], function() {
 
     if ('createEvent' in document) {
         triggerEvent = function (element, type) { // modern browsers, IE9+
-            var e = document.createEvent('HTMLEvents');
-            element.initEvent(type, false, true);
-            element.dispatchEvent(e);
+
+            if (typeof element[type] == 'function') {
+                element[type]();
+            } else {
+                var e = document.createEvent('HTMLEvents');
+                e.initEvent(type, false, true);
+                element.dispatchEvent(e);
+            }
+
         }
     } else {
         triggerEvent = function (element, type) {
-            // IE 8
-            var e = document.createEventObject();
-            e.eventType = type;
-            element.fireEvent('on'+e.eventType, e);
+            if (typeof element[type] == 'function') {
+                element[type]();
+            } else {
+                // IE 8
+                var e = document.createEventObject();
+                e.eventType = type;
+                element.fireEvent('on' + e.eventType, e);
+            }
         }
     }
 
-    // Util Function
-    var each = function (arr, callback, context) {
-        for(var i = 0, len = arr.length; i < len; i++) {
-            callback.call(context, arr[i], i);
-        }
-    };
 
-    var merge = function (arr) {
-        var total = [];
-        each(arr, function (list) {
-            each(list, function (item) {
-                total.push(item);
-            });
+    // Event List Manager
+    var events = [];
+
+    var restructEvents = function () {
+        var list = [];
+        each(events, function(eventObject) {
+            if (!eventObject.removed) {
+                list.push(eventObject);
+            }
         });
 
-        return total;
+        events = list;
     };
 
-    /**
-     * @class util.DomChain
-     *
-     * dom chaining class
-     *
-     * @private
-     * @param {String|Array} selector
-     * @param {Element|DomChain} context
-     * @constructor
-     */
-    function DomChain(selector, context) {
 
-        var result, list = [];
-
-        if (typeof selector == 'string') {
-
-            if (selector.indexOf("<") > -1) {
-                list = feature.create(selector, false);
-            } else if (result = regForId.exec(selector)) {
-                list = [dom.id(result[1], context)];
-            } else if (result = regForClass.exec(selector)) {
-                list = dom.className(result[1], context);
-            } else if (result = regForTag.exec(selector)) {
-                list = dom.tag(result[1], context);
-            } else {
-                list = dom.find(selector, context);
+    var filter = function (arr, callback, context) {
+        var list = [];
+        for(var i = 0, len = arr.length; i < len; i++) {
+            if (callback.call(context, arr[i], i)) {
+                list.push(arr[i]);
             }
-        } else if (selector.length) {
-            list = selector;
-        } else if (selector.nodeType) {
-            list = [selector];
         }
 
-        for(var i = 0, len = list.length; i < len; i++) {
-            this[i] = list[i];
-        }
-        this.length = list.length;
-        this.context = context;
-        this.selector = selector;
+        return list;
+    };
+
+    var bind = function (func, context) {
+        return function () {
+            func.apply(context, arguments);
+        };
     }
 
-    DomChain.prototype = {
 
-        domchain : true,
-
-        /**
-         * @method html
-         *
-         *      // get html
-         *      dom("#id").html();
-         *
-         *      // set html
-         *      dom("#id").html("html text");
-         *
-         *
-         * @param contents
-         * @returns {*}
-         */
-        html : function (contents) {
-            if (arguments.length) {
-                this.each(function (el){
-                   feature.html(el, contents);
-                });
-                return this;
-            } else {
-                return this.length > 0 && feature.html(this[0]);
-            }
-        },
-
-        /**
-         * @method text
-         *
-         *      // get text
-         *      dom("#id").html();
-         *
-         *      // set text
-         *      dom("#id").html("html text");
-         *
-         * @param {String} contents
-         * @returns {*}
-         */
-        text : function (contents) {
-            if (arguments.length) {
-                this.each(function (el){  feature.text(el, contents); });
-                return this;
-            } else {
-                return this.length > 0 && feature.text(this[0]);
-            }
-        },
-
-        /**
-         * @method unwrap
-         *
-         *      dom("#id").unwrap();
-         *
-         * @returns {DomChain}
-         */
-        unwrap : function () {
-            this.each(function(el) {
-                feature.unwrap(el);
-            });
-
-            return this;
-        },
-
-        /**
-         * @method wrap
-         *
-         *      dom("#id").wrap(dom.create('div'));
-         *
-         *      dom("#id").wrap(dom("#id2"));
-         *
-         * @param wrapElement
-         */
-        wrap : function (wrapElement) {
-            var self = this;
-            new DomChain(wrapElement).each(function(wrapEl) {
-                self.each(function(el) {
-                    feature.wrap(el, wrapEl);
-                });
-            });
-        },
-
-        /**
-         * @method empty
-         *
-         * empty string
-         *
-         * @returns {DomChain}
-         */
-        empty : function () {
-            this.each(function(el) {
-               feature.empty(el);
-            });
-            return this;
-        },
-
-
-        /**
-         * @method remove
-         *
-         * remove an element from the DOM tree
-         *
-         * @returns {DomChain}
-         */
-        remove : function () {
-            this.each(function(el) {
-                feature.remove(el);
-            });
-
-            return this;
-        },
-
-        /**
-         * @method hasClass
-         *
-         * check element has class name
-         *
-         * @param {String} className
-         * @returns {Boolean}
-         */
-        hasClass : function (className) {
-            if (this.length > 0) {
-                feature.hasClass(this[0], className);
-            }
-            return false;
-        },
-
-        /**
-         * @method addClass
-         *
-         * @param {String} className
-         * @returns {DomChain}
-         */
-        addClass : function (className) {
-            this.each(function(el){
-                feature.addClass(el, className);
-            });
-
-            return  this;
-        },
-
-        /**
-         * @method removeClass
-         *
-         *      dom(".my-class").removeClass("my-class");
-         *
-         * @param {String} className
-         */
-        removeClass: function (className) {
-            this.each(function(el){
-                feature.removeClass(el, className);
-            });
-
-            return  this;
-        },
-
-        /**
-         * @method toggleClass
-         *
-         *      dom("#id").toggleClass("my-class");
-         *
-         * @param {String} className
-         */
-        toggleClass : function (className) {
-            this.each(function(el){
-                feature.toggleClass(el, className);
-            });
-
-            return this;
-        },
-
-        /**
-         * @method after
-         *
-         *      dom("#id").after($("#id2"));
-         *
-         *      dom("#id").after(dom.createText("text"));
-         *
-         *      dom("#id").after(dom.create("div"));
-         *
-         * @param newElement
-         */
-        after : function(newElement) {
-
-            if (typeof newElement == 'string') {
-                var cloneElement = newElement;
-            } else {
-                var cloneElement = newElement.domchain ? newElement.fragment() : feature.clone(newElement);
-            }
-
-            this.each(function(el) {
-                feature.after(el, cloneElement);
-            });
-
-            return this;
-        },
-
-        /**
-         * @method before
-         *
-         *      dom("#id").before($("#id2"));
-         *
-         *      dom("#id").before(dom.createText("text"));
-         *
-         *      dom("#id").before(dom.create('div'));
-         *
-         * @param newElement
-         * @returns {DomChain}
-         */
-        before : function (newElement) {
-
-            if (typeof newElement == 'string') {
-                var cloneElement = newElement;
-            } else {
-                var cloneElement = newElement.domchain ? newElement.fragment() : feature.clone(newElement);
-            }
-
-            this.each(function(el) {
-                feature.before(el, cloneElement);
-            });
-
-            return this;
-        },
-
-        fragment : function () {
-            return feature.createFragment(this);
-        },
-
-        /**
-         * @method append
-         *
-         *      dom("#id").append(dom("#id2"));
-         *
-         *      dom("#id").append(1, 2, 3);
-         *
-         *      dom("#id").append(dom.create('div'), dom.create('span'), dom.create('h1'));
-         *
-         * @param newElement
-         * @returns {DomChain}
-         */
-        append : function (newElement) {
-
-            if (typeof newElement == 'string') {
-                var cloneElement = newElement;
-            } else {
-                var cloneElement = newElement.domchain ? newElement.fragment() : feature.clone(newElement);
-            }
-
-            this.each(function(el) {
-                feature.append(el, cloneElement);
-            });
-
-            return this;
-        },
-
-        appendTo : function (selector) {
-            var dom = new DomChain(selector);
-            console.log(dom);
-            return dom.append(this);
-        },
-
-        prepend: function (newElement) {
-
-            if (typeof newElement == 'string') {
-                var cloneElement = newElement;
-            } else {
-                var cloneElement = newElement.domchain ? newElement.fragment() : feature.clone(newElement);
-            }
-
-            this.each(function(el) {
-                feature.prepend(el, cloneElement);
-            });
-
-            return this;
-        },
-
-        prependTo : function (selector) {
-            return new DomChain(selector).prepend(this);
-        },
-
-        /**
-         * @method css
-         *
-         *      dom("#id").css("background-color");
-         *
-         *      dom("#id").css("background-color", 'yellow');
-         *
-         *      dom("#id").css({ "background-color" : "yellow" });
-         *
-         *
-         * @param {String|Object} key
-         * @param {Mixed} [value=undefined]
-         * @returns {*}
-         */
-        css : function (key, value) {
-
-            var styles = key;
-
-            if (typeof key == 'string') {
-                if (arguments.length == 1) {
-                    return feature.css(this[0], key);
-                } else if (arguments.length == 2) {
-                    styles = {};
-                    styles[key] = value;
-                }
-            }
-
-            this.each(function(el) {
-                feature.css(el, styles);
-            });
-
-            return this;
-        },
-
-        position: function() {
-            return this.length > 0 && feature.position(this[0]);
-        },
-
-        offset: function () {
-            return this.length > 0 && feature.offset(this[0]);
-        },
-
-        outerWidth: function() {
-            return this.length> 0 && feature.outerWidth(this[0]);
-        },
-
-        outerHeight: function() {
-            return this.length> 0 && feature.outerHeight(this[0]);
-        },
+    /**
+     * @class util.dom.Event
+     *
+     */
+    var Event = {
 
         /**
          * @method on
          *
          * add event listener at element
          *
+         * @param {Element} element
+         * @param {String} type event's name
+         * @param {Function} handler
+         * @param {Object} context
+         */
+        on : function (element, type, handler, context) {
+            var eo;
+
+            if (arguments.length == 3) {
+
+                eo = {
+                    element : element,
+                    type : type,
+                    context : context,
+                    originalHandler : handler
+                };
+
+                eo.handler = bind(function(e) {
+                    this.originalHandler.apply(this.context || this.element, arguments);
+
+                    // only run once
+                    if (this.handler.one) {
+                        Event.off(this.element, this.type, this.handler);
+                    }
+                }, eo);
+
+                events.push(eo);
+
+                addEvent(eo.element, eo.type, eo.handler);
+
+
+            } else if (arguments.length == 4) {
+                var selector = handler;
+                handler = context;
+                context = arguments[4];
+
+                eo = {
+                    element : element,
+                    type : type,
+                    context : context,
+                    selector : selector,
+                    originalHandler : handler
+                };
+
+                eo.handler = bind(function(e) {
+
+                    var target = e.target || e.srcElement;
+
+                    if (typeof this.selector == 'string') {
+                        if (matches.call(target, this.selector)) {
+                            this.originalHandler.apply(this.context || this.element, arguments);
+                        }
+                    } else if (this.selector.length) {
+                        var list = filter(this.selector, function (el) {
+                            return target === el;
+                        });
+
+                        if (list.length > 0) {
+                            this.originalHandler.apply(this.context || this.element, arguments);
+                        }
+                    }
+
+                    // only run once
+                    if (this.handler.one) {
+                        Event.off(this.element, this.type, this.selector, this.handler);
+                    }
+
+                }, eo);
+
+                events.push(eo);
+
+                addEvent(eo.element, eo.type, eo.handler);
+
+            }
+
+            return eo;
+
+        },
+
+        /**
+         * @method one
+         *
+         * add event that is only run once
+         *
+         *      dom.one(element, 'click', function(e) {
+         *
+         *      });
+         *
+         *      dom.one(element, 'click', '.btn', function(e) {
+         *
+         *      });
+         *
+         * @param element
          * @param type
          * @param handler
+         * @param context
          */
-        on : function (type, handler) {
-
-            var args = arguments.length == 2 ? [null, type, handler] : [null, arguments[0], arguments[1], arguments[2]];
-
-            this.each(function(el) {
-                args[0] = el;
-                feature.on.apply(this, args);
-            });
-
-
-            return this;
+        one : function (element, type, handler, context) {
+            this.on.apply(this, arguments).handler.one = true ;
         },
 
         /**
          * @method off
          *
-         * @param type
-         * @param handler
+         * remove event handler in  listener
+         *
+         * @param {Element} element
+         * @param {String} type event's name
+         * @param {Function} handler
          */
-        off : function (type, handler) {
-            this.each(function(el) {
-                feature.off(el, type, handler);
+        off : function (element, type, handler) {
+
+            var len = arguments.length;
+            var checkFilter = function () { return false };
+
+            if (len == 1) {
+                checkFilter = function (eo) {
+                    return (eo.element == element);
+                };
+
+            } else if (len == 2) {
+                checkFilter = function (eo) {
+                    return (eo.element == element && eo.type == type);
+                };
+
+            } else if (len == 3) {
+
+                if (typeof handler == 'function') {
+                    checkFilter = function (eo) {
+                        return (eo.element == element && eo.type == type && eo.handler == handler);
+                    };
+                } else {
+                    checkFilter = function (eo) {
+                        return (eo.element == element && eo.type == type && eo.selector == handler);
+                    };
+                }
+
+
+            } else if (len == 4) {
+                var selector = handler;
+                handler = arguments[3];
+
+                checkFilter = function (eo) {
+                    return (eo.element == element && eo.type == type && eo.handler == handler && eo.selector == selector);
+                };
+            }
+
+            each(events, function (eo) {
+                if (checkFilter(eo)) {
+                    eo.removed = true;
+                    removeEvent(eo.element, eo.type, eo.handler);
+                }
             });
 
-            return this;
+            restructEvents();
         },
 
         /**
          * @method trigger
          *
+         * trigger event
+         *
+         * @param element
          * @param type
-         * @param args
+         * @param data
          */
-        trigger : function (type, args) {
-            this.each(function(el) {
-              feature.trigger(el, type, args);
-            });
+        trigger : function (element, type, data) {
+            triggerEvent(element, type, data);
+        }
+    };
 
-            return this;
-        },
+    return Event;
+});
+jui.define("util.dom.manage", [ ], function() {
+    var Manage = {
 
-        show: function (value) {
-          this.each(function(el) {
-             feature.show(el, value);
-          });
+        /**
+         * @method html
+         *
+         * get or set  html string
+         *
+         * @param {Element} element
+         * @param {String} contents
+         *
+         * @returns {*}
+         */
+        html : function (element, contents) {
+            if (arguments.length == 1){
+                return element.innerHTML;
+            }
 
-          return this;
+            element.innerHTML = contents;
         },
 
         /**
-         * @method hide
+         * @method text
          *
-         * @returns {DomChain}
+         * get or set text string
+         *
+         * @param element
+         * @param contents
+         * @returns {*}
          */
-        hide : function () {
-            this.each(function(el) {
-                feature.hide(el);
-            });
-
-            return this;
-        },
-
-        toggle : function() {
-            this.each(function(el) {
-                feature.toggle(el);
-            });
-
-            return this;
-        },
-
-        val : function (value) {
-            if (this.length == 0) return;
-
-            var node = this[0];
-
-            // get value
-            if (arguments.length == 0) {
-
-                var value;
-
-                if (node.nodeName == "SELECT") {
-                    value = node.options[node.selectedIndex].value;
-                } else {
-                    value = node.value;
-                }
-
-                return value;
-            }
-            // set value
-            else if (arguments.length == 1) {
-                var values = Array.isArray(value) ? value : [value ];
-
-                if (node.nodeName == "SELECT") {
-                    var selected = false;
-                    each(node.options, function(opt, i) {
-                        if (values.indexOf(opt.value) > -1) {
-                            opt.selected = true;
-                            selected = true;
-                        }
-                    });
-
-                    if (!selected) {
-                        node.selectedIndex = -1;
-                    }
-                } else if (node.type == "checkbox" || node.type == "radio") {
-                    node.checked = (node.value === value);
-                } else {
-                    node.value = value;
-                }
-
+        text : function (element, contents) {
+            if (arguments.length == 1){
+                return element.textContent || element.innerText;
             }
 
-            return this;
+            element.textContent = contents;
         },
+
+        /**
+         * @method after
+         *
+         * insert new element after an existing one in the DOM tree
+         *
+         * @param {Element} element
+         * @param {Element} newElement
+         */
+        after : function (element, newElement) {
+            if (typeof newChildElement == 'string') {
+                element.insertAdjacentHTML("afterend", newChildElement);
+            } else {
+                element.parentNode.insertBefore(newElement, this.next(element));
+            }
+
+        },
+
+        /**
+         * @method before
+         *
+         * insert new element before an existing one in the DOM tree
+         *
+         * @param {Element} element
+         * @param {Element} newElement
+         */
+        before : function (element, newElement) {
+            if (typeof newChildElement == 'string') {
+                element.insertAdjacentHTML("beforebegin", newChildElement);
+            } else {
+                element.parentNode.insertBefore(newElement, element);
+            }
+        },
+
+        /**
+         * @method append
+         *
+         *
+         * @param {Element} element
+         * @param {Element} newChildElement
+         */
+        append : function (element, newChildElement) {
+            if (typeof newChildElement == 'string') {
+                element.insertAdjacentHTML("beforeend", newChildElement);
+            } else {
+                element.appendChild(newChildElement);
+            }
+
+        },
+
+        /**
+         * @method prepend
+         *
+         *
+         * @param {Element} element
+         * @param {Element} newChildElement
+         */
+        prepend : function (element, newChildElement) {
+            if (typeof newChildElement == 'string') {
+                element.insertAdjacentHTML("afterbegin", newChildElement);
+            } else {
+                this.before(element.firstChild, newChildElement);
+            }
+        },
+
+        /**
+         * @method replace
+         *
+         * replace element to new element
+         *
+         * @param {Element} element
+         * @param {Element} newElement
+         */
+        replace : function (element, newElement) {
+            element.parentNode.replaceChild(newElement, element);
+        },
+
+        /**
+         * @method unwrap
+         *
+         * unwrap a dom element
+         *
+         * @param {Element} element
+         */
+        unwrap : function (element) {
+            var parent = element.parentNode;
+
+            while(parent.firstChild) {
+                parent.insertBefore(element.firstChild, el);
+            }
+
+            this.remove(element);
+        },
+
+        /**
+         * @method clone
+         *
+         * create a deep copy of a DOM element
+         *
+         * @param {Element} element
+         * @returns {Element}
+         */
+        clone : function (element, isCopyChildNodes) {
+            isCopyChildNodes = typeof isCopyChildNodes == 'undefined' ? true : isCopyChildNodes;
+            return element.cloneNode(isCopyChildNodes);
+        },
+
+        /**
+         * @method wrap
+         *
+         *      dom.wrap(element, dom.create('div'));
+         *
+         * @param element
+         * @param wrapElement
+         */
+        wrap : function (element, wrapElement) {
+            this.before(element, wrapElement);
+            this.append(wrapElement, element);
+        },
+
+
+        /**
+         * @method empty
+         *
+         * remove all child nodes of an element from the DOM
+         *
+         * @param element
+         */
+        empty : function (element) {
+            element.innerHTML = "";
+        },
+
+        /**
+         * @method remove
+         *
+         * remove an element from the DOM tree
+         *
+         * @param {Element} element
+         */
+        remove : function (element) {
+            if (element.parentNode) {
+                element.parentNode.removeChild(element);
+            }
+        },
+
+        /**
+         * @method width
+         *
+         * TODO: get or set width
+         *
+         * @param element
+         * @param width
+         */
+        width : function (element, width) {
+
+        },
+
+        /**
+         * @method height
+         *
+         * TODO: get or set height
+         *
+         * @param element
+         * @param height
+         */
+        height : function (element, height) {
+
+        }
+    };
+
+    return Manage;
+});
+jui.define("util.dom.selector", [ ], function() {
+
+
+    var ElementPrototype = Element.prototype;
+
+    var matches = ElementPrototype.matches ||
+        ElementPrototype.matchesSelector ||
+        ElementPrototype.webkitMatchesSelector ||
+        ElementPrototype.msMatchesSelector ||
+        function(selector) {
+            var node = this, nodes = (node.parentNode || node.document).querySelectorAll(selector), i = -1;
+            while (nodes[++i] && nodes[i] != node);
+            return !!nodes[i];
+        };
+
+    var closest = ElementPrototype.closest ||
+        function(selector) {
+            var el = this;
+            while (!matches.call(el, selector)) el = el.parentNode;
+            return el;
+        };
+
+    /**
+     * @class util.dom.Selector
+     *
+     */
+    var Selector = {
+
+        /**
+         * @method id
+         *
+         * get element by id
+         *
+         * @return {Element}
+         */
+        id : function (id, parent) {
+            return (parent || document).getElementById(id);
+        },
+
+        /**
+         * @method tag
+         *
+         * find elements by tag name
+         *
+         * @param {String} tagName
+         * @param {Element} [parent=document] parent element,
+         * @return {ElementList}
+         */
+        tag : function (tagName, parent) {
+            return (parent || document).getElementsByTagName(tagName);
+        },
+
+        /**
+         * @method className
+         *
+         * find elements by class name
+         *
+         * @param {String} className
+         * @param {Element} [parent=document]  parent element
+         * @returns {NodeList}
+         */
+        className : function (className, parent) {
+            return (parent || document).getElementsByClassName(className);
+        },
+
+        /**
+         * @method findOne
+         *
+         * find one element by selector
+         *
+         */
+        findOne : function (selector, parent) {
+            return  (parent || document).querySelector(selector);
+        },
+
+        /**
+         * @method find
+         *
+         * find elements by selector
+         *
+         * @returns {NodeList}
+         */
+        find: function(selector, parent) {
+            return  (parent || document).querySelectorAll(selector);
+        },
+
+
+        /**
+         * @method matches
+         *
+         * get matched element
+         *
+         * @param selector
+         * @returns {*}
+         */
+        matches : function (element, selector) {
+            return matches.call(element, selector);
+        },
+
+        /**
+         * @method siblings
+         *
+         * @param element
+         * @param filter
+         * @returns {Array}
+         */
+        siblings: function(element, filter) {
+            var arr = [];
+
+            do {
+                if (!filter || filter(element)) {
+                    arr[arr.length] = element;
+                }
+            } while(element = element.nextSibling);
+
+            return arr;
+        },
+
+        /**
+         * @method children
+         *
+         * get chlid nodes for fast performance
+         *
+         * @param {Element} element
+         * @param {Function] [filter=undefined]
+         * @returns {*}
+         */
+        children : function (element, filter) {
+            return this.siblings(element.firstChild, filter);
+        },
+
 
         /**
          * @method next
          *
-         *      dom("#id").next();
          *
-         * @param {Function] [filter=undefined]
-         * @returns {util.DomChain}
+         * @param element
+         * @param filter
+         * @returns {*}
          */
-        next: function (filter) {
-            return new DomChain(this.map(function(el) {
-                return feature.next(el, filter);
-            }));
+        next : function (element, filter) {
+            while(element = element.nextSibling) {
+                if (!filter || filter(element)) {
+                    return element;
+                }
+            }
+
+            return null;
         },
+
+        /**
+         * @method nextAll
+         *
+         * @param element
+         * @param filter
+         * @returns {Array}
+         */
+        nextAll: function(element, filter) {
+            var arr = [];
+            while(element = element.nextSibling) {
+                if (!filter || filter(element)) {
+                    arr[arr.length] = element;
+                }
+            }
+
+            return arr;
+        },
+
 
         /**
          * @method prev
          *
-         *      dom("#id").prev();
-         *
-         * @param {Function] [filter=undefined]
-         * @returns {util.DomChain}
+         * @param element
+         * @param filter
+         * @returns {*}
          */
-        prev: function (filter) {
-            return new DomChain(this.map(function(el) {
-                return feature.prev(el, filter);
-            }));
-        },
-
-        closest: function (selector) {
-            return new DomChain(this.length > 0 && feature.closest(this[0], selector));
-        },
-
-        children : function () {
-            return new DomChain(merge(this.map(function (el, i) {
-                return feature.children(el);
-            })));
-        },
-
-        each : function (callback) {
-            each(this, callback, this);
-            return this;
-        },
-
-        map : function (callback) {
-            var list = [];
-            this.each(function(el, i) {
-                list[list.length] = callback.call(this, el, i);
-            });
-
-            return list;
-        },
-
-
-        filter : function (callback) {
-            var list = [];
-            this.each(function(el, i) {
-
-                var result = callback.call(this, el, i);
-
-                if (result) {
-                    list[list.length] = el;
+        prev: function(element, filter) {
+            while(element = element.previousSibling) {
+                if (!filter || filter(element)) {
+                    return element;
                 }
-            });
-
-            return list;
-        },
-
-        attr : function (attrs) {
-            if (typeof attrs == 'string') {
-                return this.length > 0 && feature.get(this[0], attrs);
-            } else {
-                this.each(function (el, i) {
-                    feature.set(el, attrs);
-                });
-
-                return this;
-            }
-        },
-
-        removeAttr : function (key) {
-            if (this.length > 0) {
-                feature.removeAttr(this[0], key);
             }
 
-            return this;
+            return null;
         },
 
-        data: function (datas) {
-            if (typeof datas == 'string') {
-                return this.length > 0 && feature.data(this[0], datas);
-            } else {
-                this.each(function (el, i) {
-                    feature.data(el, datas);
-                });
-
-                return this;
+        /**
+         * @method prevAll
+         *
+         * @param element
+         * @param filter
+         * @returns {Array}
+         */
+        prevAll: function(element, filter) {
+            var arr = [];
+            while(element = element.previousSibling) {
+                if (!filter || filter(element)) {
+                    arr[arr.length] = element;
+                }
             }
+
+            return arr;
         },
 
-        eq : function (index) {
-            var i = (index < 0) ? this.length + index : index;
-            return new DomChain(this[i]);
-        },
-
-        first : function () {
-            return this.eq(0);
-        },
-
-        last : function () {
-            return this.eq(-1);
+        /**
+         * @method closest
+         *
+         * @param element
+         * @param selector
+         * @returns {*}
+         */
+        closest: function (element, selector) {
+            return closest.call(element, selector);
         }
     };
 
+    return Selector;
+});
+jui.define("util.dom.core", [ "util.dom.selector", "util.dom.manage" ], function($selector, $manage) {
 
     /**
-     * @class util.dom
+     * @class util.dom.Core
      *
-     * pure dom utility
-     *
-     *      dom("#id") is equals to dom.id('id');
-     *
-     *      dom(".class") is equals to dom.className("class");
-     *
-     *      dom("tag") is equals to dom.tag('tag');
-     *
-     *      dom(".class > tag > li:first-child") is equals to dom.find(".class > tag > li:first-child");
-     *
-     * @singleton
      */
-    function dom(selector, context) {
-        return new DomChain(selector, context || document);
-    }
-
-    var feature = {
-
+    var Core = {
         /**
          * @method create
          *
@@ -2348,7 +2549,10 @@ jui.define("util.dom", [ ], function() {
          *     });
          *
          *     // 2. set string same to  dom.create({ tag : 'div', className : 'my-class your-class' })
-         *     dom.create('div.my-class.your-class');
+         *     dom.create('div');
+         *
+         *     // 3. set tag same to dom.create({ tag : 'div', className : 'name' })
+         *     dom.create("<div class='name'></div>");
          *
          * @param {Object} opt
          * @returns {Element}
@@ -2360,13 +2564,14 @@ jui.define("util.dom", [ ], function() {
             if (typeof opt == 'string') {
                 var str  = opt.trim();
 
+                // if str is start with '<' character, run html parser
                 if (str.indexOf("<") == 0) {
                     // html parser
                     var fakeDom = document.createElement('div');
                     fakeDom.innerHTML = str;
 
-                    var list = this.children(fakeDom);
-                    this.remove(fakeDom);
+                    var list = $selector.children(fakeDom);
+                    $manage.remove(fakeDom);
 
                     if (isFragment) {
                         return this.createFragment(list);
@@ -2399,7 +2604,7 @@ jui.define("util.dom", [ ], function() {
             if (opt.style) {
                 var s = element.style;
                 for(var k in opt.style) {
-                     s[k] = opt.style[k];
+                    s[k] = opt.style[k];
                 }
             }
 
@@ -2457,352 +2662,7 @@ jui.define("util.dom", [ ], function() {
             return fragment;
         },
 
-        /**
-         * @method html
-         *
-         * get or set  html string
-         *
-         * @param {Element} element
-         * @param {String} contents
-         *
-         * @returns {*}
-         */
-        html : function (element, contents) {
-            if (arguments.length == 1){
-                return element.innerHTML;
-            }
 
-            element.innerHTML = contents;
-        },
-
-        /**
-         * @method text
-         *
-         * get or set text string
-         *
-         * @param element
-         * @param contents
-         * @returns {*}
-         */
-        text : function (element, contents) {
-            if (arguments.length == 1){
-                return element.textContent || element.innerText;
-            }
-
-            element.textContent = contents;
-        },
-
-        /**
-         * @method matches
-         *
-         * get matched element
-         *
-         * @param selector
-         * @returns {*}
-         */
-        matches : function (element, selector) {
-            return matches.call(element, selector);
-        },
-
-        siblings: function(element, filter) {
-          var arr = [], first = element.parentNode.firstChild;
-
-            do {
-                if (!filter || filter(element)) {
-                    arr[arr.length] = element;
-                }
-            } while(element = element.nextSibling);
-
-            return arr;
-        },
-
-        next : function (element, filter) {
-            while(element = element.nextSibling) {
-                if (!filter || filter(element)) {
-                    return element;
-                }
-            }
-
-            return null;
-        },
-
-        nextAll: function(element, filter) {
-            var arr = [];
-            while(element = element.nextSibling) {
-                if (!filter || filter(element)) {
-                    arr[arr.length] = element;
-                }
-            }
-
-            return arr;
-        },
-
-
-        prev: function(element, filter) {
-            while(element = element.previousSibling) {
-                if (!filter || filter(element)) {
-                    return element;
-                }
-            }
-
-            return null;
-        },
-
-        prevAll: function(element, filter) {
-            var arr = [];
-            while(element = element.previousSibling) {
-                if (!filter || filter(element)) {
-                    arr[arr.length] = element;
-                }
-            }
-
-            return arr;
-        },
-
-        closest: function (element, selector) {
-            return closest.call(element, selector);
-        },
-
-        /**
-         * @method children
-         *
-         * get chlid nodes for fast performance
-         *
-         * @param {Element} element
-         * @param {Function] [filter=undefined]
-         * @returns {*}
-         */
-        children : function (element, filter) {
-            return this.siblings(element.firstChild, filter);
-        },
-
-        /**
-         * @method replace
-         *
-         * replace element to new element
-         *
-         * @param {Element} element
-         * @param {Element} newElement
-         */
-        replace : function (element, newElement) {
-          element.parentNode.replaceChild(newElement, element);
-        },
-
-        /**
-         * @method unwrap
-         *
-         * unwrap a dom element
-         *
-         * @param {Element} element
-         */
-        unwrap : function (element) {
-          var parent = element.parentNode;
-
-          while(parent.firstChild) {
-              parent.insertBefore(element.firstChild, el);
-          }
-
-          this.remove(element);
-        },
-
-        /**
-         * @method clone
-         *
-         * create a deep copy of a DOM element
-         *
-         * @param {Element} element
-         * @returns {Element}
-         */
-        clone : function (element, isCopyChildNodes) {
-            isCopyChildNodes = typeof isCopyChildNodes == 'undefined' ? true : isCopyChildNodes;
-            return element.cloneNode(isCopyChildNodes);
-        },
-
-        /**
-         * @method wrap
-         *
-         *      dom.wrap(element, dom.create('div'));
-         *
-         * @param element
-         * @param wrapElement
-         */
-        wrap : function (element, wrapElement) {
-          this.before(element, wrapElement);
-          this.append(wrapElement, element);
-        },
-
-
-        /**
-         * @method empty
-         *
-         * remove all child nodes of an element from the DOM
-         *
-         * @param element
-         */
-        empty : function (element) {
-          element.innerHTML = "";
-        },
-
-        /**
-         * @method remove
-         *
-         * remove an element from the DOM tree
-         *
-         * @param {Element} element
-         */
-        remove : function (element) {
-            if (element.parentNode) {
-                element.parentNode.removeChild(element);
-            }
-        },
-
-        /**
-         * @method hasClass
-         *
-         *
-         *
-         * @param {Element} element
-         * @param {String} className
-         * @returns {*}
-         */
-        hasClass : function (element, className) {
-            return hasClass(element, className);
-        },
-
-        /**
-         * @method addClass
-         *
-         * @param {Element} element
-         * @param {String} className
-         */
-        addClass : function (element, className) {
-            addClass(element, className);
-        },
-
-        /**
-         * @method removeClass
-         *
-         * @param {Element} element
-         * @param {String} className
-         */
-        removeClass : function (element, className) {
-            removeClass(element, className);
-        },
-
-
-        /**
-         * @method toggleClass
-         *
-         *
-         *
-         * @param element
-         * @param className
-         */
-        toggleClass : function (element, className) {
-            if (hasClass(element, className)) {
-                removeClass(element, className);
-            } else {
-                addClass(element, className);
-            }
-        },
-
-        /**
-         * @method after
-         *
-         * insert new element after an existing one in the DOM tree
-         *
-         * @param {Element} element
-         * @param {Element} newElement
-         */
-        after : function (element, newElement) {
-            if (typeof newChildElement == 'string') {
-                element.insertAdjacentHTML("afterend", newChildElement);
-            } else {
-                element.parentNode.insertBefore(newElement, this.next(element));
-            }
-
-        },
-
-        /**
-         * @method before
-         *
-         * insert new element before an existing one in the DOM tree
-         *
-         * @param {Element} element
-         * @param {Element} newElement
-         */
-        before : function (element, newElement) {
-            if (typeof newChildElement == 'string') {
-                element.insertAdjacentHTML("beforebegin", newChildElement);
-            } else {
-                element.parentNode.insertBefore(newElement, element);
-            }
-        },
-
-        /**
-         * @method append
-         *
-         *
-         * @param {Element} element
-         * @param {Element} newChildElement
-         */
-        append : function (element, newChildElement) {
-            if (typeof newChildElement == 'string') {
-                element.insertAdjacentHTML("beforeend", newChildElement);
-            } else {
-                console.log(element, newChildElement);
-                element.appendChild(newChildElement);
-            }
-
-        },
-
-        /**
-         * @method prepend
-         *
-         *
-         * @param {Element} element
-         * @param {Element} newChildElement
-         */
-        prepend : function (element, newChildElement) {
-            if (typeof newChildElement == 'string') {
-                element.insertAdjacentHTML("afterbegin", newChildElement);
-            } else {
-                this.before(element.firstChild, newChildElement);
-            }
-        },
-
-        /**
-         * @method css
-         *
-         * get the computed style properties of element
-         *
-         *      //1. get all style
-         *      var allStyle = dom.css(element);
-         *      console.log(allStyle.backgroundColor);
-         *
-         *      //2. get one property
-         *      console.log(dom.css(element, 'background-color');
-         *
-         *      //3. set style properties
-         *      dom.css(element, { 'background-color': 'yellow' });
-         *
-         * @param element
-         * @param key
-         * @returns {*}
-         */
-        css : function (element, styles) {
-            var style = window.getComputedStyle ? getComputedStyle(element, null) : element.currentStyle;
-
-            if (typeof styles === 'string') {
-                return style[styles];
-            } else if (typeof styles === 'object') {
-                for(var k in styles) {
-                    element.style[k] = styles[k];
-                }
-            }
-
-            return style;
-        },
 
         /**
          * @method position
@@ -2837,9 +2697,22 @@ jui.define("util.dom", [ ], function() {
 
         },
 
+        /**
+         * @method outerWidth
+         *
+         * @param element
+         * @returns {number}
+         */
         outerWidth: function(element) {
             return element.offsetWidth;
         },
+
+        /**
+         * @method outerHeight
+         *
+         * @param element
+         * @returns {number}
+         */
         outerHeight : function (element) {
             return element.offsetHeight;
         },
@@ -2871,14 +2744,462 @@ jui.define("util.dom", [ ], function() {
                 return window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
             }
             return element.clientHeight;
+        }
+    };
+
+    return Core;
+});
+jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.css", "util.dom.event", "util.dom.manage", "util.dom.selector" ], function($core, $attr, $css, $event, $manage, $selector) {
+
+    // Util Function
+    var each = function (arr, callback, context) {
+        for(var i = 0, len = arr.length; i < len; i++) {
+            callback.call(context, arr[i], i);
+        }
+    };
+
+    var merge = function (arr) {
+        var total = [];
+        each(arr, function (list) {
+            each(list, function (item) {
+                total.push(item);
+            });
+        });
+
+        return total;
+    };
+
+    var regForId = /^#([\w-]+)$/;
+    var regForClass = /^\.([\w-]+)$/;
+    var regForTag = /^([\w-]+)$/;
+
+    /**
+     * @class util.dom.DomChain
+     *
+     * dom chaining class
+     *
+     * @private
+     * @param {String|Array} search
+     * @param {Element|DomChain} context
+     * @constructor
+     */
+    function DomChain(search, context) {
+
+        var result, list = [];
+
+        if (typeof search == 'string') {
+
+            if (search.indexOf("<") > -1) {
+                list = $core.create(search, false);
+            } else if (result = regForId.exec(search)) {
+                list = [$selector.id(result[1], context)];
+            } else if (result = regForClass.exec(search)) {
+                list = $selector.className(result[1], context);
+            } else if (result = regForTag.exec(search)) {
+                list = $selector.tag(result[1], context);
+            } else {
+                list = $selector.find(search, context);
+            }
+        } else if (search.length) {
+            list = search;
+        } else if (search.nodeType) {
+            list = [search];
+        }
+
+        for(var i = 0, len = list.length; i < len; i++) {
+            this[i] = list[i];
+        }
+
+        this.length = list.length;
+        this.context = context;
+        this.selector = search;
+    }
+
+    DomChain.prototype = {
+
+        domchain : true,
+
+        /**
+         * @method html
+         *
+         *      // get html
+         *      dom("#id").html();
+         *
+         *      // set html
+         *      dom("#id").html("html text");
+         *
+         *
+         * @param contents
+         * @returns {*}
+         */
+        html : function (contents) {
+            if (arguments.length) {
+                this.each(function (el){
+                    $manage.html(el, contents);
+                });
+                return this;
+            } else {
+                return this.length > 0 && $manage.html(this[0]);
+            }
         },
 
-        width : function (element, width) {
-
+        /**
+         * @method text
+         *
+         *      // get text
+         *      dom("#id").html();
+         *
+         *      // set text
+         *      dom("#id").html("html text");
+         *
+         * @param {String} contents
+         * @returns {*}
+         */
+        text : function (contents) {
+            if (arguments.length) {
+                this.each(function (el){  $manage.text(el, contents); });
+                return this;
+            } else {
+                return this.length > 0 && $manage.text(this[0]);
+            }
         },
 
-        height : function (element, height) {
+        /**
+         * @method unwrap
+         *
+         *      dom("#id").unwrap();
+         *
+         * @returns {DomChain}
+         */
+        unwrap : function () {
+            this.each(function(el) {
+                $manage.unwrap(el);
+            });
 
+            return this;
+        },
+
+        /**
+         * @method wrap
+         *
+         *      dom("#id").wrap(dom.create('div'));
+         *
+         *      dom("#id").wrap(dom("#id2"));
+         *
+         * @param wrapElement
+         */
+        wrap : function (wrapElement) {
+            var self = this;
+            new DomChain(wrapElement).each(function(wrapEl) {
+                self.each(function(el) {
+                    $manage.wrap(el, wrapEl);
+                });
+            });
+        },
+
+        /**
+         * @method empty
+         *
+         * empty string
+         *
+         * @returns {DomChain}
+         */
+        empty : function () {
+            this.each(function(el) {
+                $manage.empty(el);
+            });
+            return this;
+        },
+
+
+        /**
+         * @method remove
+         *
+         * remove an element from the DOM tree
+         *
+         * @returns {DomChain}
+         */
+        remove : function () {
+            this.each(function(el) {
+                $manage.remove(el);
+            });
+
+            return this;
+        },
+
+        /**
+         * @method hasClass
+         *
+         * check element has class name
+         *
+         * @param {String} className
+         * @returns {Boolean}
+         */
+        hasClass : function (className) {
+            if (this.length > 0) {
+                $css.hasClass(this[0], className);
+            }
+            return false;
+        },
+
+        /**
+         * @method addClass
+         *
+         * @param {String} className
+         * @returns {DomChain}
+         */
+        addClass : function (className) {
+            this.each(function(el){
+                $css.addClass(el, className);
+            });
+
+            return  this;
+        },
+
+        /**
+         * @method removeClass
+         *
+         *      dom(".my-class").removeClass("my-class");
+         *
+         * @param {String} className
+         */
+        removeClass: function (className) {
+            this.each(function(el){
+                $css.removeClass(el, className);
+            });
+
+            return  this;
+        },
+
+        /**
+         * @method toggleClass
+         *
+         *      dom("#id").toggleClass("my-class");
+         *
+         * @param {String} className
+         */
+        toggleClass : function (className) {
+            this.each(function(el){
+                $css.toggleClass(el, className);
+            });
+
+            return this;
+        },
+
+        /**
+         * @method after
+         *
+         *      dom("#id").after($("#id2"));
+         *
+         *      dom("#id").after(dom.createText("text"));
+         *
+         *      dom("#id").after(dom.create("div"));
+         *
+         * @param newElement
+         */
+        after : function(newElement) {
+
+            if (typeof newElement == 'string') {
+                var cloneElement = newElement;
+            } else {
+                var cloneElement = newElement.domchain ? newElement.fragment() : $manage.clone(newElement);
+            }
+
+            this.each(function(el) {
+                $manage.after(el, cloneElement);
+            });
+
+            return this;
+        },
+
+        /**
+         * @method before
+         *
+         *      dom("#id").before($("#id2"));
+         *
+         *      dom("#id").before(dom.createText("text"));
+         *
+         *      dom("#id").before(dom.create('div'));
+         *
+         * @param newElement
+         * @returns {DomChain}
+         */
+        before : function (newElement) {
+
+            if (typeof newElement == 'string') {
+                var cloneElement = newElement;
+            } else {
+                var cloneElement = newElement.domchain ? newElement.fragment() : $manage.clone(newElement);
+            }
+
+            this.each(function(el) {
+                $manage.before(el, cloneElement);
+            });
+
+            return this;
+        },
+
+        /**
+         * @method fragment
+         *
+         * create document frament for DOM tree
+         *
+         * @returns {*|DocumentFragment}
+         */
+        fragment : function () {
+            return $core.createFragment(this);
+        },
+
+        /**
+         * @method append
+         *
+         *      dom("#id").append(dom("#id2"));
+         *
+         *      dom("#id").append(1, 2, 3);
+         *
+         *      dom("#id").append(dom.create('div'), dom.create('span'), dom.create('h1'));
+         *
+         * @param newElement
+         * @returns {DomChain}
+         */
+        append : function (newElement) {
+
+            if (typeof newElement == 'string') {
+                var cloneElement = newElement;
+            } else {
+                var cloneElement = newElement.domchain ? newElement.fragment() : $manage.clone(newElement);
+            }
+
+            this.each(function(el) {
+                $manage.append(el, cloneElement);
+            });
+
+            return this;
+        },
+
+        /**
+         * @method appendTo
+         *
+         * append element to selector
+         *
+         * @param selector
+         * @returns {*|DomChain}
+         */
+        appendTo : function (selector) {
+            var dom = new DomChain(selector);
+            return dom.append(this);
+        },
+
+        /**
+         * @method prepend
+         *
+         * prepend newElement to DOM tree
+         *
+         * @param newElement
+         * @returns {DomChain}
+         */
+        prepend: function (newElement) {
+
+            if (typeof newElement == 'string') {
+                var cloneElement = newElement;
+            } else {
+                var cloneElement = newElement.domchain ? newElement.fragment() : $manage.clone(newElement);
+            }
+
+            this.each(function(el) {
+                $manage.prepend(el, cloneElement);
+            });
+
+            return this;
+        },
+
+        /**
+         * @method prependTo
+         *
+         * prepend element to selector
+         *
+         * @param selector
+         * @returns {*|DomChain}
+         */
+        prependTo : function (selector) {
+            return new DomChain(selector).prepend(this);
+        },
+
+        /**
+         * @method css
+         *
+         *      dom("#id").css("background-color");
+         *
+         *      dom("#id").css("background-color", 'yellow');
+         *
+         *      dom("#id").css({ "background-color" : "yellow" });
+         *
+         *
+         * @param {String|Object} key
+         * @param {Mixed} [value=undefined]
+         * @returns {*}
+         */
+        css : function (key, value) {
+
+            if (typeof key == 'string') {
+                if (arguments.length == 1) {
+                    return $css.css(this[0], key);
+                } else if (arguments.length == 2) {
+                    $css.css(this[0], key, value);
+                }
+            } else if (typeof key == 'object') {
+                this.each(function(el) {
+                    $css.css(el, key);
+                });
+            }
+
+            return this;
+        },
+
+        /**
+         * @method position
+         *
+         * get position
+         *
+         *      $("#id").position();
+         *
+         * @returns {boolean|*|{top, left}|{top: (Number|number), left: (Number|number)}}
+         */
+        position: function() {
+            return this.length > 0 && $core.position(this[0]);
+        },
+
+        /**
+         * @method offset
+         *
+         *      $("#id").offset();
+         *
+         * @returns {boolean|*|{top, left}|{top: *, left: *}}
+         */
+        offset: function () {
+            return this.length > 0 && $core.offset(this[0]);
+        },
+
+        /**
+         * @method outerWidth
+         *
+         *      $("#id").outerWidth();
+         *
+         * @returns {boolean|*}
+         */
+        outerWidth: function() {
+            return this.length> 0 && $core.outerWidth(this[0]);
+        },
+
+        /**
+         * @method outerHeight
+         *
+         *      $("#id").outerHieght();
+         *
+         * @returns {boolean|*}
+         */
+        outerHeight: function() {
+            return this.length> 0 && $core.outerHeight(this[0]);
         },
 
         /**
@@ -2886,317 +3207,463 @@ jui.define("util.dom", [ ], function() {
          *
          * add event listener at element
          *
-         * @param {Element} element
-         * @param {String} type event's name
+         *      // add click event
+         *      $("#id").on("click", function(e) {
+         *
+         *      });
+         *
+         *      // add click event with delegate
+         *      $("#id").on("click", ".btn" or element, function (e) {
+         *          console.log('.btn element', e.target, '#id element', this);
+         *      });
+         *
+         * @param {String} type
          * @param {Function} handler
          */
-        on : function (element, type, handler) {
-            if (arguments.length == 3) {
-                addEvent(element, type, handler);
-            } else if (arguments.length == 4) {
-                var selector = handler;
-                var handler = arguments[3];
+        on : function (type, handler) {
 
-                addEvent(element, type, function (e) {
-                    if (matches.call(e.target || e.srcElement, selector)) {
-                        handler(e);
-                    }
-                });
+            var args = arguments.length == 2 ? [null, type, handler] : [null, arguments[0], arguments[1], arguments[2]];
 
-            }
+            this.each(function(el) {
+                args[0] = el;
+                $event.on.apply($event, args);
+            });
 
+
+            return this;
+        },
+
+        /**
+         * @method one
+         *
+         * add event that is only run once
+         *
+         * @param type
+         * @param handler
+         * @returns {DomChain}
+         */
+        one : function (type, handler) {
+
+            var args = arguments.length == 2 ? [null, type, handler] : [null, arguments[0], arguments[1], arguments[2]];
+
+            this.each(function(el) {
+                args[0] = el;
+                $event.one.apply($event, args);
+            });
+
+            return this;
         },
 
         /**
          * @method off
          *
-         * remove event handler in  listener
+         * remove event
          *
-         * @param {Element} element
-         * @param {String} type event's name
-         * @param {Function} handler
+         *      // delete all event
+         *      $("#id").off();
+         *
+         *      // delete click event
+         *      $("#id").off('click');
+         *
+         *      // delete click event for handler
+         *      $("#id").off('click', handler);
+         *
+         *      // delete click event for selector
+         *      $("#id").off('click', 'selector' or element);
+         *
+         *      // delete click event for selector with handler
+         *      $("#id").off('click', 'selector' or element, handler);
+         *
+         *
+         * @param type
+         * @param handler
          */
-        off : function (element, type, handler) {
-            removeEvent(element, type, handler);
+        off : function (type, handler) {
+
+            var args = [];
+            var count = arguments.length;
+
+            if (count == 0) {
+                args = [null];
+            } else if (count == 1) {
+                args = [null, type];
+            } else if (count == 2) {
+                args = [null, type, handler];
+            } else if (count == 3) {
+                args = [null, arguments[3], arguments[1], arguments[2]];
+            }
+
+            this.each(function(el) {
+                args[0] = el;
+                $event.off.apply($event, args);
+            });
+
+            return this;
         },
 
         /**
          * @method trigger
          *
-         * trigger event
-         *
-         * @param element
          * @param type
+         * @param args
          */
-        trigger : function (element, type, args) {
-            triggerEvent(element, type, args);
-        },
+        trigger : function (type, args) {
+            this.each(function(el) {
+                $event.trigger(el, type, args);
+            });
 
-        show : function (element, value) {
-            element.style.display = value;
-        },
-
-        hide : function (element) {
-            element.style.display = 'none';
-        },
-
-        toggle: function (element, value) {
-            var display = this.css(element, 'display');
-
-            if (display == 'none') {
-                this.show(element, value);
-            } else {
-                this.hide(element);
-            }
+            return this;
         },
 
         /**
-         * @method id
+         * @method show
          *
-         * get element by id
+         * show element in DOM tree
          *
-         * @return {Element}
+         * @param value
+         * @returns {DomChain}
          */
-        id : function (id) {
-            return document.getElementById(id);
+        show: function (value) {
+            this.each(function(el) {
+                $css.show(el, value);
+            });
+
+            return this;
         },
 
         /**
-         * @method tag
+         * @method hide
          *
-         * find elements by tag name
+         *      $("#id").hide();
          *
-         * @param {String} tagName
-         * @param {Element} [parent=document] parent element,
-         * @return {ElementList}
+         * @returns {DomChain}
          */
-        tag : function (tagName, parent) {
-           return (parent || document).getElementsByTagName(tagName);
+        hide : function () {
+            this.each(function(el) {
+                $css.hide(el);
+            });
+
+            return this;
         },
 
         /**
-         * @method className
+         * @method toggle
          *
-         * find elements by class name
+         *      $("#id").toggle();
          *
-         * @param {String} className
-         * @param {Element} [parent=document]  parent element
-         * @returns {NodeList}
+         * @returns {DomChain}
          */
-        className : function (className, parent) {
-            return (parent || document).getElementsByClassName(className);
+        toggle : function() {
+            this.each(function(el) {
+                $css.toggle(el);
+            });
+
+            return this;
         },
 
         /**
-         * @method findOne
+         * @method next
          *
-         * find one element by selector
+         *      dom("#id").next();
          *
+         * @param {Function] [filter=undefined]
+         * @returns {DomChain}
          */
-        findOne : function (selector, parent) {
-          return  (parent || document).querySelector(selector);
+        next: function (filter) {
+            return this.map(function(el) {
+                return $selector.next(el, filter);
+            });
         },
 
         /**
-         * @method find
+         * @method prev
          *
-         * find elements by selector
+         *      dom("#id").prev();
          *
-         * @returns {NodeList}
+         * @param {Function] [filter=undefined]
+         * @returns {DomChain}
          */
-        find: function(selector, parent) {
-            return  (parent || document).querySelectorAll(selector);
+        prev: function (filter) {
+            return this.map(function(el) {
+                return $selector.prev(el, filter);
+            });
+        },
+
+        closest: function (selector) {
+            return new DomChain(this.length > 0 && $selector.closest(this[0], selector));
+        },
+
+        /**
+         * @method children
+         *
+         * get all children in DOM tree
+         *
+         *      $(".parent").children();
+         *
+         * @returns {DomChain}
+         */
+        children : function () {
+            return new DomChain(merge(this.map(function (el, i) {
+                return $selector.children(el);
+            })));
         },
 
         /**
          * @method each
          *
-         * loop for element list
+         * traverse element in dom tree
          *
-         * @param selectorOrElements
+         *      $(".class").each(function(el) {
+         *          console.log($(el).html());
+         *      });
+         *
+         * @param {Function} callback
+         * @returns {DomChain}
+         */
+        each : function (callback) {
+            each(this, callback, this);
+            return this;
+        },
+
+        /**
+         * @method map
+         *
+         * get wrapped list from dom tree
+         *
+         * @param {Function} callback
+         * @returns {DomChain}
+         */
+        map : function (callback) {
+            var list = [];
+            this.each(function(el, i) {
+                list[list.length] = callback.call(this, el, i);
+            });
+
+            return new DomChain(list);
+        },
+
+
+        /**
+         * @method filter
+         *
+         *      $(".class").filter(function(el) {
+         *          return el.nodeName == 'BUTTON';
+         *      });
+         *
          * @param callback
+         * @returns {DomChain}
          */
-        each: function(selectorOrElements, callback) {
-            if(!_.typeCheck("function", callback)) return;
+        filter : function (callback) {
+            var list = [];
+            this.each(function(el, i) {
 
-            var elements = null;
+                var result = callback.call(this, el, i);
 
-            if(_.typeCheck("string", selectorOrElements)) {
-                elements = document.querySelectorAll(selectorOrElements);
-            } else if(_.typeCheck("array", selectorOrElements)) {
-                elements = selectorOrElements;
-            }
-
-            if(elements != null) {
-
-                for(var i = 0, len = elements.length; i < len; i++) {
-                    var el = elements[i];
-                    callback.apply(el, [i, el]);
+                if (result) {
+                    list[list.length] = el;
                 }
-            }
+            });
+
+            return new DomChain(list);
         },
 
         /**
-         * @method get
+         * @method attr
          *
-         * get attributes
-         *
-         *      // 1. get attribute
-         *      dom.get(element, 'title');
-         *
-         *      // 2. set attribute
-         *      dom.set(element, { title : 'value' });
-         *
-         * @param {Element} element
-         * @param {String} key
-         * @returns {string}
+         * @param attrs
+         * @returns {*}
          */
-        get : function (element, key) {
-            return element.getAttribute(key);
-        },
+        attr : function (key, value) {
 
-        /**
-         * @method set
-         *
-         * set attributes
-         *
-         *      dom.set(element, { title : 'value' });
-         *
-         * @param {Element} element
-         * @param {String} values
-         */
-        set: function (element, values) {
+            var count = arguments.length;
 
-            var elements = element.length ? element : [element];
-            values = values || {};
-            var keys = Object.keys(values);
+            if (count == 1) {       // get
 
-            for(var index = 0, elementCount = elements.length; index < elementCount; index++) {
-                var element = elements[i];
-
-                for(var i = 0, len = keys.length; i < len; i++ ) {
-                    var attrKey = keys[i];
-                    var attrValue = values[attrKey];
-                    element.setAttribute(attrKey, attrValue);
+                if (typeof key == 'string' || Array.isArray(key)) {
+                    return $attr.attr(this[0], key);
+                } else {
+                    return this.each(function(el) {
+                        $attr.attr(el, key);
+                    });
                 }
+
+            } else if (count == 2) {
+
+                if (typeof value == 'function') {
+                    return this.each(function(el, index) {
+                        var oldValue = $attr.get(el, key);
+                        $attr.attr(el, key, value.call(el, index, oldValue));
+                    });
+                } else {
+                    return this.each(function(el) {
+                        $attr.attr(el, key, value);
+                    });
+                }
+
             }
         },
 
         /**
          * @method removeAttr
          *
-         * remove attribute
+         * remove attribute for element
          *
-         * @param {Element} element
          * @param {String} key
+         * @returns {DomChain}
          */
-        removeAttr : function (element, key) {
-          element.removeAttribute(key);
+        removeAttr : function (key) {
+            if (this.length > 0) {
+                $attr.removeAttr(this[0], key);
+            }
+
+            return this;
         },
 
         /**
          * @method data
          *
-         * set dataset values
+         * set or get data
          *
-         *      dom.data(element, 'title');     // get element.dataset.title or element.data-title attribute
-         *
-         *      dom.data(element, { title : 'value' });   // set data values
-         *
-         * @param element
-         * @param one
-         * @returns {*|string}
+         * @param {String|Object} datas
+         * @returns {*}
          */
-        data: function (element, one) {
-            one = one || {};
-            if (typeof one === 'string') {
-                return element.dataset[one] || this.get(element, 'data-' + one);
-            } else if (typeof one === 'object') {
-                var keys = Object.keys(one);
-                for(var i = 0, len = keys.length; i < len; i++) {
-                    var key = keys[i];
-                    var value = one[key];
-                    element.dataset[key] = value;
-                }
+        data: function (datas) {
+            if (typeof datas == 'string') {
+                return this.length > 0 && $attr.data(this[0], datas);
+            } else {
+                this.each(function (el, i) {
+                    $attr.data(el, datas);
+                });
 
+                return this;
             }
         },
 
-        attr: function(selectorOrElements, keyOrAttributes) {
-            if(!_.typeCheck([ "string", "array" ], selectorOrElements))
-                return;
-
-            var elements = document.querySelectorAll(selectorOrElements);
-
-            if(_.typeCheck("object", keyOrAttributes)) { // set
-                for(var i = 0; i < elements.length; i++) {
-                    for(var key in keyOrAttributes) {
-                        elements[i].setAttribute(key, keyOrAttributes[key]);
-                    }
-                }
-            } else if(_.typeCheck("string", keyOrAttributes)) { // get
-                if(elements.length > 0) {
-                    return elements[0].getAttribute(keyOrAttributes);
-                }
-            }
+        /**
+         * @method eq
+         *
+         * get element of index
+         *
+         * if index is minus, find element from last
+         *
+         * @param {Number} index
+         * @returns {DomChain}
+         */
+        eq : function (index) {
+            var i = (index < 0) ? this.length + index : index;
+            return new DomChain(this[i]);
         },
 
-        /*
-        remove: function(selectorOrElements) {
-            this.each(selectorOrElements, function() {
-                this.parentNode.removeChild(this);
-            });
-        }, */
+        /**
+         * @method first
+         *
+         * get first element in DOM tree
+         *
+         * @returns {*|DomChain}
+         */
+        first : function () {
+            return this.eq(0);
+        },
 
-        offset: function(elem) {
-            function isWindow(obj) {
-                /* jshint eqeqeq: false */
-                return obj != null && obj == obj.window;
-            }
-
-            function getWindow(elem) {
-                return isWindow(elem) ?
-                    elem :
-                    elem.nodeType === 9 ?
-                    elem.defaultView || elem.parentWindow :
-                        false;
-            }
-
-            var docElem, win,
-                box = { top: 0, left: 0 },
-                doc = elem && elem.ownerDocument;
-
-            if ( !doc ) {
-                return;
-            }
-
-            docElem = doc.documentElement;
-
-            // Make sure it's not a disconnected DOM node
-            /*/
-             if ( !global.jquery.contains( docElem, elem ) ) {
-             return box;
-             }
-             /**/
-
-            // If we don't have gBCR, just use 0,0 rather than error
-            // BlackBerry 5, iOS 3 (original iPhone)
-            var strundefined = typeof undefined;
-            if ( typeof elem.getBoundingClientRect !== strundefined ) {
-                box = elem.getBoundingClientRect();
-            }
-            win = getWindow( doc );
-
-            return {
-                top: box.top  + ( win.pageYOffset || docElem.scrollTop )  - ( docElem.clientTop  || 0 ),
-                left: box.left + ( win.pageXOffset || docElem.scrollLeft ) - ( docElem.clientLeft || 0 )
-            };
+        /**
+         * @method last
+         *
+         * get last element in DOM tree
+         *
+         * @returns {*|DomChain}
+         */
+        last : function () {
+            return this.eq(-1);
         }
     };
 
-    for(var k in feature) {
-        dom[k] = feature[k];
+    // alias
+    var eventNameList = (
+        "blur focus focusin focusout resize scroll " +
+        "click dblclick mousedown mouseup mousemove mouseover " +
+        "mouseout mouseenter mouseleave change select " +
+        "submit keydown keypress keyup contextmenu"
+    ).split(' ');
+
+    each(eventNameList, function( event) {
+        DomChain.prototype[event] = function(  ) {
+            var count = arguments.length;
+
+            if (count == 0) {
+                this.trigger( event );
+            } else if (count == 1) {
+                this.on(event, arguments[0]);
+            } else if (count == 2) {
+                this.on(event, arguments[0], arguments[1]);
+            }
+        };
+    });
+
+    return DomChain;
+});
+jui.define("util.dom", [ "util.dom.domchain" ], function(DomChain) {
+
+
+
+    //
+    // reference to https://plainjs.com
+
+
+    // Util Function
+    var each = function (arr, callback, context) {
+        for(var i = 0, len = arr.length; i < len; i++) {
+            callback.call(context, arr[i], i);
+        }
+    };
+
+    var filter = function (arr, callback, context) {
+        var list = [];
+        for(var i = 0, len = arr.length; i < len; i++) {
+            if (callback.call(context, arr[i], i)) {
+                list.push(arr[i]);
+            }
+        }
+
+        return list;
+    };
+
+    var merge = function (arr) {
+        var total = [];
+        each(arr, function (list) {
+            each(list, function (item) {
+                total.push(item);
+            });
+        });
+
+        return total;
+    };
+
+    var bind = function (func, context) {
+        return function () {
+            func.apply(context, arguments);
+        };
     }
+
+
+    /**
+     * @class util.dom
+     *
+     * pure dom utility
+     *
+     *      dom("#id") is equals to dom.id('id');
+     *
+     *      dom(".class") is equals to dom.className("class");
+     *
+     *      dom("tag") is equals to dom.tag('tag');
+     *
+     *      dom(".class > tag > li:first-child") is equals to dom.find(".class > tag > li:first-child");
+     *
+     * @singleton
+     */
+    function dom(selector, context) {
+        return new DomChain(selector, context || document);
+    }
+
 
     return dom;
 });

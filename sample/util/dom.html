@@ -4,8 +4,7 @@
 <META charset="UTF-8">
 <title>[JUI Library] - JavaScript/Table/API</title>
 
-<script src="../../js/base.js"></script>
-<script src="../../js/util/dom.js"></script>
+<script src="../../dist/core.js"></script>
 
 <script>
 
@@ -14,12 +13,6 @@ jui.ready([ "util.dom" ], function($) {
     // simple selector test
     console.log('==> start selector test')
 
-    console.log('.jui', $.className("jui"));
-    console.log('.jui - query selector', $.find(".jui"));
-    console.log('body', $.tag("body"));
-    console.log('body - query selector', $.find("body"));
-    console.log("#yellow", $.id("yellow"));
-    console.log("#yellow - query selector", $.find("#yellow"));
     console.log("#yellow - chain", $("#yellow"));
 
     console.log('==> start css test')
@@ -51,17 +44,14 @@ jui.ready([ "util.dom" ], function($) {
         // next test case
         console.log('==> start dom manipulation(dom create, append, remove)');
 
-        $("#yellow").append($.create('div'));
-        $("#yellow").append($.create('<div class="baby">yellow baby</div>'));
+        $("#yellow").append('<div class="baby">yellow baby</div>');
         $("#yellow").append('<div class="baby2">yellow baby2</div>');
-        $("#yellow").append($.create({
-            style : {
-                position: 'absolute',
-                'border-radius' : '50%',
-                background: 'black',
-                width: '50px',
-                height: '50px'
-            }
+        $("#yellow").append($("<div />").css({
+            position: 'absolute',
+            'border-radius' : '50%',
+            background: 'black',
+            width: '50px',
+            height: '50px'
         }));
 
         console.log($("<div class='love'>").append("<div class='yellow'>").appendTo("body"));
