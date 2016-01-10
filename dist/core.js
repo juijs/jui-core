@@ -16,6 +16,7 @@
 	};
 
 	var readyList = [];
+	var readyTimer = null;
 
 	function completed () {
 
@@ -29,7 +30,7 @@
 
 	function ready() {
 		while(readyList[0]) {
-			readyList.shift().call();
+			readyList.shift().call(window);
 		}
 	}
 
@@ -899,11 +900,12 @@
 		 * @param func
 		 */
 		ready : function (func) {
+
 			readyList.push(func);
 
 			// in case the document is already rendered
-			if ( document.readyState === "complete" || ( document.readyState !== "loading" && !document.documentElement.doScroll ) ) {
-				window.setTimeout(ready, 0);
+			if ( document.readyState === "complete" ) {
+				window.setTimeout(ready, 1);
 			} else if (document.addEventListener) {
 				document.addEventListener('DOMContentLoaded', completed);
 				window.addEventListener('load', completed);
@@ -1401,7 +1403,7 @@ jui.define("util.dom.attr", [ ], function() {
     // Util Function
     var each = function (arr, callback, context) {
         for(var i = 0, len = arr.length; i < len; i++) {
-            callback.call(context, arr[i], i);
+            callback.call(context, i, arr[i]);
         }
     };
 
@@ -1444,11 +1446,27 @@ jui.define("util.dom.attr", [ ], function() {
 
            if (element.nodeType == 3) return;
            var obj = {};
-           each(arr, function(key) {
+           each(arr, function(i, key) {
                obj[key] = element.getAttribute(key);
            });
            return obj;
        },
+
+        getAllData : function (element, arr) {
+            if (element.nodeType == 3) return;
+            var obj = {};
+            arr = arr || Object.keys(element.attributes);
+            each(arr, function(i, key) {
+                var hasDataAttribute = typeof element.attributes['data-'+key] !== 'undefined';
+
+                if (hasDataAttribute) {
+                    obj[key] = element.getAttribute('data-' + key);
+                } else {
+                    obj[key] = element.dataset[key];
+                }
+            });
+            return obj;
+        },
 
        /**
         * @method set
@@ -1465,7 +1483,7 @@ jui.define("util.dom.attr", [ ], function() {
            if (element.nodeType == 3) return;
 
            values = values || {};
-           each(Object.keys(values), function(key) {
+           each(Object.keys(values), function(i, key) {
                var attrKey = key;
                var attrValue = values[attrKey];
 
@@ -1488,7 +1506,7 @@ jui.define("util.dom.attr", [ ], function() {
        removeAttr : function (element, key) {
 
            if (Array.isArray(key)) {
-               each(key, function (it) {
+               each(key, function (i, it) {
                    element.removeAttribute(it);
                });
            } else {
@@ -1511,15 +1529,46 @@ jui.define("util.dom.attr", [ ], function() {
         * @param one
         * @returns {*|string}
         */
-       data: function (element, one) {
-           one = one || {};
-           if (typeof one === 'string') {
-               return element.dataset[one] || this.get(element, 'data-' + one);
-           } else if (typeof one === 'object') {
-               each(Object.keys(one), function(key) {
-                   var value = one[key];
+       data: function (element, key, value) {
+
+
+           var count = arguments.length;
+           var hasDataAttribute = typeof element.attributes['data-'+key] !== 'undefined';
+
+           if (count == 1) {
+               // return all data
+               return this.getAllData(element);
+           } else if (count == 2) {
+               if (typeof key == 'string') {
+                   if (!hasDataAttribute) {
+                       return element.dataset[key];
+                   } else {
+                       return this.get(element, 'data-' + key);
+                   }
+
+               } else if (Array.isArray(key)) {
+                   return this.getAllData(element, key);
+               } else if (typeof key == 'object') {
+                   each(Object.keys(key), function(i, k) {
+                       var value = key[k];
+
+                       if (typeof element.attributes['data-'+k] == 'undefined') {
+                           element.dataset[k] = value;
+                       } else {
+                           element.setAttribute('data-'+k, value);
+                       }
+
+                   });
+               }
+
+           } else if (count == 3) {
+               console.log(hasDataAttribute,key,value);
+               if (!hasDataAttribute) {
                    element.dataset[key] = value;
-               });
+                   console.log(element.dataset[key]);
+               } else {
+                   element.setAttribute('data-'+key, value);
+               }
            }
        },
 
@@ -1564,48 +1613,32 @@ jui.define("util.dom.attr", [ ], function() {
                this.set(element, obj);
            }
 
-           return  this;
        },
 
-       /**
-        * @method val
-        *
-        * get value attribute of element
-        *
-        *      $("#id").val();
-        *
-        * set value attribute
-        *
-        *      $("#id").val('test');
-        *
-        * @param {Mixed} [value=undefined]
-        * @returns {*}
-        */
-       val : function (value) {
-           if (this.length == 0) return;
-
-           var node = this[0];
+       val : function (element, value) {
+           var count = arguments.length;
+           value = value || "";
 
            // get value
-           if (arguments.length == 0) {
+           if (count == 1) {
 
-               var value;
+               var v;
 
-               if (node.nodeName == "SELECT") {
-                   value = node.options[node.selectedIndex].value;
+               if (element.nodeName == "SELECT") {
+                   v = element.options[element.selectedIndex].value;
                } else {
-                   value = node.value;
+                   v = element.value;
                }
 
-               return value;
+               return v;
            }
            // set value
-           else if (arguments.length == 1) {
+           else if (count == 2) {
                var values = Array.isArray(value) ? value : [value ];
 
-               if (node.nodeName == "SELECT") {
+               if (element.nodeName == "SELECT") {
                    var selected = false;
-                   each(node.options, function(opt, i) {
+                   each(element.options, function(i, opt) {
                        if (values.indexOf(opt.value) > -1) {
                            opt.selected = true;
                            selected = true;
@@ -1613,17 +1646,15 @@ jui.define("util.dom.attr", [ ], function() {
                    });
 
                    if (!selected) {
-                       node.selectedIndex = -1;
+                       element.selectedIndex = -1;
                    }
-               } else if (node.type == "checkbox" || node.type == "radio") {
-                   node.checked = (node.value === value);
+               } else if (element.type == "checkbox" || element.type == "radio") {
+                   element.checked = (element.value === value);
                } else {
-                   node.value = value;
+                   element.value = value;
                }
 
            }
-
-           return this;
        },
    };
 
@@ -1665,30 +1696,9 @@ jui.define("util.dom.css", [ ], function() {
      */
     var CSS = {
 
-        /**
-         * @method css
-         *
-         * get the computed style properties of element
-         *
-         *      //1. get all style
-         *      var allStyle = dom.css(element);
-         *      allStyle.backgroundColor;
-         *
-         *      //2. get one property
-         *      dom.css(element, 'background-color');
-         *
-         *      // 3. get all properties
-         *      dom.css(element, ['background-color', 'attr']);
-         *
-         *      //3. set style properties
-         *      dom.css(element, { 'background-color': 'yellow' });
-         *
-         * @param element
-         * @param key
-         * @returns {*}
-         */
+
         css : function (element, styles, value) {
-            var style = window.getComputedStyle ? getComputedStyle(element, null) : element.currentStyle;
+            var style = window.getComputedStyle ? getComputedStyle(element) : element.currentStyle;
 
             if (typeof styles === 'string') {
                 if (arguments.length == 2) {
@@ -1825,11 +1835,11 @@ jui.define("util.dom.css", [ ], function() {
             if (arguments.length == 1) {
                 var style = this.css(element);
 
-                w -= parseFloat(style.borderLeftWidth) + parseFloat(style.paddingLeft);
-                w -= parseFloat(style.borderRightWidth) + parseFloat(style.paddingRight);
+                w -= parseFloat(style.borderLeftWidth || 0) + parseFloat(style.paddingLeft || 0);
+                w -= parseFloat(style.borderRightWidth || 0) + parseFloat(style.paddingRight || 0);
 
                 if (style.boxSizing == 'border-box') {
-                    w -= parseFloat(style.marginLeft) + parseFloat(style.marginRight);
+                    w -= parseFloat(style.marginLeft || 0) + parseFloat(style.marginRight || 0);
                 }
 
                 return w;
@@ -1854,11 +1864,11 @@ jui.define("util.dom.css", [ ], function() {
             if (arguments.length == 1) {
                 var style = this.css(element);
 
-                h -= parseFloat(style.borderTopWidth) + parseFloat(style.paddingTop);
-                h -= parseFloat(style.borderBottomWidth) + parseFloat(style.paddingBottom);
+                h -= parseFloat(style.borderTopWidth || 0) + parseFloat(style.paddingTop || 0);
+                h -= parseFloat(style.borderBottomWidth || 0) + parseFloat(style.paddingBottom || 0);
 
                 if (style.boxSizing == 'border-box') {
-                    h -= parseFloat(style.marginTop) + parseFloat(style.marginBottom);
+                    h -= parseFloat(style.marginTop || 0) + parseFloat(style.marginBottom || 0);
                 }
 
                 return h;
@@ -1880,8 +1890,9 @@ jui.define("util.dom.css", [ ], function() {
 
             if (withMargin) {
                 var style = this.css(element);
-                width += parseInt(style.marginLeft) + parserInt(style.marginRight);
+                width += parseInt(style.marginLeft || 0) + parserInt(style.marginRight || 0);
             }
+
 
             return width;
         },
@@ -1994,7 +2005,7 @@ jui.define("util.dom.event", [ ], function() {
     var filter = function (arr, callback, context) {
         var list = [];
         for(var i = 0, len = arr.length; i < len; i++) {
-            if (callback.call(context, arr[i], i)) {
+            if (callback.call(context, i, arr[i])) {
                 list.push(arr[i]);
             }
         }
@@ -2038,7 +2049,12 @@ jui.define("util.dom.event", [ ], function() {
                 };
 
                 eo.handler = bind(function(e) {
-                    this.originalHandler.apply(this.context || this.element, arguments);
+
+                    if (!e.currentTarget) {
+                        e.currentTarget = this.element;
+                    }
+
+                    this.originalHandler.call(this.element, e);
 
                     // only run once
                     if (this.handler.one) {
@@ -2068,17 +2084,21 @@ jui.define("util.dom.event", [ ], function() {
 
                     var target = e.target || e.srcElement;
 
+                    if (!e.currentTarget) {
+                        e.currentTarget = this.element;
+                    }
+
                     if (typeof this.selector == 'string') {
                         if (matches.call(target, this.selector)) {
-                            this.originalHandler.apply(this.context || this.element, arguments);
+                            this.originalHandler.call(this.element, e);
                         }
                     } else if (this.selector.length) {
-                        var list = filter(this.selector, function (el) {
+                        var list = filter(this.selector, function (i, el) {
                             return target === el;
                         });
 
                         if (list.length > 0) {
-                            this.originalHandler.apply(this.context || this.element, arguments);
+                            this.originalHandler.call(this.element, e);
                         }
                     }
 
@@ -2243,7 +2263,7 @@ jui.define("util.dom.manage", [ ], function() {
             if (typeof newChildElement == 'string') {
                 element.insertAdjacentHTML("afterend", newChildElement);
             } else {
-                element.parentNode.insertBefore(newElement, this.next(element));
+                element.parentNode.insertBefore(newElement, element.nextElementSibling);
             }
 
         },
@@ -2491,7 +2511,7 @@ jui.define("util.dom.selector", [ ], function() {
                 if (!filter || filter(element)) {
                     arr[arr.length] = element;
                 }
-            } while(element = element.nextSibling);
+            } while(element = element.nextElementSibling);
 
             return arr;
         },
@@ -2519,7 +2539,7 @@ jui.define("util.dom.selector", [ ], function() {
          * @returns {*}
          */
         next : function (element, filter) {
-            while(element = element.nextSibling) {
+            while(element = element.nextElementSibling) {
                 if (!filter || filter(element)) {
                     return element;
                 }
@@ -2537,7 +2557,7 @@ jui.define("util.dom.selector", [ ], function() {
          */
         nextAll: function(element, filter) {
             var arr = [];
-            while(element = element.nextSibling) {
+            while(element = element.nextElementSibling) {
                 if (!filter || filter(element)) {
                     arr[arr.length] = element;
                 }
@@ -2555,7 +2575,7 @@ jui.define("util.dom.selector", [ ], function() {
          * @returns {*}
          */
         prev: function(element, filter) {
-            while(element = element.previousSibling) {
+            while(element = element.previousElementSibling) {
                 if (!filter || filter(element)) {
                     return element;
                 }
@@ -2573,7 +2593,7 @@ jui.define("util.dom.selector", [ ], function() {
          */
         prevAll: function(element, filter) {
             var arr = [];
-            while(element = element.previousSibling) {
+            while(element = element.previousElementSibling) {
                 if (!filter || filter(element)) {
                     arr[arr.length] = element;
                 }
@@ -2825,6 +2845,24 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
         return total;
     };
 
+    var ok = function() { return true };
+
+    var getCloneElement = function (element) {
+        if (typeof element == 'string') {
+            var cloneElement = element;
+        } else {
+            if (element.domchain && !element.created) {  // only reference
+                var cloneElement = element.fragment() ;
+            } else if (element.domchain && element.created) {
+                var cloneElement = element[0];
+            } else {
+                var cloneElement = $manage.clone(element);
+            }
+        }
+
+        return cloneElement;
+    }
+
     var regForId = /^#([\w-]+)$/;
     var regForClass = /^\.([\w-]+)$/;
     var regForTag = /^([\w-]+)$/;
@@ -2847,6 +2885,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
 
             if (search.indexOf("<") > -1) {
                 list = $core.create(search, false);
+                this.created = true;
             } else if (result = regForId.exec(search)) {
                 list = [$selector.id(result[1], context)];
             } else if (result = regForClass.exec(search)) {
@@ -2854,7 +2893,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
             } else if (result = regForTag.exec(search)) {
                 list = $selector.tag(result[1], context);
             } else {
-                list = $selector.find(search, context);
+                list = $selector.find(context, search);
             }
         } else if (search.length) {
             list = search;
@@ -2872,6 +2911,8 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
     }
 
     DomChain.prototype = {
+
+        created : false,
 
         domchain : true,
 
@@ -3021,9 +3062,10 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {Boolean}
          */
         hasClass : function (className) {
-            if (this.length > 0) {
-                $css.hasClass(this[0], className);
+            if (this[0]) {
+                return $css.hasClass(this[0], className);
             }
+
             return false;
         },
 
@@ -3072,6 +3114,21 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
         },
 
         /**
+         * @method clone
+         *
+         * clone dom tree
+         *
+         * @param isCopyNodes
+         * @returns {*|DomChain}
+         */
+        clone : function (isCopyNodes) {
+
+            return this.map(function(i, el) {
+                return $manage.clone(el, isCopyNodes);
+            });
+        },
+
+        /**
          * @method after
          *
          *      dom("#id").after($("#id2"));
@@ -3084,16 +3141,15 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          */
         after : function(newElement) {
 
-            if (typeof newElement == 'string') {
-                var cloneElement = newElement;
-            } else {
-                var cloneElement = newElement.domchain ? newElement.fragment() : $manage.clone(newElement);
-            }
-
             this.each(function(i, el) {
-                $manage.after(el, cloneElement);
+                $manage.after(el, getCloneElement(newElement));
             });
 
+            return this;
+        },
+
+        insertAfter : function (container) {
+            new DomChain(container).after(this);
             return this;
         },
 
@@ -3111,14 +3167,8 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          */
         before : function (newElement) {
 
-            if (typeof newElement == 'string') {
-                var cloneElement = newElement;
-            } else {
-                var cloneElement = newElement.domchain ? newElement.fragment() : $manage.clone(newElement);
-            }
-
             this.each(function(i, el) {
-                $manage.before(el, cloneElement);
+                $manage.before(el, getCloneElement(newElement));
             });
 
             return this;
@@ -3148,15 +3198,8 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {DomChain}
          */
         append : function (newElement) {
-
-            if (typeof newElement == 'string') {
-                var cloneElement = newElement;
-            } else {
-                var cloneElement = newElement.domchain ? newElement.fragment() : $manage.clone(newElement);
-            }
-
             this.each(function(i, el) {
-                $manage.append(el, cloneElement);
+                $manage.append(el, getCloneElement(newElement));
             });
 
             return this;
@@ -3185,14 +3228,8 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          */
         prepend: function (newElement) {
 
-            if (typeof newElement == 'string') {
-                var cloneElement = newElement;
-            } else {
-                var cloneElement = newElement.domchain ? newElement.fragment() : $manage.clone(newElement);
-            }
-
             this.each(function(i, el) {
-                $manage.prepend(el, cloneElement);
+                $manage.prepend(el, getCloneElement(newElement));
             });
 
             return this;
@@ -3564,20 +3601,19 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          */
         children : function (selector) {
 
+
+            var filter = ok;
+
+
             if (selector) {
-                var filter = function (el) {
-                    return $selector.matches(el, selector);
-                };
-            } else {
-                var filter = function (el) {
-                    return true;
-                };
+                filter = function (child) {
+                    if (child.nodeType == 3) return false;
+                    return $selector.matches(child, selector);
+                }
             }
 
 
             return this.map(function (i, el) {
-                console.log(el);
-                if (el.nodeType == 3) return [];
                 return $selector.children(el, filter);
             }, true);
         },
@@ -3684,6 +3720,32 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
         },
 
         /**
+         * @method val
+         *
+         * get value attribute of element
+         *
+         *      $("#id").val();
+         *
+         * set value attribute
+         *
+         *      $("#id").val('test');
+         *
+         * @param {Mixed} [value=undefined]
+         * @returns {*}
+         */
+        val : function (value) {
+          var count = arguments.length;
+
+          if (count == 0) {
+              return $attr.val(this[0]);
+          } else if (count == 1) {
+              $attr.val(this[0], value);
+          }
+
+          return this;
+        },
+
+        /**
          * @method removeAttr
          *
          * remove attribute for element
@@ -3707,16 +3769,39 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @param {String|Object} datas
          * @returns {*}
          */
-        data: function (datas) {
-            if (typeof datas == 'string') {
-                return this.length > 0 && $attr.data(this[0], datas);
-            } else {
-                this.each(function (i, el) {
-                    $attr.data(el, datas);
-                });
+        data: function (key, value) {
 
-                return this;
+
+            var count = arguments.length;
+
+            if (count == 0) {
+                return $attr.data(this[0]);
+            } else if (count == 1) {       // get
+
+                if (typeof key == 'string' || Array.isArray(key)) {
+                    return $attr.data(this[0], key);
+                } else if (typeof key == 'object') {
+                    return this.each(function(i, el) {
+                        $attr.data(el, key);
+                    });
+                }
+
+            } else if (count == 2) {
+
+                if (typeof value == 'function') {
+                    return this.each(function(index, el) {
+                        var oldValue = $attr.data(el, key);
+                        $attr.data(el, key, value.call(el, index, oldValue));
+                    });
+                } else {
+                    return this.each(function(i, el) {
+                        $attr.data(el, key, value);
+                    });
+                }
+
             }
+
+            return null;
         },
 
         /**
@@ -5579,7 +5664,7 @@ jui.define("util.scale", [ "util.math", "util.time" ], function(math, _time) {
 	return self;
 });
 
-jui.define("util.color", [ "util.math" ], function(math) {
+jui.define("util.color", [ "util.math", "util.base" ], function(math, _) {
 
 	/**
 	 *  @class util.color
@@ -8238,8 +8323,6 @@ jui.define("event", [ "util.dom", "util.base", "manager", "collection" ],
                 $root = $(selector || "<div />");
 
             $root.each(function (index) {
-
-                console.log(index);
                 list[index] = jui.createUIObject(UI, $root.selector, index, this, options, function(mainObj, opts) {
                     /** @property {Object} listen Dom events */
                     mainObj.init.prototype.listen = new DOMEventListener();

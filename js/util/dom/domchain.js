@@ -18,6 +18,24 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
         return total;
     };
 
+    var ok = function() { return true };
+
+    var getCloneElement = function (element) {
+        if (typeof element == 'string') {
+            var cloneElement = element;
+        } else {
+            if (element.domchain && !element.created) {  // only reference
+                var cloneElement = element.fragment() ;
+            } else if (element.domchain && element.created) {
+                var cloneElement = element[0];
+            } else {
+                var cloneElement = $manage.clone(element);
+            }
+        }
+
+        return cloneElement;
+    }
+
     var regForId = /^#([\w-]+)$/;
     var regForClass = /^\.([\w-]+)$/;
     var regForTag = /^([\w-]+)$/;
@@ -40,6 +58,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
 
             if (search.indexOf("<") > -1) {
                 list = $core.create(search, false);
+                this.created = true;
             } else if (result = regForId.exec(search)) {
                 list = [$selector.id(result[1], context)];
             } else if (result = regForClass.exec(search)) {
@@ -47,7 +66,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
             } else if (result = regForTag.exec(search)) {
                 list = $selector.tag(result[1], context);
             } else {
-                list = $selector.find(search, context);
+                list = $selector.find(context, search);
             }
         } else if (search.length) {
             list = search;
@@ -64,7 +83,21 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
         this.selector = search;
     }
 
+    /**
+     * alias for util function
+     */
+    DomChain.core = $core;
+    DomChain.attr = $attr;
+    DomChain.css = css;
+    DomChain.event = $event;
+    DomChain.manage = $manage;
+    DomChain.selector = $selector;
+
+    /** */
+
     DomChain.prototype = {
+
+        created : false,
 
         domchain : true,
 
@@ -214,9 +247,10 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {Boolean}
          */
         hasClass : function (className) {
-            if (this.length > 0) {
-                $css.hasClass(this[0], className);
+            if (this[0]) {
+                return $css.hasClass(this[0], className);
             }
+
             return false;
         },
 
@@ -265,6 +299,21 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
         },
 
         /**
+         * @method clone
+         *
+         * clone dom tree
+         *
+         * @param isCopyNodes
+         * @returns {*|DomChain}
+         */
+        clone : function (isCopyNodes) {
+
+            return this.map(function(i, el) {
+                return $manage.clone(el, isCopyNodes);
+            });
+        },
+
+        /**
          * @method after
          *
          *      dom("#id").after($("#id2"));
@@ -277,16 +326,15 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          */
         after : function(newElement) {
 
-            if (typeof newElement == 'string') {
-                var cloneElement = newElement;
-            } else {
-                var cloneElement = newElement.domchain ? newElement.fragment() : $manage.clone(newElement);
-            }
-
             this.each(function(i, el) {
-                $manage.after(el, cloneElement);
+                $manage.after(el, getCloneElement(newElement));
             });
 
+            return this;
+        },
+
+        insertAfter : function (container) {
+            new DomChain(container).after(this);
             return this;
         },
 
@@ -304,14 +352,8 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          */
         before : function (newElement) {
 
-            if (typeof newElement == 'string') {
-                var cloneElement = newElement;
-            } else {
-                var cloneElement = newElement.domchain ? newElement.fragment() : $manage.clone(newElement);
-            }
-
             this.each(function(i, el) {
-                $manage.before(el, cloneElement);
+                $manage.before(el, getCloneElement(newElement));
             });
 
             return this;
@@ -341,15 +383,8 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {DomChain}
          */
         append : function (newElement) {
-
-            if (typeof newElement == 'string') {
-                var cloneElement = newElement;
-            } else {
-                var cloneElement = newElement.domchain ? newElement.fragment() : $manage.clone(newElement);
-            }
-
             this.each(function(i, el) {
-                $manage.append(el, cloneElement);
+                $manage.append(el, getCloneElement(newElement));
             });
 
             return this;
@@ -378,14 +413,8 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          */
         prepend: function (newElement) {
 
-            if (typeof newElement == 'string') {
-                var cloneElement = newElement;
-            } else {
-                var cloneElement = newElement.domchain ? newElement.fragment() : $manage.clone(newElement);
-            }
-
             this.each(function(i, el) {
-                $manage.prepend(el, cloneElement);
+                $manage.prepend(el, getCloneElement(newElement));
             });
 
             return this;
@@ -757,14 +786,15 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          */
         children : function (selector) {
 
+
+            var filter = ok;
+
+
             if (selector) {
-                var filter = function (el) {
-                    return $selector.matches(el, selector);
-                };
-            } else {
-                var filter = function (el) {
-                    return true;
-                };
+                filter = function (child) {
+                    if (child.nodeType == 3) return false;
+                    return $selector.matches(child, selector);
+                }
             }
 
 
@@ -875,6 +905,32 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
         },
 
         /**
+         * @method val
+         *
+         * get value attribute of element
+         *
+         *      $("#id").val();
+         *
+         * set value attribute
+         *
+         *      $("#id").val('test');
+         *
+         * @param {Mixed} [value=undefined]
+         * @returns {*}
+         */
+        val : function (value) {
+          var count = arguments.length;
+
+          if (count == 0) {
+              return $attr.val(this[0]);
+          } else if (count == 1) {
+              $attr.val(this[0], value);
+          }
+
+          return this;
+        },
+
+        /**
          * @method removeAttr
          *
          * remove attribute for element
@@ -898,16 +954,39 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @param {String|Object} datas
          * @returns {*}
          */
-        data: function (datas) {
-            if (typeof datas == 'string') {
-                return this.length > 0 && $attr.data(this[0], datas);
-            } else {
-                this.each(function (i, el) {
-                    $attr.data(el, datas);
-                });
+        data: function (key, value) {
 
-                return this;
+
+            var count = arguments.length;
+
+            if (count == 0) {
+                return $attr.data(this[0]);
+            } else if (count == 1) {       // get
+
+                if (typeof key == 'string' || Array.isArray(key)) {
+                    return $attr.data(this[0], key);
+                } else if (typeof key == 'object') {
+                    return this.each(function(i, el) {
+                        $attr.data(el, key);
+                    });
+                }
+
+            } else if (count == 2) {
+
+                if (typeof value == 'function') {
+                    return this.each(function(index, el) {
+                        var oldValue = $attr.data(el, key);
+                        $attr.data(el, key, value.call(el, index, oldValue));
+                    });
+                } else {
+                    return this.each(function(i, el) {
+                        $attr.data(el, key, value);
+                    });
+                }
+
             }
+
+            return null;
         },
 
         /**

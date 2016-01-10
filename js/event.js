@@ -176,8 +176,6 @@ jui.define("event", [ "util.dom", "util.base", "manager", "collection" ],
                 $root = $(selector || "<div />");
 
             $root.each(function (index) {
-
-                console.log(index);
                 list[index] = jui.createUIObject(UI, $root.selector, index, this, options, function(mainObj, opts) {
                     /** @property {Object} listen Dom events */
                     mainObj.init.prototype.listen = new DOMEventListener();

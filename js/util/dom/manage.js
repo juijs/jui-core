@@ -48,7 +48,7 @@ jui.define("util.dom.manage", [ ], function() {
             if (typeof newChildElement == 'string') {
                 element.insertAdjacentHTML("afterend", newChildElement);
             } else {
-                element.parentNode.insertBefore(newElement, this.next(element));
+                element.parentNode.insertBefore(newElement, element.nextElementSibling);
             }
 
         },

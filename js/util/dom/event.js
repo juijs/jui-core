@@ -85,7 +85,7 @@ jui.define("util.dom.event", [ ], function() {
     var filter = function (arr, callback, context) {
         var list = [];
         for(var i = 0, len = arr.length; i < len; i++) {
-            if (callback.call(context, arr[i], i)) {
+            if (callback.call(context, i, arr[i])) {
                 list.push(arr[i]);
             }
         }
@@ -129,7 +129,12 @@ jui.define("util.dom.event", [ ], function() {
                 };
 
                 eo.handler = bind(function(e) {
-                    this.originalHandler.apply(this.context || this.element, arguments);
+
+                    if (!e.currentTarget) {
+                        e.currentTarget = this.element;
+                    }
+
+                    this.originalHandler.call(this.element, e);
 
                     // only run once
                     if (this.handler.one) {
@@ -159,17 +164,21 @@ jui.define("util.dom.event", [ ], function() {
 
                     var target = e.target || e.srcElement;
 
+                    if (!e.currentTarget) {
+                        e.currentTarget = this.element;
+                    }
+
                     if (typeof this.selector == 'string') {
                         if (matches.call(target, this.selector)) {
-                            this.originalHandler.apply(this.context || this.element, arguments);
+                            this.originalHandler.call(this.element, e);
                         }
                     } else if (this.selector.length) {
-                        var list = filter(this.selector, function (el) {
+                        var list = filter(this.selector, function (i, el) {
                             return target === el;
                         });
 
                         if (list.length > 0) {
-                            this.originalHandler.apply(this.context || this.element, arguments);
+                            this.originalHandler.call(this.element, e);
                         }
                     }
 

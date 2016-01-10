@@ -111,7 +111,7 @@ jui.define("util.dom.selector", [ ], function() {
                 if (!filter || filter(element)) {
                     arr[arr.length] = element;
                 }
-            } while(element = element.nextSibling);
+            } while(element = element.nextElementSibling);
 
             return arr;
         },
@@ -139,7 +139,7 @@ jui.define("util.dom.selector", [ ], function() {
          * @returns {*}
          */
         next : function (element, filter) {
-            while(element = element.nextSibling) {
+            while(element = element.nextElementSibling) {
                 if (!filter || filter(element)) {
                     return element;
                 }
@@ -157,7 +157,7 @@ jui.define("util.dom.selector", [ ], function() {
          */
         nextAll: function(element, filter) {
             var arr = [];
-            while(element = element.nextSibling) {
+            while(element = element.nextElementSibling) {
                 if (!filter || filter(element)) {
                     arr[arr.length] = element;
                 }
@@ -175,7 +175,7 @@ jui.define("util.dom.selector", [ ], function() {
          * @returns {*}
          */
         prev: function(element, filter) {
-            while(element = element.previousSibling) {
+            while(element = element.previousElementSibling) {
                 if (!filter || filter(element)) {
                     return element;
                 }
@@ -193,7 +193,7 @@ jui.define("util.dom.selector", [ ], function() {
          */
         prevAll: function(element, filter) {
             var arr = [];
-            while(element = element.previousSibling) {
+            while(element = element.previousElementSibling) {
                 if (!filter || filter(element)) {
                     arr[arr.length] = element;
                 }

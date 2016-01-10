@@ -1,0 +1,218 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<META charset="UTF-8">
+<title>[JUI Library] - JavaScript/Table/API</title>
+
+<link href="//rawgit.com/juijs/jui/develop/dist/ui.css" rel="stylesheet" />
+<link href="//rawgit.com/juijs/jui/develop/dist/ui-jennifer.css" rel="stylesheet" />
+<script src="../../dist/core.js"></script>
+
+    <style>
+        .col {
+            padding: 50px;
+        }
+    </style>
+    <script>
+
+        jui.defineUI("ui.accordion", [ "util.dom", "util.base" ], function($, _) {
+
+            /**
+             * @class ui.accordion
+             * @extends core
+             * @alias Accordion
+             * @requires jquery
+             */
+            var UI = function() {
+                var activeIndex = 0;
+
+                var $title = null,
+                        $content = null;
+
+                function showTitle(index) {
+                    $title.each(function(i) {
+                        if(index == i) {
+                            $(this).addClass("active");
+                            $content.insertAfter(this).show();
+                        } else {
+                            $(this).removeClass("active");
+                        }
+                    });
+                }
+
+                function setTitleEvent(self) {
+                    $title.each(function(i) {
+                        self.addEvent(this, "click", function(e) {
+                            if($(this).hasClass("active") && self.options.autoFold) {
+                                $(this).removeClass("active");
+                                $content.hide();
+                                self.emit("fold", [ i, e ] );
+                            } else {
+                                showTitle(i);
+                                self.emit("open", [ i, e ]);
+                            }
+                        });
+                    });
+                }
+
+                this.init = function() {
+                    var opts = this.options;
+
+                    $title = $(this.root).find(".title");
+                    $content = $(this.root).find(".content");
+
+                    if(_.typeCheck("integer", opts.index)) {
+                        showTitle(opts.index);
+                    } else {
+                        $content.hide();
+                    }
+
+                    setTitleEvent(this);
+                }
+
+                /**
+                 * @method activeIndex
+                 * Gets the index of the currently enabled node
+                 *
+                 * @return {Integer} Index
+                 */
+                this.activeIndex = function() {
+                    return activeIndex;
+                }
+            }
+
+            UI.setup = function() {
+                return {
+                    /**
+                     * @cfg {Integer} [index=null]
+                     * Sets an enabled node
+                     */
+                    index: null,
+
+                    /**
+                     * @cfg {Boolean} [autoFold=false]
+                     * When you click on a node, the node folding
+                     */
+                    autoFold: false
+                }
+            }
+
+            /**
+             * @event open
+             * When a node is opened, the events that occur
+             *
+             * @param {Integer} index Index
+             * @param {jQueryEvent} e The event object
+             */
+
+            /**
+             * @event fold
+             * When a node is closed, the events that occur
+             *
+             * @param {Integer} index Index
+             * @param {jQueryEvent} e The event object
+             */
+
+            return UI;
+        });
+
+        jui.ready([ "ui.accordion", "util.dom" ], function(accordion, $) {
+            var uiObj = accordion(".accordion:first-of-type", {
+                event: {
+                    open: function(index, e) {
+                        $(this.root).find(".title > i").attr("class", "icon-arrow1");
+                        $(e.target).find("i").attr("class", "icon-arrow3");
+                    }
+                },
+                index: 1
+            });
+
+            console.log(uiObj);
+        });
+    </script>
+</head>
+<body class="jui">
+
+<div class="page-header">
+    <h1>Accordion</h1>
+</div>
+
+<div class="row">
+    <div class="col col-3">
+        <p>Classic, Normal</p>
+
+        <div class="accordion">
+            <div class="title">
+                Group Item #1 <i class="icon-arrow1"></i>
+            </div>
+            <div class="content">
+                <i class="icon-add-dir"></i> The style components provide various options in addition to the basic functionality. In addition, script components can be added, which facilitate the development of more diverse UI components.
+            </div>
+            <div class="title">
+                Group Item #2 <i class="icon-arrow3"></i>
+            </div>
+            <div class="title">
+                Group Item #3 <i class="icon-arrow1"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col col-3">
+        <p>Classic, Large</p>
+
+        <div class="accordion large">
+            <div class="title active">
+                Group Item #1 <i class="icon-arrow3"></i>
+            </div>
+            <div class="content">
+                The style components provide various options in addition to the basic functionality. In addition, script components can be added, which facilitate the development of more diverse UI components.
+            </div>
+            <div class="title">
+                Group Item #2 <i class="icon-arrow1"></i>
+            </div>
+            <div class="title">
+                Group Item #3 <i class="icon-arrow1"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col col-3">
+        <p>Simple, Normal</p>
+
+        <div class="accordion simple">
+            <div class="title active">
+                Group Item #1
+            </div>
+            <div class="content">
+                The style components provide various options in addition to the basic functionality. In addition, script components can be added, which facilitate the development of more diverse UI components.
+            </div>
+            <div class="title">
+                Group Item #2
+            </div>
+            <div class="title">
+                Group Item #3
+            </div>
+        </div>
+    </div>
+
+    <div class="col col-3">
+        <p>Simple, Large</p>
+
+        <div class="accordion simple large">
+            <div class="title active">
+                Group Item #1
+            </div>
+            <div class="content">
+                The style components provide various options in addition to the basic functionality. In addition, script components can be added, which facilitate the development of more diverse UI components.
+            </div>
+            <div class="title">
+                Group Item #2
+            </div>
+            <div class="title">
+                Group Item #3
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -34,30 +34,9 @@ jui.define("util.dom.css", [ ], function() {
      */
     var CSS = {
 
-        /**
-         * @method css
-         *
-         * get the computed style properties of element
-         *
-         *      //1. get all style
-         *      var allStyle = dom.css(element);
-         *      allStyle.backgroundColor;
-         *
-         *      //2. get one property
-         *      dom.css(element, 'background-color');
-         *
-         *      // 3. get all properties
-         *      dom.css(element, ['background-color', 'attr']);
-         *
-         *      //3. set style properties
-         *      dom.css(element, { 'background-color': 'yellow' });
-         *
-         * @param element
-         * @param key
-         * @returns {*}
-         */
+
         css : function (element, styles, value) {
-            var style = window.getComputedStyle ? getComputedStyle(element, null) : element.currentStyle;
+            var style = window.getComputedStyle ? getComputedStyle(element) : element.currentStyle;
 
             if (typeof styles === 'string') {
                 if (arguments.length == 2) {
@@ -194,11 +173,11 @@ jui.define("util.dom.css", [ ], function() {
             if (arguments.length == 1) {
                 var style = this.css(element);
 
-                w -= parseFloat(style.borderLeftWidth) + parseFloat(style.paddingLeft);
-                w -= parseFloat(style.borderRightWidth) + parseFloat(style.paddingRight);
+                w -= parseFloat(style.borderLeftWidth || 0) + parseFloat(style.paddingLeft || 0);
+                w -= parseFloat(style.borderRightWidth || 0) + parseFloat(style.paddingRight || 0);
 
                 if (style.boxSizing == 'border-box') {
-                    w -= parseFloat(style.marginLeft) + parseFloat(style.marginRight);
+                    w -= parseFloat(style.marginLeft || 0) + parseFloat(style.marginRight || 0);
                 }
 
                 return w;
@@ -223,11 +202,11 @@ jui.define("util.dom.css", [ ], function() {
             if (arguments.length == 1) {
                 var style = this.css(element);
 
-                h -= parseFloat(style.borderTopWidth) + parseFloat(style.paddingTop);
-                h -= parseFloat(style.borderBottomWidth) + parseFloat(style.paddingBottom);
+                h -= parseFloat(style.borderTopWidth || 0) + parseFloat(style.paddingTop || 0);
+                h -= parseFloat(style.borderBottomWidth || 0) + parseFloat(style.paddingBottom || 0);
 
                 if (style.boxSizing == 'border-box') {
-                    h -= parseFloat(style.marginTop) + parseFloat(style.marginBottom);
+                    h -= parseFloat(style.marginTop || 0) + parseFloat(style.marginBottom || 0);
                 }
 
                 return h;
@@ -249,8 +228,9 @@ jui.define("util.dom.css", [ ], function() {
 
             if (withMargin) {
                 var style = this.css(element);
-                width += parseInt(style.marginLeft) + parserInt(style.marginRight);
+                width += parseInt(style.marginLeft || 0) + parserInt(style.marginRight || 0);
             }
+
 
             return width;
         },

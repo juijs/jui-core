@@ -16,6 +16,7 @@
 	};
 
 	var readyList = [];
+	var readyTimer = null;
 
 	function completed () {
 
@@ -29,7 +30,7 @@
 
 	function ready() {
 		while(readyList[0]) {
-			readyList.shift().call();
+			readyList.shift().call(window);
 		}
 	}
 
@@ -899,11 +900,12 @@
 		 * @param func
 		 */
 		ready : function (func) {
+
 			readyList.push(func);
 
 			// in case the document is already rendered
-			if ( document.readyState === "complete" || ( document.readyState !== "loading" && !document.documentElement.doScroll ) ) {
-				window.setTimeout(ready, 0);
+			if ( document.readyState === "complete" ) {
+				window.setTimeout(ready, 1);
 			} else if (document.addEventListener) {
 				document.addEventListener('DOMContentLoaded', completed);
 				window.addEventListener('load', completed);

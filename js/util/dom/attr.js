@@ -3,7 +3,7 @@ jui.define("util.dom.attr", [ ], function() {
     // Util Function
     var each = function (arr, callback, context) {
         for(var i = 0, len = arr.length; i < len; i++) {
-            callback.call(context, arr[i], i);
+            callback.call(context, i, arr[i]);
         }
     };
 
@@ -46,11 +46,27 @@ jui.define("util.dom.attr", [ ], function() {
 
            if (element.nodeType == 3) return;
            var obj = {};
-           each(arr, function(key) {
+           each(arr, function(i, key) {
                obj[key] = element.getAttribute(key);
            });
            return obj;
        },
+
+        getAllData : function (element, arr) {
+            if (element.nodeType == 3) return;
+            var obj = {};
+            arr = arr || Object.keys(element.attributes);
+            each(arr, function(i, key) {
+                var hasDataAttribute = typeof element.attributes['data-'+key] !== 'undefined';
+
+                if (hasDataAttribute) {
+                    obj[key] = element.getAttribute('data-' + key);
+                } else {
+                    obj[key] = element.dataset[key];
+                }
+            });
+            return obj;
+        },
 
        /**
         * @method set
@@ -67,7 +83,7 @@ jui.define("util.dom.attr", [ ], function() {
            if (element.nodeType == 3) return;
 
            values = values || {};
-           each(Object.keys(values), function(key) {
+           each(Object.keys(values), function(i, key) {
                var attrKey = key;
                var attrValue = values[attrKey];
 
@@ -90,7 +106,7 @@ jui.define("util.dom.attr", [ ], function() {
        removeAttr : function (element, key) {
 
            if (Array.isArray(key)) {
-               each(key, function (it) {
+               each(key, function (i, it) {
                    element.removeAttribute(it);
                });
            } else {
@@ -113,15 +129,46 @@ jui.define("util.dom.attr", [ ], function() {
         * @param one
         * @returns {*|string}
         */
-       data: function (element, one) {
-           one = one || {};
-           if (typeof one === 'string') {
-               return element.dataset[one] || this.get(element, 'data-' + one);
-           } else if (typeof one === 'object') {
-               each(Object.keys(one), function(key) {
-                   var value = one[key];
+       data: function (element, key, value) {
+
+
+           var count = arguments.length;
+           var hasDataAttribute = typeof element.attributes['data-'+key] !== 'undefined';
+
+           if (count == 1) {
+               // return all data
+               return this.getAllData(element);
+           } else if (count == 2) {
+               if (typeof key == 'string') {
+                   if (!hasDataAttribute) {
+                       return element.dataset[key];
+                   } else {
+                       return this.get(element, 'data-' + key);
+                   }
+
+               } else if (Array.isArray(key)) {
+                   return this.getAllData(element, key);
+               } else if (typeof key == 'object') {
+                   each(Object.keys(key), function(i, k) {
+                       var value = key[k];
+
+                       if (typeof element.attributes['data-'+k] == 'undefined') {
+                           element.dataset[k] = value;
+                       } else {
+                           element.setAttribute('data-'+k, value);
+                       }
+
+                   });
+               }
+
+           } else if (count == 3) {
+               console.log(hasDataAttribute,key,value);
+               if (!hasDataAttribute) {
                    element.dataset[key] = value;
-               });
+                   console.log(element.dataset[key]);
+               } else {
+                   element.setAttribute('data-'+key, value);
+               }
            }
        },
 
@@ -166,48 +213,32 @@ jui.define("util.dom.attr", [ ], function() {
                this.set(element, obj);
            }
 
-           return  this;
        },
 
-       /**
-        * @method val
-        *
-        * get value attribute of element
-        *
-        *      $("#id").val();
-        *
-        * set value attribute
-        *
-        *      $("#id").val('test');
-        *
-        * @param {Mixed} [value=undefined]
-        * @returns {*}
-        */
-       val : function (value) {
-           if (this.length == 0) return;
-
-           var node = this[0];
+       val : function (element, value) {
+           var count = arguments.length;
+           value = value || "";
 
            // get value
-           if (arguments.length == 0) {
+           if (count == 1) {
 
-               var value;
+               var v;
 
-               if (node.nodeName == "SELECT") {
-                   value = node.options[node.selectedIndex].value;
+               if (element.nodeName == "SELECT") {
+                   v = element.options[element.selectedIndex].value;
                } else {
-                   value = node.value;
+                   v = element.value;
                }
 
-               return value;
+               return v;
            }
            // set value
-           else if (arguments.length == 1) {
+           else if (count == 2) {
                var values = Array.isArray(value) ? value : [value ];
 
-               if (node.nodeName == "SELECT") {
+               if (element.nodeName == "SELECT") {
                    var selected = false;
-                   each(node.options, function(opt, i) {
+                   each(element.options, function(i, opt) {
                        if (values.indexOf(opt.value) > -1) {
                            opt.selected = true;
                            selected = true;
@@ -215,17 +246,15 @@ jui.define("util.dom.attr", [ ], function() {
                    });
 
                    if (!selected) {
-                       node.selectedIndex = -1;
+                       element.selectedIndex = -1;
                    }
-               } else if (node.type == "checkbox" || node.type == "radio") {
-                   node.checked = (node.value === value);
+               } else if (element.type == "checkbox" || element.type == "radio") {
+                   element.checked = (element.value === value);
                } else {
-                   node.value = value;
+                   element.value = value;
                }
 
            }
-
-           return this;
        },
    };
 

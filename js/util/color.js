@@ -1,4 +1,4 @@
-jui.define("util.color", [ "util.math" ], function(math) {
+jui.define("util.color", [ "util.math", "util.base" ], function(math, _) {
 
 	/**
 	 *  @class util.color
