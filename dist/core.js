@@ -15,6 +15,26 @@
 		logUrl: "tool/debug.html"
 	};
 
+	/*
+	var readyList = [];
+	var readyTimer = null;
+
+	function completed () {
+
+		if (document.addEventListener) {
+			document.removeEventListener( "DOMContentLoaded", completed );
+			window.removeEventListener( "load", completed );
+		}
+
+		ready();
+	}
+
+	function ready() {
+		while(readyList[0]) {
+			readyList.shift().call(window);
+		}
+	}
+	*/
 
 	/**
 	 * @class util.base
@@ -51,10 +71,10 @@
 		/**
 		 * @method inherit
 		 *
-		 * 프로토타입 기반의 상속 제공
+		 * support prototype based inherit system
 		 *
-		 * @param {Function} ctor base Class
-		 * @param {Function} superCtor super Class
+		 * @param {Function} ctor Base Class
+		 * @param {Function} superCtor Super Class
 		 */
 		inherit: function (ctor, superCtor) {
 			if (!this.typeCheck("function", ctor) || !this.typeCheck("function", superCtor)) return;
@@ -112,7 +132,10 @@
 		},
 
 		/**
+		 * @method pxToInt
+		 *
 		 * convert px to integer
+		 *
 		 * @param {String or Number} px
 		 * @return {Number}
 		 */
@@ -639,10 +662,10 @@
 		/**
 		 * @method createId
 		 *
-		 * 유니크 아이디 생성
+		 * create unique id
 		 *
 		 * @param {String} key  prefix string
-		 * @return {String} 생성된 아이디 문자열
+		 * @return {String} random id string
 		 */
 		createId: function (key) {
 			return [key || "id", (+new Date), Math.round(Math.random() * 100) % 100].join("-");
@@ -650,7 +673,7 @@
 		/**
 		 * @method btoa
 		 *
-		 * Base64 인코딩
+		 * encoding input string to base64
 		 *
 		 * @return {String}
 		 */
@@ -661,7 +684,7 @@
 		/**
 		 * @method atob
 		 *
-		 * Base64 디코딩
+		 * decoding base64 string to value
 		 *
 		 * @return {String}
 		 */
@@ -671,11 +694,13 @@
 		},
 
 		/**
+		 * @method timeLoop
+		 *
 		 * implement async loop without blocking ui
 		 *
-		 * @param total
-		 * @param context
-		 * @returns {Function}
+		 * @param {Number} total  loop run count
+		 * @param {Object} context
+		 * @return {Function}
 		 */
 		timeLoop : function(total, context) {
 
@@ -701,11 +726,11 @@
 		/**
 		 * @method loop
 		 *
-		 * 최적화된 루프 생성 (5단계로 나눔)
+		 * create optimized loop (step by 5 )
 		 *
-		 * @param {Number} total
+		 * @param {Number} total	total loop count
 		 * @param {Object} [context=null]
-		 * @return {Function} 최적화된 루프 콜백 (index, groupIndex 2가지 파라미터를 받는다.)
+		 * @return {Function(index, groupIndex)}
 		 */
 		loop: function (total, context) {
 			var start = 0,
@@ -814,6 +839,7 @@
 
 		/**
 		 * @method startsWith
+		 *
 		 * Check that it matches the starting string search string.
 		 *
 		 * @param {String} string
@@ -828,6 +854,7 @@
 
 		/**
 		 * @method endsWith
+		 *
 		 * Check that it matches the end of a string search string.
 		 *
 		 * @param {String} string
@@ -867,6 +894,13 @@
 				( text + "" ).replace( rtrim, "" );
 		},
 
+		/**
+		 * @method ready
+		 *
+		 * Running code when the document is ready
+		 *
+		 * @param func
+		 */
 		ready: (function() {
 			var readyList,
 				DOMContentLoaded,
@@ -1261,7 +1295,7 @@
 		/**
 		 * @method ready
 		 *
-		 * ready 타임에 실행될 callback 정의
+		 * define callback to be executed at ready event
 		 *
 		 * @param {Function} callback
 		 */
@@ -1295,15 +1329,15 @@
 		/**
 		 * @method defineUI
 		 *
-		 * 사용자가 실제로 사용할 수 있는 UI 클래스를 정의
+		 * define UI Class
 		 *
-		 * @param {String} name 모듈 로드와 상속에 사용될 이름을 정한다.
-		 * @param {Array} depends 'define'이나 'defineUI'로 정의된 클래스나 객체를 인자로 받을 수 있다.
-		 * @param {Function} callback UI 클래스를 해당 콜백 함수 내에서 클래스 형태로 구현하고 리턴해야 한다.
+		 * @param {String} name set module name (ex : "ui.button")
+		 * @param {Array} depends specify dependency module list
+		 * @param {Function} callback  UI Class Callback UI 클래스를 해당 콜백 함수 내에서 클래스 형태로 구현하고 리턴해야 한다.
 		 */
 		defineUI: function (name, depends, callback, parent) {
 			if (!utility.typeCheck("string", name) || !utility.typeCheck("array", depends) ||
-				!utility.typeCheck("function", callback) || !utility.typeCheck([ "string", "undefined" ], parent)) {
+				!utility.typeCheck("function", callback) || !utility.typeCheck(["string", "undefined"], parent)) {
 				throw new Error("JUI_CRITICAL_ERR: Invalid parameter type of the function");
 			}
 
@@ -1339,6 +1373,7 @@
 			globalFunc[name] = true;
 
 			// support AMD module
+			// @Deprecated  it will be replaced by different module system
 			if (typeof define == "function" && define.amd) {
 				define(name, function () {
 					return global[name]
@@ -1365,7 +1400,7 @@
 			/** @property {Array} event Custom events */
 			mainObj.init.prototype.event = new Array(); // Custom Event
 			/** @property {Integer} timestamp UI Instance creation time*/
-			mainObj.init.prototype.timestamp = new Date().getTime();
+			mainObj.init.prototype.timestamp = (+new Date());
 			/** @property {Integer} index Index of UI instance*/
 			mainObj.init.prototype.index = index;
 			/** @property {Class} module Module class */
@@ -1392,7 +1427,7 @@
 				uiObj.on(key, opts.event[key]);
 			}
 
-			// 엘리먼트 객체에 jui 속성 추가
+			// add jui instance
 			elem.jui = uiObj;
 
 			return uiObj;
@@ -1401,12 +1436,12 @@
 		/**
 		 * @method define
 		 *
-		 * UI 클래스에서 사용될 클래스를 정의하고, 자유롭게 상속할 수 있는 클래스를 정의
+		 * define module
 		 *
-		 * @param {String} name 모듈 로드와 상속에 사용될 이름을 정한다.
-		 * @param {Array} depends 'define'이나 'defineUI'로 정의된 클래스나 객체를 인자로 받을 수 있다.
+		 * @param {String} name module name
+		 * @param {Array} depends dependency module list
 		 * @param {Function} callback UI 클래스를 해당 콜백 함수 내에서 클래스 형태로 구현하고 리턴해야 한다.
-		 * @param {String} parent 상속받을 클래스
+		 * @param {String} parent parent module name
 		 */
 		define: function (name, depends, callback, parent) {
 			if (!utility.typeCheck("string", name) || !utility.typeCheck("array", depends) || !utility.typeCheck("function", callback) || !utility.typeCheck(["string", "undefined"], parent)) {
@@ -1435,6 +1470,7 @@
 			globalFunc[name] = true;
 
 			// support AMD module
+			// @Deprecated  it will be replaced by different module system
 			if (typeof define == "function" && define.amd) {
 				define(name, function () {
 					return global[name]
@@ -1445,7 +1481,7 @@
 		/**
 		 * @method defineOptions
 		 *
-		 * 모듈 기본 옵션 정의
+		 * define module default options
 		 *
 		 * @param {Object} Module
 		 * @param {Object} options
@@ -1492,9 +1528,14 @@
 		},
 
 		/**
-		 * define과 defineUI로 정의된 클래스 또는 객체를 가져온다.
+		 * @method include
 		 *
-		 * @param name 가져온 클래스 또는 객체의 이름
+		 * get module by name
+		 *
+		 * 		var ModuleClass = jui.include("ui.module");
+		 * 		new ModuleClass({ options });
+		 *
+		 * @param {String} name module name
 		 * @return {*}
 		 */
 		include: function (name) {
@@ -1519,6 +1560,8 @@
 		},
 
 		/**
+		 * @method includeAll
+		 *
 		 * define과 defineUI로 정의된 모든 클래스와 객체를 가져온다.
 		 *
 		 * @return {Array}
@@ -1534,6 +1577,8 @@
 		},
 
 		/**
+		 * @method log
+		 *
 		 * 설정된 jui 관리 화면을 윈도우 팝업으로 띄운다.
 		 *
 		 * @param logUrl
@@ -1553,6 +1598,12 @@
 			return jui_mng;
 		},
 
+		/**
+		 * @method setup
+		 *
+		 * @param {Object} options
+		 * @returns {{template: {evaluate: RegExp, interpolate: RegExp, escape: RegExp}, logUrl: string}}
+		 */
 		setup: function (options) {
 			if (utility.typeCheck("object", options)) {
 				globalOpts = utility.extend(globalOpts, options);
@@ -1563,120 +1614,2567 @@
 	};
 })(window, (typeof(global) !== "undefined") ? global : window);
 
-jui.define("util.dom", [ "util.base" ], function(_) {
+jui.define("util.dom.attr", ["util.base"], function (_) {
+
+	// Util Function
+	var each = function (arr, callback, context) {
+		for (var i = 0, len = arr.length; i < len; i++) {
+			callback.call(context, i, arr[i]);
+		}
+	};
+
+	/**
+	 * @class util.dom.Attr
+	 *
+	 */
+	var Attr = {
+
+
+		/**
+		 * @method getAttr
+		 *
+		 * get attributes
+		 *
+		 *      // 1. get attribute
+		 *      $.getAttr(element, 'title');
+		 *
+		 * @param {Element} element
+		 * @param {String} key
+		 * @returns {string}
+		 */
+		getAttr: function (element, key) {
+
+			if (element.nodeType == 3) return;
+
+			return element.getAttribute(key);
+		},
+
+		/**
+		 * @method getAllAttr
+		 *
+		 *  get selected all attributes
+		 *
+		 * @param {Element} element
+		 * @param {Array} arr
+		 * @returns {Object}
+		 */
+		getAllAttr: function (element, arr) {
+
+			if (element.nodeType == 3) return;
+			var obj = {};
+			each(arr, function (i, key) {
+				obj[key] = element.getAttribute(key);
+			});
+			return obj;
+		},
+
+		/**
+		 * @method getAllData
+		 *
+		 * get all data values
+		 *
+		 * @param element
+		 * @param arr
+		 * @returns {{}}
+		 */
+		getAllData: function (element, arr) {
+			if (element.nodeType == 3) return;
+			var obj = {};
+			arr = arr || Object.keys(element.attributes);
+			each(arr, function (i, key) {
+				var hasDataAttribute = typeof element.attributes['data-' + key] !== 'undefined';
+
+				if (hasDataAttribute) {
+					obj[key] = element.getAttribute('data-' + key);
+				} else {
+					obj[key] = element.dataset[key];
+				}
+			});
+			return obj;
+		},
+
+		/**
+		 * @method setAttr
+		 *
+		 * set attributes
+		 *
+		 *      dom.setAttr(element, { title : 'value' });
+		 *
+		 * @param {Element} element
+		 * @param {String} values
+		 */
+		setAttr: function (element, key, value) {
+			element.setAttribute(key, value);
+		},
+
+		/**
+		 * @method setAllAttr
+		 *
+		 * set all attributes
+		 *
+		 * @param element
+		 * @param values
+		 */
+		setAllAttr: function (element, values) {
+			values = values || {};
+			each(Object.keys(values), function (i, key) {
+				var attrKey = key;
+				var attrValue = values[attrKey];
+
+				element.setAttribute(attrKey, attrValue);
+			});
+		},
+
+		/**
+		 * @method removeAttr
+		 *
+		 * remove attribute
+		 *
+		 *      dom.removeAttr(element, key);
+		 *
+		 *      dom.removeAttr(element, [key, key2, key3]);
+		 *
+		 * @param {Element} element
+		 * @param {String} key
+		 */
+		removeAttr: function (element, key) {
+
+			if (Array.isArray(key)) {
+				each(key, function (i, it) {
+					element.removeAttribute(it);
+				});
+			} else {
+				element.removeAttribute(key);
+			}
+
+			return this;
+		},
+
+		/**
+		 * @method getData
+		 *
+		 * get data properties
+		 *
+		 * @param element
+		 * @param key
+		 * @returns {*}
+		 */
+		getData: function (element, key) {
+			element.juiData = element.juiData || {};
+
+			if (typeof element.juiData[key] !== 'undefined') {
+				return element.juiData[key];
+			}
+
+			var data = element.getAttribute('data-' + key);
+			if (typeof data !== 'undefined') {
+				return data;
+			}
+
+			return;
+		},
+
+		/**
+		 * @method getAllData
+		 *
+		 * get all data properties
+		 *
+		 * @param element
+		 * @returns {*}
+		 */
+		getAllData: function (element) {
+			var data = _.deepClone(element.juiData);
+
+			// get data-* properties
+			each(Object.keys(element.attributes), function (i, key) {
+				if (key.indexOf("data-") > -1) {
+					var realKey = key.replace('data-', '');
+					if (typeof data[realKey] === 'undefined') {
+						data[key]
+					}
+				}
+			});
+
+			return data;
+		},
+
+
+		/**
+		 * @method setData
+		 *
+		 * set data
+		 *
+		 * @param element
+		 * @param key
+		 * @param value
+		 */
+		setData: function (element, key, value) {
+			element.juiData = element.juiData || {};
+			element.juiData[key] = value;
+		},
+
+		/**
+		 * @method setAllData
+		 *
+		 * @param element
+		 * @param datas
+		 */
+		setAllData: function (element, datas) {
+			element.juiData = element.juiData || {};
+
+			for (var key in datas) {
+				element.juiData[key] = datas[key];
+			}
+		},
+
+
+		/**
+		 * @method getValue
+		 *
+		 * get value attribute for element
+		 *
+		 * @param element
+		 * @returns {*}
+		 */
+		getValue: function (element) {
+			var v;
+
+			if (element.nodeName == "SELECT") {
+				v = element.options[element.selectedIndex].value;
+			} else {
+				v = element.value;
+			}
+
+			return v;
+		},
+
+		/**
+		 * @method setValue
+		 *
+		 * set value attribute for element
+		 *
+		 * @param element
+		 * @param value
+		 */
+		setValue: function (element, value) {
+			var values = Array.isArray(value) ? value : [value];
+
+			if (element.nodeName == "SELECT") {
+				var selected = false;
+				each(element.options, function (i, opt) {
+					if (values.indexOf(opt.value) > -1) {
+						opt.selected = true;
+						selected = true;
+					}
+				});
+
+				if (!selected) {
+					element.selectedIndex = -1;
+				}
+			} else if (element.type == "checkbox" || element.type == "radio") {
+				element.checked = (element.value === value);
+			} else {
+				element.value = value;
+			}
+
+		}
+	};
+
+	return Attr;
+});
+jui.define("util.dom.css", [], function () {
+
+	// Util Function
+	var each = function (arr, callback, context) {
+		for (var i = 0, len = arr.length; i < len; i++) {
+			callback.call(context, i, arr[i]);
+		}
+	};
+
+	var hasClass, addClass, removeClass;
+
+	if ('classList' in document.documentElement) {
+		hasClass = function (element, className) {
+			return element.classList.contains(className);
+		};
+
+		addClass = function (element, className) {
+			element.classList.add(className);
+		};
+
+		removeClass = function (element, className) {
+			element.classList.remove(className);
+		};
+	} else {
+		hasClass = function (element, className) {
+			return new RegExp('\\b' + className + '\\b').test(element.className);
+		};
+		addClass = function (element, className) {
+			if (!hasClass(element, className)) {
+				element.className += ' ' + className;
+			}
+		};
+		removeClass = function (element, className) {
+			element.className = element.className.replace(new RegExp('\\b' + className + '\\b', 'g'), '');
+		};
+	}
+
+	var getComputedStyle = function (element) {
+		return window.getComputedStyle ? window.getComputedStyle(element) : element.currentStyle;
+	};
+
+	/**
+	 * @class util.dom.CSS
+	 *
+	 */
+	var CSS = {
+
+
+		getCss: function (element, key) {
+			var style = getComputedStyle(element);
+
+			return style[key];
+		},
+
+		getAllCss: function (element, styles) {
+			var style = getComputedStyle(element);
+
+			var obj = {};
+			each(styles || [], function (i, key) {
+				obj[key] = style[key];
+			});
+			return obj;
+		},
+
+		setCss: function (element, key, value) {
+			element.style[key] = value;
+		},
+
+		setAllCss: function (element, styles) {
+			for (var k in styles) {
+				element.style[k] = styles[k];
+			}
+		},
+
+		/**
+		 * @method show
+		 *
+		 * show element
+		 *
+		 * @param element
+		 * @param value
+		 */
+		show: function (element, value) {
+			element.style.display = value || 'block';
+
+			return this;
+		},
+
+		/**
+		 * @method hide
+		 *
+		 * hide element
+		 *
+		 * @param element
+		 */
+		hide: function (element) {
+			element.style.display = 'none';
+
+			return this;
+		},
+
+		/**
+		 * @method toggle
+		 *
+		 * toggle show or hide for element
+		 *
+		 * @param element
+		 * @param value
+		 */
+		toggle: function (element, value) {
+			var display = this.getCss(element, 'display');
+
+			if (display == 'none') {
+				this.show(element, value);
+			} else {
+				this.hide(element);
+			}
+		},
+
+		/**
+		 * @method hasClass
+		 *
+		 *
+		 *
+		 * @param {Element} element
+		 * @param {String} className
+		 * @returns {*}
+		 */
+		hasClass: function (element, className) {
+			return hasClass(element, className);
+		},
+
+		/**
+		 * @method addClass
+		 *
+		 * @param {Element} element
+		 * @param {String} className
+		 */
+		addClass: function (element, className) {
+			addClass(element, className);
+		},
+
+		/**
+		 * @method removeClass
+		 *
+		 * @param {Element} element
+		 * @param {String} className
+		 */
+		removeClass: function (element, className) {
+			removeClass(element, className);
+		},
+
+
+		/**
+		 * @method toggleClass
+		 *
+		 *      $("#id").toggleClass("className");
+		 *
+		 * @param element
+		 * @param className
+		 */
+		toggleClass: function (element, className) {
+			if (hasClass(element, className)) {
+				removeClass(element, className);
+			} else {
+				addClass(element, className);
+			}
+		},
+
+		/**
+		 * @method width
+		 *
+		 * @param element
+		 * @param width
+		 */
+		width: function (element, width) {
+			var w = this.outerWidth(element);
+
+			if (arguments.length == 1) {
+				var style = getComputedStyle(element);
+
+				w -= parseFloat(style.borderLeftWidth || 0) + parseFloat(style.paddingLeft || 0);
+				w -= parseFloat(style.borderRightWidth || 0) + parseFloat(style.paddingRight || 0);
+
+				if (style.boxSizing == 'border-box') {
+					w -= parseFloat(style.marginLeft || 0) + parseFloat(style.marginRight || 0);
+				}
+
+				return w;
+			} else if (arguments.length == 2) {
+				this.getCss(element, width);
+			}
+
+		},
+
+		/**
+		 * @method height
+		 *
+		 *
+		 * @param element
+		 * @param height
+		 */
+		height: function (element, height) {
+
+			var h = this.outerHeight(element);
+
+			if (arguments.length == 1) {
+				var style = getComputedStyle(element);
+
+				h -= parseFloat(style.borderTopWidth || 0) + parseFloat(style.paddingTop || 0);
+				h -= parseFloat(style.borderBottomWidth || 0) + parseFloat(style.paddingBottom || 0);
+
+				if (style.boxSizing == 'border-box') {
+					h -= parseFloat(style.marginTop || 0) + parseFloat(style.marginBottom || 0);
+				}
+
+				return h;
+			} else if (arguments.length == 2) {
+				this.getCss(element, height);
+			}
+
+		},
+
+
+		/**
+		 * @method outerWidth
+		 *
+		 * @param element
+		 * @returns {number}
+		 */
+		outerWidth: function (element, withMargin) {
+			var width = element.offsetWidth;
+
+			if (withMargin) {
+				var style = getComputedStyle(element);
+				width += parseInt(style.marginLeft || 0) + parserInt(style.marginRight || 0);
+			}
+
+
+			return width;
+		},
+
+		/**
+		 * @method outerHeight
+		 *
+		 * @param element
+		 * @returns {number}
+		 */
+		outerHeight: function (element, withMargin) {
+			var height = element.offsetHeight;
+
+			if (withMargin) {
+				var style = getComputedStyle(element);
+				height += parseInt(style.marginTop) + parserInt(style.marginBottom);
+			}
+
+			return height;
+		}
+
+	};
+
+	return CSS;
+});
+jui.define("util.dom.event", [], function () {
+
+	var ElementPrototype = Element.prototype;
+
+	var matches = ElementPrototype.matches ||
+		ElementPrototype.matchesSelector ||
+		ElementPrototype.webkitMatchesSelector ||
+		ElementPrototype.msMatchesSelector ||
+		function (selector) {
+			var node = this, nodes = (node.parentNode || node.document).querySelectorAll(selector), i = -1;
+			while (nodes[++i] && nodes[i] != node);
+			return !!nodes[i];
+		};
+
+	// Util Function
+	var each = function (arr, callback, context) {
+		for (var i = 0, len = arr.length; i < len; i++) {
+			callback.call(context, arr[i], i);
+		}
+	};
+
+	var addEvent, removeEvent;
+
+	if (window.attachEvent) {
+		addEvent = function (element, type, handler) {
+			element.attachEvent('on' + type, handler);
+		};
+
+		removeEvent = function (element, type, handler) {
+			element.detachEvent('on' + type, handler);
+		}
+	} else {
+		addEvent = function (element, type, handler) {
+			element.addEventListener(type, handler);
+		};
+
+		removeEvent = function (element, type, handler) {
+			element.removeEventListener(type, handler)
+		}
+	}
+
+	var triggerEvent;
+
+	if ('createEvent' in document) {
+		triggerEvent = function (element, type, data) { // modern browsers, IE9+
+
+			if (typeof element[type] == 'function') {
+				element[type]();
+			} else {
+				var e = document.createEvent('CustomEvent');
+				e.initEvent(type, false, true, data);
+				element.dispatchEvent(e);
+			}
+
+		}
+	} else {
+		triggerEvent = function (element, type, data) {
+			if (typeof element[type] == 'function') {
+				element[type]();
+			} else {
+				// IE 8
+				var e = document.createEventObject();
+				e.eventType = type;
+				element.fireEvent('on' + e.eventType, e);
+			}
+		}
+	}
+
+
+	// Event List Manager
+	var events = [];
+
+	var restructEvents = function () {
+		var list = [];
+		each(events, function (eventObject) {
+			if (!eventObject.removed) {
+				list.push(eventObject);
+			}
+		});
+
+		events = list;
+	};
+
+
+	var filter = function (arr, callback, context) {
+		var list = [];
+		for (var i = 0, len = arr.length; i < len; i++) {
+			if (callback.call(context, i, arr[i])) {
+				list.push(arr[i]);
+			}
+		}
+
+		return list;
+	};
+
+	var bind = function (func, context) {
+		return function () {
+			func.apply(context, arguments);
+		};
+	}
+
+
+	/**
+	 * @class util.dom.Event
+	 *
+	 */
+	var Event = {
+
+		/**
+		 * @method on
+		 *
+		 * add event listener at element
+		 *
+		 * @param {Element} element
+		 * @param {String} type event's name
+		 * @param {Function} handler
+		 * @param {Object} context
+		 */
+		on: function (element, type, handler, context) {
+			var eo;
+
+			if (arguments.length == 3) {
+
+				eo = {
+					element: element,
+					type: type,
+					context: context,
+					originalHandler: handler
+				};
+
+				eo.handler = bind(function (e) {
+
+					if (!e.currentTarget) {
+						e.currentTarget = this.element;
+					}
+
+					this.originalHandler.call(this.element, e);
+
+					// only run once
+					if (this.handler.one) {
+						Event.off(this.element, this.type, this.handler);
+					}
+				}, eo);
+
+				events.push(eo);
+
+				addEvent(eo.element, eo.type, eo.handler);
+
+
+			} else if (arguments.length == 4) {
+				var selector = handler;
+				handler = context;
+				context = arguments[4];
+
+				eo = {
+					element: element,
+					type: type,
+					context: context,
+					selector: selector,
+					originalHandler: handler
+				};
+
+				eo.handler = bind(function (e) {
+
+					var target = e.target || e.srcElement;
+
+					if (!e.currentTarget) {
+						e.currentTarget = this.element;
+					}
+
+					if (typeof this.selector == 'string') {
+						if (matches.call(target, this.selector)) {
+							this.originalHandler.call(this.element, e);
+						}
+					} else if (this.selector.length) {
+						var list = filter(this.selector, function (i, el) {
+							return target === el;
+						});
+
+						if (list.length > 0) {
+							this.originalHandler.call(this.element, e);
+						}
+					}
+
+					// only run once
+					if (this.handler.one) {
+						Event.off(this.element, this.type, this.selector, this.handler);
+					}
+
+				}, eo);
+
+				events.push(eo);
+
+				addEvent(eo.element, eo.type, eo.handler);
+
+			}
+
+			return eo;
+
+		},
+
+		/**
+		 * @method one
+		 *
+		 * add event that is only run once
+		 *
+		 *      dom.one(element, 'click', function(e) {
+         *
+         *      });
+		 *
+		 *      dom.one(element, 'click', '.btn', function(e) {
+         *
+         *      });
+		 *
+		 * @param element
+		 * @param type
+		 * @param handler
+		 * @param context
+		 */
+		one: function (element, type, handler, context) {
+			this.on.apply(this, arguments).handler.one = true;
+		},
+
+		/**
+		 * @method off
+		 *
+		 * remove event handler in  listener
+		 *
+		 * @param {Element} element
+		 * @param {String} type event's name
+		 * @param {Function} handler
+		 */
+		off: function (element, type, handler) {
+
+			var len = arguments.length;
+			var checkFilter = function () {
+				return false
+			};
+
+			if (len == 1) {
+				checkFilter = function (eo) {
+					return (eo.element == element);
+				};
+
+			} else if (len == 2) {
+				checkFilter = function (eo) {
+					return (eo.element == element && eo.type == type);
+				};
+
+			} else if (len == 3) {
+
+				if (typeof handler == 'function') {
+					checkFilter = function (eo) {
+						return (eo.element == element && eo.type == type && eo.handler == handler);
+					};
+				} else {
+					checkFilter = function (eo) {
+						return (eo.element == element && eo.type == type && eo.selector == handler);
+					};
+				}
+
+
+			} else if (len == 4) {
+				var selector = handler;
+				handler = arguments[3];
+
+				checkFilter = function (eo) {
+					return (eo.element == element && eo.type == type && eo.handler == handler && eo.selector == selector);
+				};
+			}
+
+			each(events, function (eo) {
+				if (checkFilter(eo)) {
+					eo.removed = true;
+					removeEvent(eo.element, eo.type, eo.handler);
+				}
+			});
+
+			restructEvents();
+		},
+
+		/**
+		 * @method trigger
+		 *
+		 * trigger event
+		 *
+		 * @param element
+		 * @param type
+		 * @param data
+		 */
+		trigger: function (element, type, data) {
+			triggerEvent(element, type, data);
+		}
+	};
+
+	return Event;
+});
+jui.define("util.dom.manage", [], function () {
+	var Manage = {
+
+		/**
+		 * @method html
+		 *
+		 * get or set  html string
+		 *
+		 * @param {Element} element
+		 * @param {String} contents
+		 *
+		 * @returns {*}
+		 */
+		html: function (element, contents) {
+			if (arguments.length == 1) {
+				return element.innerHTML;
+			}
+
+			element.innerHTML = contents;
+		},
+
+		/**
+		 * @method text
+		 *
+		 * get or set text string
+		 *
+		 * @param element
+		 * @param contents
+		 * @returns {*}
+		 */
+		text: function (element, contents) {
+			if (arguments.length == 1) {
+				return element.textContent || element.innerText;
+			}
+
+			element.textContent = contents;
+		},
+
+		/**
+		 * @method after
+		 *
+		 * insert new element after an existing one in the DOM tree
+		 *
+		 * @param {Element} element
+		 * @param {Element} newElement
+		 */
+		after: function (element, newElement) {
+			if (typeof newChildElement == 'string') {
+				element.insertAdjacentHTML("afterend", newChildElement);
+			} else {
+				element.parentNode.insertBefore(newElement, element.nextElementSibling);
+			}
+
+		},
+
+		/**
+		 * @method before
+		 *
+		 * insert new element before an existing one in the DOM tree
+		 *
+		 * @param {Element} element
+		 * @param {Element} newElement
+		 */
+		before: function (element, newElement) {
+			if (typeof newChildElement == 'string') {
+				element.insertAdjacentHTML("beforebegin", newChildElement);
+			} else {
+				element.parentNode.insertBefore(newElement, element);
+			}
+		},
+
+		/**
+		 * @method append
+		 *
+		 *
+		 * @param {Element} element
+		 * @param {Element} newChildElement
+		 */
+		append: function (element, newChildElement) {
+			if (typeof newChildElement == 'string') {
+				element.insertAdjacentHTML("beforeend", newChildElement);
+			} else {
+				element.appendChild(newChildElement);
+			}
+
+		},
+
+		/**
+		 * @method prepend
+		 *
+		 *
+		 * @param {Element} element
+		 * @param {Element} newChildElement
+		 */
+		prepend: function (element, newChildElement) {
+			if (typeof newChildElement == 'string') {
+				element.insertAdjacentHTML("afterbegin", newChildElement);
+			} else {
+				this.before(element.firstChild, newChildElement);
+			}
+		},
+
+		/**
+		 * @method replace
+		 *
+		 * replace element to new element
+		 *
+		 * @param {Element} element
+		 * @param {Element} newElement
+		 */
+		replace: function (element, newElement) {
+			element.parentNode.replaceChild(newElement, element);
+		},
+
+		/**
+		 * @method unwrap
+		 *
+		 * unwrap a dom element
+		 *
+		 * @param {Element} element
+		 */
+		unwrap: function (element) {
+			var parent = element.parentNode;
+
+			while (parent.firstChild) {
+				parent.insertBefore(element.firstChild, el);
+			}
+
+			this.remove(element);
+		},
+
+		/**
+		 * @method clone
+		 *
+		 * create a deep copy of a DOM element
+		 *
+		 * @param {Element} element
+		 * @returns {Element}
+		 */
+		clone: function (element, isCopyChildNodes) {
+			isCopyChildNodes = typeof isCopyChildNodes == 'undefined' ? true : isCopyChildNodes;
+			return element.cloneNode(isCopyChildNodes);
+		},
+
+		/**
+		 * @method wrap
+		 *
+		 *      dom.wrap(element, dom.create('div'));
+		 *
+		 * @param element
+		 * @param wrapElement
+		 */
+		wrap: function (element, wrapElement) {
+			this.before(element, wrapElement);
+			this.append(wrapElement, element);
+		},
+
+
+		/**
+		 * @method empty
+		 *
+		 * remove all child nodes of an element from the DOM
+		 *
+		 * @param element
+		 */
+		empty: function (element) {
+			element.innerHTML = "";
+		},
+
+		/**
+		 * @method remove
+		 *
+		 * remove an element from the DOM tree
+		 *
+		 * @param {Element} element
+		 */
+		remove: function (element) {
+			if (element.parentNode) {
+				element.parentNode.removeChild(element);
+			}
+		}
+	};
+
+	return Manage;
+});
+jui.define("util.dom.selector", [], function () {
+
+
+	var ElementPrototype = Element.prototype;
+
+	var matches = ElementPrototype.matches ||
+		ElementPrototype.matchesSelector ||
+		ElementPrototype.webkitMatchesSelector ||
+		ElementPrototype.msMatchesSelector ||
+		function (selector) {
+			var node = this, nodes = (node.parentNode || node.document).querySelectorAll(selector), i = -1;
+			while (nodes[++i] && nodes[i] != node);
+			return !!nodes[i];
+		};
+
+	var closest = ElementPrototype.closest ||
+		function (selector) {
+			var el = this;
+			while (!matches.call(el, selector)) el = el.parentNode;
+			return el;
+		};
+
+	/**
+	 * @class util.dom.Selector
+	 *
+	 */
+	var Selector = {
+
+		/**
+		 * @method id
+		 *
+		 * get element by id
+		 *
+		 * @return {Element}
+		 */
+		id: function (id, parent) {
+			return (parent || document).getElementById(id);
+		},
+
+		/**
+		 * @method tag
+		 *
+		 * find elements by tag name
+		 *
+		 * @param {String} tagName
+		 * @param {Element} [parent=document] parent element,
+		 * @return {ElementList}
+		 */
+		tag: function (tagName, parent) {
+			return (parent || document).getElementsByTagName(tagName);
+		},
+
+		/**
+		 * @method className
+		 *
+		 * find elements by class name
+		 *
+		 * @param {String} className
+		 * @param {Element} [parent=document]  parent element
+		 * @returns {NodeList}
+		 */
+		className: function (className, parent) {
+			return (parent || document).getElementsByClassName(className);
+		},
+
+		/**
+		 * @method findOne
+		 *
+		 * find one element by selector
+		 *
+		 */
+		findOne: function (context, selector) {
+			return (context || document).querySelector(selector);
+		},
+
+		/**
+		 * @method find
+		 *
+		 * find elements by selector
+		 *
+		 * @returns {NodeList}
+		 */
+		find: function (context, selector) {
+			return (context || document).querySelectorAll(selector);
+		},
+
+
+		/**
+		 * @method matches
+		 *
+		 * get matched element
+		 *
+		 * @param selector
+		 * @returns {*}
+		 */
+		matches: function (element, selector) {
+			return matches.call(element, selector);
+		},
+
+		/**
+		 * @method siblings
+		 *
+		 * @param element
+		 * @param filter
+		 * @returns {Array}
+		 */
+		siblings: function (element, filter) {
+			var arr = [];
+
+			do {
+				if (!filter || filter(element)) {
+					arr[arr.length] = element;
+				}
+			} while (element = element.nextElementSibling);
+
+			return arr;
+		},
+
+		/**
+		 * @method children
+		 *
+		 * get chlid nodes for fast performance
+		 *
+		 * @param {Element} element
+		 * @param {Function] [filter=undefined]
+		 * @returns {*}
+		 */
+		children: function (element, filter) {
+			return this.siblings(element.firstChild, filter);
+		},
+
+
+		/**
+		 * @method next
+		 *
+		 *
+		 * @param element
+		 * @param filter
+		 * @returns {*}
+		 */
+		next: function (element, filter) {
+			while (element = element.nextElementSibling) {
+				if (!filter || filter(element)) {
+					return element;
+				}
+			}
+
+			return null;
+		},
+
+		/**
+		 * @method nextAll
+		 *
+		 * @param element
+		 * @param filter
+		 * @returns {Array}
+		 */
+		nextAll: function (element, filter) {
+			var arr = [];
+			while (element = element.nextElementSibling) {
+				if (!filter || filter(element)) {
+					arr[arr.length] = element;
+				}
+			}
+
+			return arr;
+		},
+
+
+		/**
+		 * @method prev
+		 *
+		 * @param element
+		 * @param filter
+		 * @returns {*}
+		 */
+		prev: function (element, filter) {
+			while (element = element.previousElementSibling) {
+				if (!filter || filter(element)) {
+					return element;
+				}
+			}
+
+			return null;
+		},
+
+		/**
+		 * @method prevAll
+		 *
+		 * @param element
+		 * @param filter
+		 * @returns {Array}
+		 */
+		prevAll: function (element, filter) {
+			var arr = [];
+			while (element = element.previousElementSibling) {
+				if (!filter || filter(element)) {
+					arr[arr.length] = element;
+				}
+			}
+
+			return arr;
+		},
+
+		/**
+		 * @method closest
+		 *
+		 * @param element
+		 * @param selector
+		 * @returns {*}
+		 */
+		closest: function (element, selector) {
+			return closest.call(element, selector);
+		}
+	};
+
+	return Selector;
+});
+jui.define("util.dom.core", ["util.dom.selector", "util.dom.manage"], function ($selector, $manage) {
+
+	/**
+	 * @class util.dom.Core
+	 *
+	 */
+	var Core = {
+		/**
+		 * @method create
+		 *
+		 * create element by option
+		 *
+		 *      // 1. set options
+		 *      dom.create({
+         *          tag : 'div',
+         *          style : {
+         *             marginLeft : '0px',
+         *             'z-index' : 10
+         *          },
+         *          className : 'test main',
+         *          html : 'wow html',
+         *          text : 'this is text',
+         *          children : [
+         *              { tag : 'p', className : 'description', html : yellow },
+         *              .....
+         *          ]
+         *     });
+		 *
+		 *     // 2. set string same to  dom.create({ tag : 'div', className : 'my-class your-class' })
+		 *     dom.create('div');
+		 *
+		 *     // 3. set tag same to dom.create({ tag : 'div', className : 'name' })
+		 *     dom.create("<div class='name'></div>");
+		 *
+		 * @param {Object} opt
+		 * @returns {Element}
+		 */
+		create: function (opt, isFragment) {
+			opt = opt || {tag: 'div'};
+			isFragment = typeof isFragment == 'undefined' ? true : isFragment;
+
+			if (typeof opt == 'string') {
+				var str = opt.trim();
+
+				// if str is start with '<' character, run html parser
+				if (str.indexOf("<") == 0) {
+					// html parser
+					var fakeDom = document.createElement('div');
+					fakeDom.innerHTML = str;
+
+					var list = $selector.children(fakeDom);
+					$manage.remove(fakeDom);
+
+					if (isFragment) {
+						return this.createFragment(list);
+					} else {
+						return list;
+					}
+				} else {
+					// tag
+					tag = str;
+					className = "";
+				}
+
+				opt = {tag: tag, className: className};
+			}
+
+			var element = document.createElement(opt.tag || 'div');
+
+			if (opt.className) {
+				element.className = opt.className;
+			}
+
+			if (opt.attr) {
+				var keys = Object.keys(opt.attr);
+				for (var i = 0, len = keys.length; i < len; i++) {
+					var key = keys[i];
+					element.setAttribute(key, opt.attr[key]);
+				}
+			}
+
+			if (opt.style) {
+				var s = element.style;
+				for (var k in opt.style) {
+					s[k] = opt.style[k];
+				}
+			}
+
+			if (opt.html) {
+				element.innerHTML = html;
+			} else if (opt.text) {
+				element.textContent = html;
+			}
+
+			if (opt.children && opt.children.length) {
+				var fragment = document.createDocumentFragment();
+
+				for (var i = 0, len = opt.children.length; i < len; i++) {
+					fragment.appendChild(this.create(opt.children[i]));
+				}
+
+				element.appendChild(fragment);
+			}
+
+			return element;
+		},
+
+		/**
+		 * @method createText
+		 *
+		 * create text node
+		 *
+		 * @param {String} text
+		 * @returns {TextNode}
+		 */
+		createText: function (text) {
+			return document.createTextNode(text);
+		},
+
+		/**
+		 * @method createFragment
+		 *
+		 * create fragment object
+		 *
+		 * @param {Array|Eleemnt} list
+		 * @returns {DocumentFragment}
+		 */
+		createFragment: function (list) {
+			var target = list;
+
+			if (!target.length) {
+				target = [target];
+			}
+
+			var fragment = document.createDocumentFragment();
+			for (var i = 0, len = target.length; i < len; i++) {
+				fragment.appendChild(target[i]);
+			}
+
+			return fragment;
+		},
+
+
+		/**
+		 * @method position
+		 *
+		 * Get the offset position of an element relative to its parent
+		 *
+		 * @param {Element} element
+		 * @returns {{top: (Number|number), left: (Number|number)}}
+		 */
+		position: function (element) {
+			return {top: element.offsetTop, left: element.offsetLeft};
+		},
+
+
+		/**
+		 * @method offset
+		 *
+		 * Get the position of an element relative to the document
+		 *
+		 * @param {Element} element
+		 * @returns {{top: *, left: *}}
+		 */
+		offset: function (element) {
+
+			var rect = element.getBoundingClientRect(),
+				scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
+				scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+			return {
+				top: rect.top + scrollTop,
+				left: rect.left + scrollLeft
+			};
+
+		},
+
+		/**
+		 * @method width
+		 *
+		 * get width of element, including only padding but without border
+		 *
+		 * @param element
+		 * @returns {*}
+		 */
+		innerWidth: function (element) {
+			if (element == window || element == document) {
+				return window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+			}
+			return element.clientWidth;
+		},
+		/**
+		 * @method height
+		 *
+		 * get height of element, including only padding but without border
+		 *
+		 * @param element
+		 * @returns {*}
+		 */
+		innerHeight: function (element) {
+			if (element == window || element == document) {
+				return window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+			}
+			return element.clientHeight;
+		}
+	};
+
+	return Core;
+});
+jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.css", "util.dom.event", "util.dom.manage", "util.dom.selector" ], function($core, $attr, $css, $event, $manage, $selector) {
+
+    // Util Function
+    var each = function (arr, callback, context) {
+        for(var i = 0, len = arr.length; i < len; i++) {
+            callback.call(context, i, arr[i]);
+        }
+    };
+
+    var merge = function (arr) {
+        var total = [];
+        each(arr, function (i, list) {
+            each(list, function (j, item) {
+                total.push(item);
+            });
+        });
+
+        return total;
+    };
+
+    var ok = function() { return true };
+
+    var getCloneElement = function (element) {
+        if (typeof element == 'string') {
+            var cloneElement = element;
+        } else {
+            if (element.domchain && !element.created) {  // only reference
+                var cloneElement = element.fragment() ;
+            } else if (element.domchain && element.created) {
+                var cloneElement = element[0];
+            } else {
+                var cloneElement = $manage.clone(element);
+            }
+        }
+
+        return cloneElement;
+    }
+
+    var regForId = /^#([\w-]+)$/;
+    var regForClass = /^\.([\w-]+)$/;
+    var regForTag = /^([\w-]+)$/;
 
     /**
-     * @class util.dom
+     * @class util.dom.DomChain
      *
-     * pure dom utility
+     * dom chaining class
      *
-     * @singleton
+     * @private
+     * @param {String|Array} search
+     * @param {Element|DomChain} context
+     * @constructor
      */
-    return {
-        find: function() {
-            var args = arguments;
+    function DomChain(search, context) {
 
-            if(args.length == 1) {
-                if(_.typeCheck("string", args[0])) {
-                    return document.querySelectorAll(args[0]);
-                }
-            } else if(args.length == 2) {
-                if(_.typeCheck("object", args[0]) && _.typeCheck("string", args[1])) {
-                    return args[0].querySelectorAll(args[1]);
-                }
+        var result, list = [];
+
+        if (typeof search == 'string') {
+
+            if (search.indexOf("<") > -1) {
+                list = $core.create(search, false);
+                this.created = true;
+            } else if (result = regForId.exec(search)) {
+                list = [$selector.id(result[1], context)];
+            } else if (result = regForClass.exec(search)) {
+                list = $selector.className(result[1], context);
+            } else if (result = regForTag.exec(search)) {
+                list = $selector.tag(result[1], context);
+            } else {
+                list = $selector.find(context, search);
             }
+        } else if (search.length) {
+            list = search;
+        } else if (search.nodeType) {
+            list = [search];
+        }
 
-            return [];
+        for(var i = 0, len = list.length; i < len; i++) {
+            this[i] = list[i];
+        }
+
+        this.length = list.length;
+        this.context = context;
+        this.selector = search;
+    }
+
+    /**
+     * alias for util function
+     */
+    DomChain.core = $core;
+    DomChain.attr = $attr;
+    DomChain.css = $css;
+    DomChain.event = $event;
+    DomChain.manage = $manage;
+    DomChain.selector = $selector;
+
+    /** */
+
+    DomChain.prototype = {
+
+        created : false,
+
+        domchain : true,
+
+        /**
+         * @method html
+         *
+         *      // get html
+         *      dom("#id").html();
+         *
+         *      // set html
+         *      dom("#id").html("html text");
+         *
+         *
+         * @param contents
+         * @returns {*}
+         */
+        html : function (contents) {
+
+            if (arguments.length) {
+                if (contents.domchain) {
+                    this.empty();
+                    return this.append(contents);
+                } else {
+                    this.each(function (i, el){
+                        $manage.html(el, contents);
+                    });
+                    return this;
+                }
+
+            } else {
+                return this.length > 0 && $manage.html(this[0]);
+            }
         },
 
-        each: function(selectorOrElements, callback) {
-            if(!_.typeCheck("function", callback)) return;
+        /**
+         * @method text
+         *
+         *      // get text
+         *      dom("#id").html();
+         *
+         *      // set text
+         *      dom("#id").html("html text");
+         *
+         * @param {String} contents
+         * @returns {*}
+         */
+        text : function (contents) {
+            if (arguments.length) {
+                this.each(function (i, el){  $manage.text(el, contents); });
+                return this;
+            } else {
+                return this.length > 0 && $manage.text(this[0]);
+            }
+        },
 
-            var elements = null;
+        /**
+         * @method is
+         *
+         * matches selector
+         *
+         * @param {String|Element|DomChain} selector
+         * @returns {Boolean}
+         */
+        is : function (selector) {
+            if (typeof selector == 'string') {
+                return $selector.matches(this[0], selector);
+            } else {
+                if (selector.domchain) {
+                    return this[0] === selector[0];
+                } else {
+                    return this[0] === selector;
+                }
 
-            if(_.typeCheck("string", selectorOrElements)) {
-                elements = document.querySelectorAll(selectorOrElements);
-            } else if(_.typeCheck("array", selectorOrElements)) {
-                elements = selectorOrElements;
             }
 
-            if(elements != null) {
-                Array.prototype.forEach.call(elements, function(el, i) {
-                    callback.apply(el, [ i, el ]);
+        },
+
+        /**
+         * @method unwrap
+         *
+         *      dom("#id").unwrap();
+         *
+         * @returns {DomChain}
+         */
+        unwrap : function () {
+            this.each(function(i, el) {
+                $manage.unwrap(el);
+            });
+
+            return this;
+        },
+
+        /**
+         * @method wrap
+         *
+         *      dom("#id").wrap(dom.create('div'));
+         *
+         *      dom("#id").wrap(dom("#id2"));
+         *
+         * @param wrapElement
+         */
+        wrap : function (wrapElement) {
+            var self = this;
+            new DomChain(wrapElement).each(function(i, wrapEl) {
+                self.each(function(i, el) {
+                    $manage.wrap(el, wrapEl);
                 });
-            }
-        },
-
-        attr: function(selectorOrElements, keyOrAttributes) {
-            if(!_.typeCheck([ "string", "array" ], selectorOrElements))
-                return;
-
-            var elements = document.querySelectorAll(selectorOrElements);
-
-            if(_.typeCheck("object", keyOrAttributes)) { // set
-                for(var i = 0; i < elements.length; i++) {
-                    for(var key in keyOrAttributes) {
-                        elements[i].setAttribute(key, keyOrAttributes[key]);
-                    }
-                }
-            } else if(_.typeCheck("string", keyOrAttributes)) { // get
-                if(elements.length > 0) {
-                    return elements[0].getAttribute(keyOrAttributes);
-                }
-            }
-        },
-
-        remove: function(selectorOrElements) {
-            this.each(selectorOrElements, function() {
-                this.parentNode.removeChild(this);
             });
         },
 
-        offset: function(elem) {
-            function isWindow(obj) {
-                /* jshint eqeqeq: false */
-                return obj != null && obj == obj.window;
+        /**
+         * @method empty
+         *
+         * empty string
+         *
+         * @returns {DomChain}
+         */
+        empty : function () {
+            this.each(function(i, el) {
+                $manage.empty(el);
+            });
+            return this;
+        },
+
+
+        /**
+         * @method remove
+         *
+         * remove an element from the DOM tree
+         *
+         * @returns {DomChain}
+         */
+        remove : function () {
+            this.each(function(i, el) {
+                $manage.remove(el);
+            });
+
+            return this;
+        },
+
+        /**
+         * @method hasClass
+         *
+         * check element has class name
+         *
+         * @param {String} className
+         * @returns {Boolean}
+         */
+        hasClass : function (className) {
+            if (this[0]) {
+                return $css.hasClass(this[0], className);
             }
 
-            function getWindow(elem) {
-                return isWindow(elem) ?
-                    elem :
-                    elem.nodeType === 9 ?
-                    elem.defaultView || elem.parentWindow :
-                        false;
+            return false;
+        },
+
+        /**
+         * @method addClass
+         *
+         * @param {String} className
+         * @returns {DomChain}
+         */
+        addClass : function (className) {
+            this.each(function(i, el){
+                $css.addClass(el, className);
+            });
+
+            return  this;
+        },
+
+        /**
+         * @method removeClass
+         *
+         *      dom(".my-class").removeClass("my-class");
+         *
+         * @param {String} className
+         */
+        removeClass: function (className) {
+            this.each(function(i, el){
+                $css.removeClass(el, className);
+            });
+
+            return  this;
+        },
+
+        /**
+         * @method toggleClass
+         *
+         *      dom("#id").toggleClass("my-class");
+         *
+         * @param {String} className
+         */
+        toggleClass : function (className) {
+            this.each(function(i, el){
+                $css.toggleClass(el, className);
+            });
+
+            return this;
+        },
+
+        /**
+         * @method clone
+         *
+         * clone dom tree
+         *
+         * @param isCopyNodes
+         * @returns {*|DomChain}
+         */
+        clone : function (isCopyNodes) {
+
+            return this.map(function(i, el) {
+                return $manage.clone(el, isCopyNodes);
+            });
+        },
+
+        /**
+         * @method after
+         *
+         *      dom("#id").after($("#id2"));
+         *
+         *      dom("#id").after(dom.createText("text"));
+         *
+         *      dom("#id").after(dom.create("div"));
+         *
+         * @param newElement
+         */
+        after : function(newElement) {
+
+            this.each(function(i, el) {
+                $manage.after(el, getCloneElement(newElement));
+            });
+
+            return this;
+        },
+
+        insertAfter : function (container) {
+            new DomChain(container).after(this);
+            return this;
+        },
+
+        /**
+         * @method before
+         *
+         *      dom("#id").before($("#id2"));
+         *
+         *      dom("#id").before(dom.createText("text"));
+         *
+         *      dom("#id").before(dom.create('div'));
+         *
+         * @param newElement
+         * @returns {DomChain}
+         */
+        before : function (newElement) {
+
+            this.each(function(i, el) {
+                $manage.before(el, getCloneElement(newElement));
+            });
+
+            return this;
+        },
+
+        /**
+         * @method fragment
+         *
+         * create document frament for DOM tree
+         *
+         * @returns {*|DocumentFragment}
+         */
+        fragment : function () {
+            return $core.createFragment(this);
+        },
+
+        /**
+         * @method append
+         *
+         *      dom("#id").append(dom("#id2"));
+         *
+         *      dom("#id").append(1, 2, 3);
+         *
+         *      dom("#id").append(dom.create('div'), dom.create('span'), dom.create('h1'));
+         *
+         * @param newElement
+         * @returns {DomChain}
+         */
+        append : function (newElement) {
+            this.each(function(i, el) {
+                $manage.append(el, getCloneElement(newElement));
+            });
+
+            return this;
+        },
+
+        /**
+         * @method appendTo
+         *
+         * append element to selector
+         *
+         * @param selector
+         * @returns {*|DomChain}
+         */
+        appendTo : function (selector) {
+            var dom = new DomChain(selector);
+            return dom.append(this);
+        },
+
+        /**
+         * @method prepend
+         *
+         * prepend newElement to DOM tree
+         *
+         * @param newElement
+         * @returns {DomChain}
+         */
+        prepend: function (newElement) {
+
+            this.each(function(i, el) {
+                $manage.prepend(el, getCloneElement(newElement));
+            });
+
+            return this;
+        },
+
+        /**
+         * @method prependTo
+         *
+         * prepend element to selector
+         *
+         * @param selector
+         * @returns {*|DomChain}
+         */
+        prependTo : function (selector) {
+            return new DomChain(selector).prepend(this);
+        },
+
+        /**
+         * @method replace
+         *
+         * TODO: replace element to newElement
+         *
+         * @param newElement
+         */
+        replace : function (newElement) {
+            return this;
+        },
+
+        /**
+         * @method css
+         *
+         *      dom("#id").css("background-color");
+         *
+         *      dom("#id").css("background-color", 'yellow');
+         *
+         *      dom("#id").css({ "background-color" : "yellow" });
+         *
+         *
+         * @param {String|Object} key
+         * @param {Mixed} [value=undefined]
+         * @returns {*}
+         */
+        css : function (key, value) {
+            if (typeof key == 'string') {
+                if (arguments.length == 1) {
+                    return $css.getCss(this[0], key);
+                } else if (arguments.length == 2) {
+                    $css.setCss(this[0], key, value);
+                }
+            } else if (Array.isArray(key)) {
+                return $css.getAllCss(this[0], key);
+            } else if (typeof key == 'object') {
+                this.each(function(i, el) {
+                    console.log(key);
+                    $css.setAllCss(el, key);
+                });
             }
 
-            var docElem, win,
-                box = { top: 0, left: 0 },
-                doc = elem && elem.ownerDocument;
+            return this;
+        },
 
-            if ( !doc ) {
-                return;
+        /**
+         * @method position
+         *
+         * get position
+         *
+         *      $("#id").position();
+         *
+         * @returns {boolean|*|{top, left}|{top: (Number|number), left: (Number|number)}}
+         */
+        position: function() {
+            return this.length > 0 && $core.position(this[0]);
+        },
+
+        /**
+         * @method offset
+         *
+         *      $("#id").offset();
+         *
+         * @returns {boolean|*|{top, left}|{top: *, left: *}}
+         */
+        offset: function () {
+            return this.length > 0 && $core.offset(this[0]);
+        },
+
+        /**
+         * @method outerWidth
+         *
+         *      $("#id").outerWidth();
+         *
+         * @returns {boolean|*}
+         */
+        outerWidth: function(withMargin) {
+            return this.length> 0 && $css.outerWidth(this[0], withMargin);
+        },
+
+        /**
+         * @method outerHeight
+         *
+         *      $("#id").outerHieght();
+         *
+         * @returns {boolean|*}
+         */
+        outerHeight: function(withMargin) {
+            return this.length> 0 && $css.outerHeight(this[0], withMargin);
+        },
+
+        innerWidth : function () {
+            return this.length > 0 && $css.innerWidth(this[0]);
+        },
+
+        innerHeight : function () {
+            return this.length > 0 && $css.innerHeight(this[0]);
+        },
+
+        /**
+         * @method width
+         *
+         * get or set width
+         *
+         * @param element
+         * @param width
+         */
+        width : function (width) {
+            var count = arguments.length;
+            if (count == 0) {
+                return $css.width(this[0]);
             }
 
-            docElem = doc.documentElement;
+            $css.width(this[0], width);
 
-            // Make sure it's not a disconnected DOM node
-            /*/
-             if ( !global.jquery.contains( docElem, elem ) ) {
-             return box;
-             }
-             /**/
+            return this;
+        },
 
-            // If we don't have gBCR, just use 0,0 rather than error
-            // BlackBerry 5, iOS 3 (original iPhone)
-            var strundefined = typeof undefined;
-            if ( typeof elem.getBoundingClientRect !== strundefined ) {
-                box = elem.getBoundingClientRect();
+        /**
+         * @method height
+         *
+         * get or set height
+         *
+         * @param element
+         * @param height
+         */
+        height : function (height) {
+            var count = arguments.length;
+            if (count == 0) {
+                return $css.height(this[0]);
             }
-            win = getWindow( doc );
 
-            return {
-                top: box.top  + ( win.pageYOffset || docElem.scrollTop )  - ( docElem.clientTop  || 0 ),
-                left: box.left + ( win.pageXOffset || docElem.scrollLeft ) - ( docElem.clientLeft || 0 )
-            };
+            $css.height(this[0], height);
+
+            return this;
+        },
+
+
+
+        /**
+         * @method on
+         *
+         * add event listener at element
+         *
+         *      // add click event
+         *      $("#id").on("click", function(e) {
+         *
+         *      });
+         *
+         *      // add click event with delegate
+         *      $("#id").on("click", ".btn" or element, function (e) {
+         *          console.log('.btn element', e.target, '#id element', this);
+         *      });
+         *
+         * @param {String} type
+         * @param {Function} handler
+         */
+        on : function (type, handler) {
+
+            var args = arguments.length == 2 ? [null, type, handler] : [null, arguments[0], arguments[1], arguments[2]];
+
+            this.each(function(i, el) {
+                args[0] = el;
+                $event.on.apply($event, args);
+            });
+
+
+            return this;
+        },
+
+        /**
+         * @method one
+         *
+         * add event that is only run once
+         *
+         * @param type
+         * @param handler
+         * @returns {DomChain}
+         */
+        one : function (type, handler) {
+
+            var args = arguments.length == 2 ? [null, type, handler] : [null, arguments[0], arguments[1], arguments[2]];
+
+            this.each(function(i, el) {
+                args[0] = el;
+                $event.one.apply($event, args);
+            });
+
+            return this;
+        },
+
+        /**
+         * @method off
+         *
+         * remove event
+         *
+         *      // delete all event
+         *      $("#id").off();
+         *
+         *      // delete click event
+         *      $("#id").off('click');
+         *
+         *      // delete click event for handler
+         *      $("#id").off('click', handler);
+         *
+         *      // delete click event for selector
+         *      $("#id").off('click', 'selector' or element);
+         *
+         *      // delete click event for selector with handler
+         *      $("#id").off('click', 'selector' or element, handler);
+         *
+         *
+         * @param type
+         * @param handler
+         */
+        off : function (type, handler) {
+
+            var args = [];
+            var count = arguments.length;
+
+            if (count == 0) {
+                args = [null];
+            } else if (count == 1) {
+                args = [null, type];
+            } else if (count == 2) {
+                args = [null, type, handler];
+            } else if (count == 3) {
+                args = [null, arguments[3], arguments[1], arguments[2]];
+            }
+
+            this.each(function(i, el) {
+                args[0] = el;
+                $event.off.apply($event, args);
+            });
+
+            return this;
+        },
+
+        /**
+         * @method trigger
+         *
+         * @param type
+         * @param args
+         */
+        trigger : function (type, args) {
+            this.each(function(i, el) {
+                $event.trigger(el, type, args);
+            });
+
+            return this;
+        },
+
+        /**
+         * @method show
+         *
+         * show element in DOM tree
+         *
+         * @param value
+         * @returns {DomChain}
+         */
+        show: function (value) {
+            this.each(function(i, el) {
+                $css.show(el, value);
+            });
+
+            return this;
+        },
+
+        /**
+         * @method hide
+         *
+         *      $("#id").hide();
+         *
+         * @returns {DomChain}
+         */
+        hide : function () {
+            this.each(function(i, el) {
+                $css.hide(el);
+            });
+
+            return this;
+        },
+
+        /**
+         * @method toggle
+         *
+         *      $("#id").toggle();
+         *
+         * @returns {DomChain}
+         */
+        toggle : function() {
+            this.each(function(i, el) {
+                $css.toggle(el);
+            });
+
+            return this;
+        },
+
+        /**
+         * @method next
+         *
+         *      dom("#id").next();
+         *
+         * @param {Function] [filter=undefined]
+         * @returns {DomChain}
+         */
+        next: function (filter) {
+            return this.map(function() {
+                return $selector.next(this, filter);
+            });
+        },
+
+        /**
+         * @method prev
+         *
+         *      dom("#id").prev();
+         *
+         * @param {Function] [filter=undefined]
+         * @returns {DomChain}
+         */
+        prev: function (filter) {
+            return this.map(function() {
+                return $selector.prev(this, filter);
+            });
+        },
+
+        /**
+         * @method closest
+         *
+         * @param selector
+         * @returns {util.dom.DomChain}
+         */
+        closest: function (selector) {
+            return new DomChain(this.length > 0 && $selector.closest(this[0], selector));
+        },
+
+        /**
+         * @method parent
+         *
+         * get parent element for DomChain
+         *
+         *      $("id").parent().css({ ... });
+         *
+         * @returns {*}
+         */
+        parent : function () {
+            if (this[0]) {
+                return new DomChain(this[0].parentNode);
+            }
+
+            return null;
+        },
+
+        /**
+         * @method children
+         *
+         * get all children in DOM tree
+         *
+         *      $(".parent").children();
+         *
+         * @returns {DomChain}
+         */
+        children : function (selector) {
+
+
+            var filter = ok;
+
+
+            if (selector) {
+                filter = function (child) {
+                    if (child.nodeType == 3) return false;
+                    return $selector.matches(child, selector);
+                }
+            }
+
+
+            return this.map(function (i, el) {
+                return $selector.children(el, filter);
+            }, true);
+        },
+
+        /**
+         * @method each
+         *
+         * traverse element in dom tree
+         *
+         *      $(".class").each(function(el) {
+         *          console.log($(el).html());
+         *      });
+         *
+         * @param {Function} callback
+         * @returns {DomChain}
+         */
+        each : function (callback) {
+            each(this, function (i, el) {
+                callback.call(el, i, el);
+            });
+            return this;
+        },
+
+        /**
+         * @method map
+         *
+         * get wrapped list from dom tree
+         *
+         * @param {Function} callback
+         * @returns {DomChain}
+         */
+        map : function (callback, isMerge) {
+            var list = [];
+            this.each(function(i, el) {
+                list[list.length] = callback.call(el, i, el);
+            });
+
+            if (isMerge) {
+                list = merge(list);
+            }
+
+            return new DomChain(list);
+        },
+
+
+        /**
+         * @method filter
+         *
+         *      $(".class").filter(function(el) {
+         *          return el.nodeName == 'BUTTON';
+         *      });
+         *
+         * @param callback
+         * @returns {DomChain}
+         */
+        filter : function (callback) {
+            var list = [];
+            this.each(function(i, el) {
+
+                var result = callback.call(el, i, el);
+
+                if (result) {
+                    list[list.length] = this;
+                }
+            });
+
+            return new DomChain(list);
+        },
+
+        /**
+         * @method attr
+         *
+         * @param attrs
+         * @returns {*}
+         */
+        attr : function (key, value) {
+
+            var count = arguments.length;
+
+            if (count == 1) {       // get
+
+                if (typeof key == 'string') {
+                    return $attr.getAttr(this[0], key);
+                } else if (Array.isArray(key)) {
+                    return $attr.getAllAttr(this[0], key);
+                } else if (typeof key == 'object') {
+                    return this.each(function(i, el) {
+                        $attr.setAllAttr(el, key);
+                    });
+                }
+
+            } else if (count == 2) {
+
+                if (typeof value == 'function') {
+                    return this.each(function(index, el) {
+                        var oldValue = $attr.getAttr(el, key);
+                        $attr.setAttr(el, key, value.call(el, index, oldValue));
+                    });
+                } else {
+                    return this.each(function(i, el) {
+                        $attr.setAttr(el, key, value);
+                    });
+                }
+
+            }
+        },
+
+        /**
+         * @method val
+         *
+         * get value attribute of element
+         *
+         *      $("#id").val();
+         *
+         * set value attribute
+         *
+         *      $("#id").val('test');
+         *
+         * @param {Mixed} [value=undefined]
+         * @returns {*}
+         */
+        val : function (value) {
+          var count = arguments.length;
+
+          if (count == 0) {
+              return $attr.getValue(this[0]);
+          } else if (count == 1) {
+              $attr.setValue(this[0], value);
+          }
+
+          return this;
+        },
+
+        /**
+         * @method removeAttr
+         *
+         * remove attribute for element
+         *
+         * @param {String} key
+         * @returns {DomChain}
+         */
+        removeAttr : function (key) {
+            if (this[0]) {
+                $attr.removeAttr(this[0], key);
+            }
+
+            return this;
+        },
+
+        /**
+         * @method data
+         *
+         * set or get data
+         *
+         *      // set value for key
+         *      $("#id").data('key', value);
+         *
+         *      // get data for key
+         *      $("#id").data('key");
+         *
+         *      // get all data with data-* properties
+         *      $("#id").data();
+         *
+         *      // set all data
+         *      $("#id").data({ ... })
+         *
+         * @param {String|Object} datas
+         * @returns {*}
+         */
+        data: function (key, value) {
+
+
+            var count = arguments.length;
+
+            if (count == 0) {
+                return $attr.getAllData(this[0]);
+            } else if (count == 1) {       // get
+
+                if (typeof key == 'string') {
+                    return $attr.getData(this[0], key);
+                } else if (typeof key == 'object') {
+                    return this.each(function(i, el) {
+                        $attr.setAllData(el, key);
+                    });
+                }
+
+            } else if (count == 2) {
+
+                if (typeof value == 'function') {
+                    return this.each(function(index, el) {
+                        var oldValue = $attr.getData(el, key);
+                        $attr.setData(el, key, value.call(el, index, oldValue));
+                    });
+                } else {
+                    return this.each(function(i, el) {
+                        $attr.setData(el, key, value);
+                    });
+                }
+
+            }
+
+            return null;
+        },
+
+        /**
+         * @method eq
+         *
+         * get element of index
+         *
+         * if index is minus, find element from last
+         *
+         * @param {Number} index
+         * @returns {DomChain}
+         */
+        eq : function (index) {
+            var i = (index < 0) ? this.length + index : index;
+            return new DomChain(this[i]);
+        },
+
+        /**
+         * @method first
+         *
+         * get first element in DOM tree
+         *
+         * @returns {*|DomChain}
+         */
+        first : function () {
+            return this.eq(0);
+        },
+
+        /**
+         * @method last
+         *
+         * get last element in DOM tree
+         *
+         * @returns {*|DomChain}
+         */
+        last : function () {
+            return this.eq(-1);
+        },
+
+        /**
+         * @method find
+         *
+         * find by selector
+         *
+         * @param selector
+         * @returns {util.dom.DomChain}
+         */
+        find : function (selector) {
+            return this.map(function() {
+                return $selector.find(this, selector);
+            }, true);
         }
-    }
+
+
+    };
+
+    //////////////////////////////
+    // event alias
+    //
+    //  $("#id").click() is  $("#id").trigger('click');
+    //
+    //  $("#id").click(function() { });  is $("#id").on('click', function() { });
+    //
+    ////////////////////////////
+    var eventNameList = (
+        "blur focus focusin focusout resize scroll " +
+        "click dblclick mousedown mouseup mousemove mouseover " +
+        "mouseout mouseenter mouseleave change select " +
+        "submit keydown keypress keyup contextmenu"
+    ).split(' ');
+
+    each(eventNameList, function( index, event) {
+        DomChain.prototype[event] = function(  ) {
+            var count = arguments.length;
+
+            if (count == 0) {
+                this.trigger( event );
+            } else if (count == 1) {
+                this.on(event, arguments[0]);
+            } else if (count == 2) {
+                this.on(event, arguments[0], arguments[1]);
+            }
+        };
+    });
+
+    return DomChain;
+});
+jui.define("util.dom", ["util.dom.domchain"], function (DomChain) {
+
+	/**
+	 * @class util.dom
+	 *
+	 * pure dom utility
+	 *
+	 *      dom("#id") is equals to dom.id('id');
+	 *
+	 *      dom(".class") is equals to dom.className("class");
+	 *
+	 *      dom("tag") is equals to dom.tag('tag');
+	 *
+	 *      dom(".class > tag > li:first-child") is equals to dom.find(".class > tag > li:first-child");
+	 *
+	 * @singleton
+	 */
+	function dom(selector, context) {
+		return new DomChain(selector, context || document);
+	}
+
+
+	return dom;
 });
 jui.define("util.sort", [], function() {
 
@@ -3429,7 +5927,7 @@ jui.define("util.scale", [ "util.math", "util.time" ], function(math, _time) {
 	return self;
 });
 
-jui.define("util.color", [ "util.math" ], function(math) {
+jui.define("util.color", [ "util.math", "util.base" ], function(math, _) {
 
 	/**
 	 *  @class util.color
@@ -5617,7 +8115,7 @@ jui.define("collection", [], function() {
 
     return UICollection;
 });
-jui.define("core", [ "util.base", "util.dom", "manager", "collection" ],
+jui.define("core", [ "util.base", "jquery", "manager", "collection" ],
     function(_, $, UIManager, UICollection) {
 
 	/** 
@@ -5848,7 +8346,7 @@ jui.define("core", [ "util.base", "util.dom", "manager", "collection" ],
                 elemList = [];
 
             if(_.typeCheck("string", selector)) {
-                elemList = $.find(selector);
+                elemList = $(selector);
             } else if(_.typeCheck("object", selector)) {
                 elemList.push(selector);
             } else {
@@ -5963,20 +8461,19 @@ jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
             var e = { target: args[0], type: args[1] };
 
             if (_.typeCheck("function", args[2])) {
-                e = $.extend(e, { callback: args[2] });
+                e = _.extend(e, { callback: args[2] });
             } else if (_.typeCheck("string", args[2])) {
-                e = $.extend(e, { children: args[2], callback: args[3] });
+                e = _.extend(e, { children: args[2], callback: args[3] });
             }
 
             var eventTypes = _.typeCheck("array", e.type) ? e.type : [ e.type ];
 
             for (var i = 0; i < eventTypes.length; i++) {
-                e.type = eventTypes[i]
+                e.type = eventTypes[i];
 
                 if (e.type.toLowerCase().indexOf("animation") != -1)
                     settingEventAnimation(e);
                 else {
-                    // body, window, document ��쿡�� �̺�Ʈ ��ø�� ����
                     if (e.target != "body" && e.target != window && e.target != document) {
                         $(e.target).off(e.type);
                     }
@@ -6074,7 +8571,6 @@ jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
                 $(obj.target).off(obj.type);
             }
 
-            // ������ �޼ҵ� �޸𸮿��� ����
             if(this.__proto__) {
                 for (var key in this.__proto__) {
                     delete this.__proto__[key];

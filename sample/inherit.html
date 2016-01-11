@@ -7,7 +7,14 @@
 
 <script src="../lib/jquery-1.8.0.min.js"></script>
 <script src="../js/base.js"></script>
-<script src="../js/util/dom.js"></script>
+  <script src="../js/util/dom/attr.js"></script>
+  <script src="../js/util/dom/event.js"></script>
+  <script src="../js/util/dom/css.js"></script>
+  <script src="../js/util/dom/manage.js"></script>
+  <script src="../js/util/dom/selector.js"></script>
+  <script src="../js/util/dom/core.js"></script>
+  <script src="../js/util/dom/domchain.js"></script>
+  <script src="../js/util/dom.js"></script>
 <script src="../js/manager.js"></script>
 <script src="../js/collection.js"></script>
 <script src="../js/core.js"></script>
@@ -18,8 +25,8 @@ jui.defineUI("base.ui.select", [], function() {
   
    var UI = function() {
      
-     this.init = function() {
-       console.log('base.ui.select init called');
+     this.init = function(a) {
+       console.log('base.ui.select init called', a);
      }
      
      this.start = function() {
@@ -43,7 +50,7 @@ jui.defineUI("test.ui.select", [], function() {
       
       this.init = function() {
         
-        this.super('init');
+        this.super('init', [1]);
         
         console.log('test.ui.select init called.');
         

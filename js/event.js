@@ -51,20 +51,19 @@ jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
             var e = { target: args[0], type: args[1] };
 
             if (_.typeCheck("function", args[2])) {
-                e = $.extend(e, { callback: args[2] });
+                e = _.extend(e, { callback: args[2] });
             } else if (_.typeCheck("string", args[2])) {
-                e = $.extend(e, { children: args[2], callback: args[3] });
+                e = _.extend(e, { children: args[2], callback: args[3] });
             }
 
             var eventTypes = _.typeCheck("array", e.type) ? e.type : [ e.type ];
 
             for (var i = 0; i < eventTypes.length; i++) {
-                e.type = eventTypes[i]
+                e.type = eventTypes[i];
 
                 if (e.type.toLowerCase().indexOf("animation") != -1)
                     settingEventAnimation(e);
                 else {
-                    // body, window, document ��쿡�� �̺�Ʈ ��ø�� ����
                     if (e.target != "body" && e.target != window && e.target != document) {
                         $(e.target).off(e.type);
                     }
@@ -162,7 +161,6 @@ jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
                 $(obj.target).off(obj.type);
             }
 
-            // ������ �޼ҵ� �޸𸮿��� ����
             if(this.__proto__) {
                 for (var key in this.__proto__) {
                     delete this.__proto__[key];

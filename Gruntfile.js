@@ -22,6 +22,15 @@ module.exports = function(grunt) {
                     // core
                     "js/base.js",
 
+                    // util.dom
+                    "js/util/dom/attr.js",
+                    "js/util/dom/css.js",
+                    "js/util/dom/event.js",
+                    "js/util/dom/manage.js",
+                    "js/util/dom/selector.js",
+                    "js/util/dom/core.js",
+                    "js/util/dom/domchain.js",
+
                     // util
                     "js/util/dom.js",
                     "js/util/sort.js",
