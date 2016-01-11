@@ -432,8 +432,15 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
             return new DomChain(selector).prepend(this);
         },
 
+        /**
+         * @method replace
+         *
+         * TODO: replace element to newElement
+         *
+         * @param newElement
+         */
         replace : function (newElement) {
-
+            return this;
         },
 
         /**
