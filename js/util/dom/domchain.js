@@ -88,7 +88,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
      */
     DomChain.core = $core;
     DomChain.attr = $attr;
-    DomChain.css = css;
+    DomChain.css = $css;
     DomChain.event = $event;
     DomChain.manage = $manage;
     DomChain.selector = $selector;
@@ -451,16 +451,18 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {*}
          */
         css : function (key, value) {
-
             if (typeof key == 'string') {
                 if (arguments.length == 1) {
-                    return $css.css(this[0], key);
+                    return $css.getCss(this[0], key);
                 } else if (arguments.length == 2) {
-                    $css.css(this[0], key, value);
+                    $css.setCss(this[0], key, value);
                 }
+            } else if (Array.isArray(key)) {
+                return $css.getAllCss(this[0], key);
             } else if (typeof key == 'object') {
                 this.each(function(i, el) {
-                    $css.css(el, key);
+                    console.log(key);
+                    $css.setAllCss(el, key);
                 });
             }
 
@@ -880,11 +882,13 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
 
             if (count == 1) {       // get
 
-                if (typeof key == 'string' || Array.isArray(key)) {
-                    return $attr.attr(this[0], key);
-                } else {
+                if (typeof key == 'string') {
+                    return $attr.getAttr(this[0], key);
+                } else if (Array.isArray(key)) {
+                    return $attr.getAllAttr(this[0], key);
+                } else if (typeof key == 'object') {
                     return this.each(function(i, el) {
-                        $attr.attr(el, key);
+                        $attr.setAllAttr(el, key);
                     });
                 }
 
@@ -892,12 +896,12 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
 
                 if (typeof value == 'function') {
                     return this.each(function(index, el) {
-                        var oldValue = $attr.get(el, key);
-                        $attr.attr(el, key, value.call(el, index, oldValue));
+                        var oldValue = $attr.getAttr(el, key);
+                        $attr.setAttr(el, key, value.call(el, index, oldValue));
                     });
                 } else {
                     return this.each(function(i, el) {
-                        $attr.attr(el, key, value);
+                        $attr.setAttr(el, key, value);
                     });
                 }
 
@@ -922,9 +926,9 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
           var count = arguments.length;
 
           if (count == 0) {
-              return $attr.val(this[0]);
+              return $attr.getValue(this[0]);
           } else if (count == 1) {
-              $attr.val(this[0], value);
+              $attr.setValue(this[0], value);
           }
 
           return this;
@@ -939,7 +943,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {DomChain}
          */
         removeAttr : function (key) {
-            if (this.length > 0) {
+            if (this[0]) {
                 $attr.removeAttr(this[0], key);
             }
 
@@ -951,6 +955,18 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          *
          * set or get data
          *
+         *      // set value for key
+         *      $("#id").data('key', value);
+         *
+         *      // get data for key
+         *      $("#id").data('key");
+         *
+         *      // get all data with data-* properties
+         *      $("#id").data();
+         *
+         *      // set all data
+         *      $("#id").data({ ... })
+         *
          * @param {String|Object} datas
          * @returns {*}
          */
@@ -960,14 +976,14 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
             var count = arguments.length;
 
             if (count == 0) {
-                return $attr.data(this[0]);
+                return $attr.getAllData(this[0]);
             } else if (count == 1) {       // get
 
-                if (typeof key == 'string' || Array.isArray(key)) {
-                    return $attr.data(this[0], key);
+                if (typeof key == 'string') {
+                    return $attr.getData(this[0], key);
                 } else if (typeof key == 'object') {
                     return this.each(function(i, el) {
-                        $attr.data(el, key);
+                        $attr.setAllData(el, key);
                     });
                 }
 
@@ -975,12 +991,12 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
 
                 if (typeof value == 'function') {
                     return this.each(function(index, el) {
-                        var oldValue = $attr.data(el, key);
-                        $attr.data(el, key, value.call(el, index, oldValue));
+                        var oldValue = $attr.getData(el, key);
+                        $attr.setData(el, key, value.call(el, index, oldValue));
                     });
                 } else {
                     return this.each(function(i, el) {
-                        $attr.data(el, key, value);
+                        $attr.setData(el, key, value);
                     });
                 }
 

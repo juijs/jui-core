@@ -1,6 +1,11 @@
 jui.define("util.dom.css", [ ], function() {
 
-
+    // Util Function
+    var each = function (arr, callback, context) {
+        for(var i = 0, len = arr.length; i < len; i++) {
+            callback.call(context, i, arr[i]);
+        }
+    };
 
     var hasClass, addClass, removeClass;
 
@@ -28,6 +33,10 @@ jui.define("util.dom.css", [ ], function() {
         };
     }
 
+    var getComputedStyle = function (element) {
+        return window.getComputedStyle ? window.getComputedStyle(element) : element.currentStyle;
+    };
+
     /**
      * @class util.dom.CSS
      *
@@ -35,31 +44,35 @@ jui.define("util.dom.css", [ ], function() {
     var CSS = {
 
 
-        css : function (element, styles, value) {
-            var style = window.getComputedStyle ? getComputedStyle(element) : element.currentStyle;
+        getCss : function (element, key) {
+            var style = getComputedStyle(element);
 
-            if (typeof styles === 'string') {
-                if (arguments.length == 2) {
-                    return style[styles];
-                } else  if (arguments.length == 3){
-                    return element.style[styles] = value ;
-                }
-
-            } else if (Array.isArray(styles)) {
-                var obj = {};
-                each(styles, function(key) {
-                    obj[key] = style[key];
-                });
-                return obj;
-            } else if (typeof styles === 'object') {
-                for(var k in styles) {
-                    element.style[k] = styles[k];
-                }
-            }
-
-            return style;
+            return style[key];
         },
 
+        getAllCss : function (element, styles) {
+            var style = getComputedStyle(element);
+
+            var obj = {};
+            each(styles || [], function(i, key) {
+                obj[key] = style[key];
+            });
+            return obj;
+        },
+
+        setCss : function (element, key, value) {
+            element.style[key] = value ;
+        },
+
+        setAllCss : function (element, styles) {
+            console.log('all css', styles);
+            for(var k in styles) {
+                element.style[k] = styles[k];
+                console.log(k, styles, styles[k]);
+            }
+
+            console.log(element.style['left']);
+        },
 
         /**
          * @method show
@@ -98,7 +111,7 @@ jui.define("util.dom.css", [ ], function() {
          * @returns {feature}
          */
         toggle: function (element, value) {
-            var display = this.css(element, 'display');
+            var display = this.getCss(element, 'display');
 
             if (display == 'none') {
                 this.show(element, value);
@@ -171,7 +184,7 @@ jui.define("util.dom.css", [ ], function() {
             var w = this.outerWidth(element);
 
             if (arguments.length == 1) {
-                var style = this.css(element);
+                var style = getComputedStyle(element);
 
                 w -= parseFloat(style.borderLeftWidth || 0) + parseFloat(style.paddingLeft || 0);
                 w -= parseFloat(style.borderRightWidth || 0) + parseFloat(style.paddingRight || 0);
@@ -200,7 +213,7 @@ jui.define("util.dom.css", [ ], function() {
             var h = this.outerHeight(element);
 
             if (arguments.length == 1) {
-                var style = this.css(element);
+                var style = getComputedStyle(element);
 
                 h -= parseFloat(style.borderTopWidth || 0) + parseFloat(style.paddingTop || 0);
                 h -= parseFloat(style.borderBottomWidth || 0) + parseFloat(style.paddingBottom || 0);
@@ -227,7 +240,7 @@ jui.define("util.dom.css", [ ], function() {
             var width = element.offsetWidth;
 
             if (withMargin) {
-                var style = this.css(element);
+                var style = getComputedStyle(element);
                 width += parseInt(style.marginLeft || 0) + parserInt(style.marginRight || 0);
             }
 
@@ -245,7 +258,7 @@ jui.define("util.dom.css", [ ], function() {
             var height = element.offsetHeight;
 
             if (withMargin) {
-                var style = this.css(element);
+                var style = getComputedStyle(element);
                 height += parseInt(style.marginTop) + parserInt(style.marginBottom);
             }
 

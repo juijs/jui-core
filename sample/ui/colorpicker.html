@@ -98,8 +98,8 @@
                     else if (y > h) y = h;
 
                     $drag_pointer.css({
-                        left: x - 5,
-                        top: y - 5
+                        left: (x - 5) + 'px',
+                        top: (y - 5) + 'px'
                     }).data('pos', { x: x, y : y});
 
                     setInputColor();
@@ -183,6 +183,7 @@
                     var pos = $drag_pointer.data('pos') || { x : 0, y : 0 };
                     var huePos = $drag_bar.data('pos') || { x : 0 };
 
+
                     var width = $color.width();
                     var height = $color.height();
 
@@ -252,15 +253,8 @@
                 }
 
                 function initColor(newColor, evtType) {
-                    console.log('start init color');
                     var c = newColor || self.options.color,
                             rgb = color.rgb(c);
-
-                    $color.css("background-color", c);
-
-                    console.log($color.width(), $color);
-
-                    console.log(getComputedStyle($color[0]));
 
                     var hsv = color.RGBtoHSV(rgb.r, rgb.g, rgb.b),
                             x = $color.width() * hsv.s,

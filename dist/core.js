@@ -1398,7 +1398,7 @@
 	};
 })(window, (typeof(global) !== "undefined") ? global : window);
 
-jui.define("util.dom.attr", [ ], function() {
+jui.define("util.dom.attr", [ "util.base" ], function(_) {
 
     // Util Function
     var each = function (arr, callback, context) {
@@ -1426,7 +1426,7 @@ jui.define("util.dom.attr", [ ], function() {
         * @param {String} key
         * @returns {string}
         */
-       get : function (element, key) {
+       getAttr : function (element, key) {
 
            if (element.nodeType == 3) return;
 
@@ -1442,7 +1442,7 @@ jui.define("util.dom.attr", [ ], function() {
         * @param {Array} arr
         * @returns {Object}
         */
-       getAll : function (element, arr) {
+       getAllAttr : function (element, arr) {
 
            if (element.nodeType == 3) return;
            var obj = {};
@@ -1478,10 +1478,11 @@ jui.define("util.dom.attr", [ ], function() {
         * @param {Element} element
         * @param {String} values
         */
-       set: function (element, values) {
+       setAttr: function (element, key, value) {
+           element.setAttribute(key, value);
+       },
 
-           if (element.nodeType == 3) return;
-
+       setAllAttr : function (element, values) {
            values = values || {};
            each(Object.keys(values), function(i, key) {
                var attrKey = key;
@@ -1516,153 +1517,97 @@ jui.define("util.dom.attr", [ ], function() {
            return this;
        },
 
-       /**
-        * @method data
-        *
-        * set dataset values
-        *
-        *      dom.data(element, 'title');     // get element.dataset.title or element.data-title attribute
-        *
-        *      dom.data(element, { title : 'value' });   // set data values
-        *
-        * @param element
-        * @param one
-        * @returns {*|string}
-        */
-       data: function (element, key, value) {
+       getData : function (element, key) {
+         element.juiData = element.juiData || {};
+
+         if (typeof element.juiData[key] !== 'undefined') {
+             return element.juiData[key];
+         }
+
+         var data = element.getAttribute('data-' + key);
+         if (typeof data !== 'undefined') {
+             return data;
+         }
+
+         return ;
+       },
+
+        getAllData : function (element) {
+            var data = _.deepClone(element.juiData);
+
+            // get data-* properties
+            each(Object.keys(element.attributes), function (i, key) {
+                if (key.indexOf("data-") > -1) {
+                    var realKey = key.replace('data-', '');
+                    if (typeof data[realKey] === 'undefined') {
+                        data[key]
+                    }
+                }
+            });
+
+            return data;
+        },
 
 
-           var count = arguments.length;
-           var hasDataAttribute = typeof element.attributes['data-'+key] !== 'undefined';
+        setData : function (element, key, value) {
+            element.juiData = element.juiData || {};
+            element.juiData[key] = value ;
+        },
 
-           if (count == 1) {
-               // return all data
-               return this.getAllData(element);
-           } else if (count == 2) {
-               if (typeof key == 'string') {
-                   if (!hasDataAttribute) {
-                       return element.dataset[key];
-                   } else {
-                       return this.get(element, 'data-' + key);
+        setAllData : function (element, datas) {
+            element.juiData = element.juiData || {};
+
+            for(var key in datas) {
+                element.juiData[key] = datas[key];
+            }
+        },
+
+       getValue : function (element) {
+           var v;
+
+           if (element.nodeName == "SELECT") {
+               v = element.options[element.selectedIndex].value;
+           } else {
+               v = element.value;
+           }
+
+           return v;
+       },
+
+       setValue : function (element, value) {
+           var values = Array.isArray(value) ? value : [value ];
+
+           if (element.nodeName == "SELECT") {
+               var selected = false;
+               each(element.options, function(i, opt) {
+                   if (values.indexOf(opt.value) > -1) {
+                       opt.selected = true;
+                       selected = true;
                    }
+               });
 
-               } else if (Array.isArray(key)) {
-                   return this.getAllData(element, key);
-               } else if (typeof key == 'object') {
-                   each(Object.keys(key), function(i, k) {
-                       var value = key[k];
-
-                       if (typeof element.attributes['data-'+k] == 'undefined') {
-                           element.dataset[k] = value;
-                       } else {
-                           element.setAttribute('data-'+k, value);
-                       }
-
-                   });
+               if (!selected) {
+                   element.selectedIndex = -1;
                }
-
-           } else if (count == 3) {
-               console.log(hasDataAttribute,key,value);
-               if (!hasDataAttribute) {
-                   element.dataset[key] = value;
-                   console.log(element.dataset[key]);
-               } else {
-                   element.setAttribute('data-'+key, value);
-               }
-           }
-       },
-
-       /**
-        * @method attr
-        *
-        * get or set attributes to element
-        *
-        *      // get attribute
-        *      dom.attr(element, key);
-        *
-        *      // get all attribute
-        *      dom.attr(element, [key, key2, key3] );
-        *
-        *      // set all attribute
-        *      dom.attr(element, { key : value, key1 : value1 } );
-        *
-        *      // set attribute
-        *      dom.attr(element, key, value );
-        *
-        * @param {Element} element
-        * @param {String} key
-        * @param {Mixed} value
-        * @returns {*|DomChain}
-        */
-       attr: function(element, key, value) {
-
-           var count = arguments.length;
-
-           if (count == 2) {
-               if (typeof key == 'string') {
-                   return this.get(element, key);
-               } else if (Array.isArray(key)) {
-                   return this.getAll(element, key);
-               } else if (typeof key == 'object') {
-                   this.set(element, key);
-               }
-
-           } else if (count == 3) {
-               var obj = {};
-               obj[key] = value;
-               this.set(element, obj);
+           } else if (element.type == "checkbox" || element.type == "radio") {
+               element.checked = (element.value === value);
+           } else {
+               element.value = value;
            }
 
-       },
-
-       val : function (element, value) {
-           var count = arguments.length;
-           value = value || "";
-
-           // get value
-           if (count == 1) {
-
-               var v;
-
-               if (element.nodeName == "SELECT") {
-                   v = element.options[element.selectedIndex].value;
-               } else {
-                   v = element.value;
-               }
-
-               return v;
-           }
-           // set value
-           else if (count == 2) {
-               var values = Array.isArray(value) ? value : [value ];
-
-               if (element.nodeName == "SELECT") {
-                   var selected = false;
-                   each(element.options, function(i, opt) {
-                       if (values.indexOf(opt.value) > -1) {
-                           opt.selected = true;
-                           selected = true;
-                       }
-                   });
-
-                   if (!selected) {
-                       element.selectedIndex = -1;
-                   }
-               } else if (element.type == "checkbox" || element.type == "radio") {
-                   element.checked = (element.value === value);
-               } else {
-                   element.value = value;
-               }
-
-           }
-       },
+       }
    };
 
     return Attr;
 });
 jui.define("util.dom.css", [ ], function() {
 
-
+    // Util Function
+    var each = function (arr, callback, context) {
+        for(var i = 0, len = arr.length; i < len; i++) {
+            callback.call(context, i, arr[i]);
+        }
+    };
 
     var hasClass, addClass, removeClass;
 
@@ -1690,6 +1635,10 @@ jui.define("util.dom.css", [ ], function() {
         };
     }
 
+    var getComputedStyle = function (element) {
+        return window.getComputedStyle ? window.getComputedStyle(element) : element.currentStyle;
+    };
+
     /**
      * @class util.dom.CSS
      *
@@ -1697,31 +1646,35 @@ jui.define("util.dom.css", [ ], function() {
     var CSS = {
 
 
-        css : function (element, styles, value) {
-            var style = window.getComputedStyle ? getComputedStyle(element) : element.currentStyle;
+        getCss : function (element, key) {
+            var style = getComputedStyle(element);
 
-            if (typeof styles === 'string') {
-                if (arguments.length == 2) {
-                    return style[styles];
-                } else  if (arguments.length == 3){
-                    return element.style[styles] = value ;
-                }
-
-            } else if (Array.isArray(styles)) {
-                var obj = {};
-                each(styles, function(key) {
-                    obj[key] = style[key];
-                });
-                return obj;
-            } else if (typeof styles === 'object') {
-                for(var k in styles) {
-                    element.style[k] = styles[k];
-                }
-            }
-
-            return style;
+            return style[key];
         },
 
+        getAllCss : function (element, styles) {
+            var style = getComputedStyle(element);
+
+            var obj = {};
+            each(styles || [], function(i, key) {
+                obj[key] = style[key];
+            });
+            return obj;
+        },
+
+        setCss : function (element, key, value) {
+            element.style[key] = value ;
+        },
+
+        setAllCss : function (element, styles) {
+            console.log('all css', styles);
+            for(var k in styles) {
+                element.style[k] = styles[k];
+                console.log(k, styles, styles[k]);
+            }
+
+            console.log(element.style['left']);
+        },
 
         /**
          * @method show
@@ -1760,7 +1713,7 @@ jui.define("util.dom.css", [ ], function() {
          * @returns {feature}
          */
         toggle: function (element, value) {
-            var display = this.css(element, 'display');
+            var display = this.getCss(element, 'display');
 
             if (display == 'none') {
                 this.show(element, value);
@@ -1833,7 +1786,7 @@ jui.define("util.dom.css", [ ], function() {
             var w = this.outerWidth(element);
 
             if (arguments.length == 1) {
-                var style = this.css(element);
+                var style = getComputedStyle(element);
 
                 w -= parseFloat(style.borderLeftWidth || 0) + parseFloat(style.paddingLeft || 0);
                 w -= parseFloat(style.borderRightWidth || 0) + parseFloat(style.paddingRight || 0);
@@ -1862,7 +1815,7 @@ jui.define("util.dom.css", [ ], function() {
             var h = this.outerHeight(element);
 
             if (arguments.length == 1) {
-                var style = this.css(element);
+                var style = getComputedStyle(element);
 
                 h -= parseFloat(style.borderTopWidth || 0) + parseFloat(style.paddingTop || 0);
                 h -= parseFloat(style.borderBottomWidth || 0) + parseFloat(style.paddingBottom || 0);
@@ -1889,7 +1842,7 @@ jui.define("util.dom.css", [ ], function() {
             var width = element.offsetWidth;
 
             if (withMargin) {
-                var style = this.css(element);
+                var style = getComputedStyle(element);
                 width += parseInt(style.marginLeft || 0) + parserInt(style.marginRight || 0);
             }
 
@@ -1907,7 +1860,7 @@ jui.define("util.dom.css", [ ], function() {
             var height = element.offsetHeight;
 
             if (withMargin) {
-                var style = this.css(element);
+                var style = getComputedStyle(element);
                 height += parseInt(style.marginTop) + parserInt(style.marginBottom);
             }
 
@@ -2910,6 +2863,18 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
         this.selector = search;
     }
 
+    /**
+     * alias for util function
+     */
+    DomChain.core = $core;
+    DomChain.attr = $attr;
+    DomChain.css = $css;
+    DomChain.event = $event;
+    DomChain.manage = $manage;
+    DomChain.selector = $selector;
+
+    /** */
+
     DomChain.prototype = {
 
         created : false,
@@ -3266,16 +3231,18 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {*}
          */
         css : function (key, value) {
-
             if (typeof key == 'string') {
                 if (arguments.length == 1) {
-                    return $css.css(this[0], key);
+                    return $css.getCss(this[0], key);
                 } else if (arguments.length == 2) {
-                    $css.css(this[0], key, value);
+                    $css.setCss(this[0], key, value);
                 }
+            } else if (Array.isArray(key)) {
+                return $css.getAllCss(this[0], key);
             } else if (typeof key == 'object') {
                 this.each(function(i, el) {
-                    $css.css(el, key);
+                    console.log(key);
+                    $css.setAllCss(el, key);
                 });
             }
 
@@ -3695,11 +3662,13 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
 
             if (count == 1) {       // get
 
-                if (typeof key == 'string' || Array.isArray(key)) {
-                    return $attr.attr(this[0], key);
-                } else {
+                if (typeof key == 'string') {
+                    return $attr.getAttr(this[0], key);
+                } else if (Array.isArray(key)) {
+                    return $attr.getAllAttr(this[0], key);
+                } else if (typeof key == 'object') {
                     return this.each(function(i, el) {
-                        $attr.attr(el, key);
+                        $attr.setAllAttr(el, key);
                     });
                 }
 
@@ -3707,12 +3676,12 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
 
                 if (typeof value == 'function') {
                     return this.each(function(index, el) {
-                        var oldValue = $attr.get(el, key);
-                        $attr.attr(el, key, value.call(el, index, oldValue));
+                        var oldValue = $attr.getAttr(el, key);
+                        $attr.setAttr(el, key, value.call(el, index, oldValue));
                     });
                 } else {
                     return this.each(function(i, el) {
-                        $attr.attr(el, key, value);
+                        $attr.setAttr(el, key, value);
                     });
                 }
 
@@ -3737,9 +3706,9 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
           var count = arguments.length;
 
           if (count == 0) {
-              return $attr.val(this[0]);
+              return $attr.getValue(this[0]);
           } else if (count == 1) {
-              $attr.val(this[0], value);
+              $attr.setValue(this[0], value);
           }
 
           return this;
@@ -3754,7 +3723,7 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          * @returns {DomChain}
          */
         removeAttr : function (key) {
-            if (this.length > 0) {
+            if (this[0]) {
                 $attr.removeAttr(this[0], key);
             }
 
@@ -3766,6 +3735,18 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
          *
          * set or get data
          *
+         *      // set value for key
+         *      $("#id").data('key', value);
+         *
+         *      // get data for key
+         *      $("#id").data('key");
+         *
+         *      // get all data with data-* properties
+         *      $("#id").data();
+         *
+         *      // set all data
+         *      $("#id").data({ ... })
+         *
          * @param {String|Object} datas
          * @returns {*}
          */
@@ -3775,14 +3756,14 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
             var count = arguments.length;
 
             if (count == 0) {
-                return $attr.data(this[0]);
+                return $attr.getAllData(this[0]);
             } else if (count == 1) {       // get
 
-                if (typeof key == 'string' || Array.isArray(key)) {
-                    return $attr.data(this[0], key);
+                if (typeof key == 'string') {
+                    return $attr.getData(this[0], key);
                 } else if (typeof key == 'object') {
                     return this.each(function(i, el) {
-                        $attr.data(el, key);
+                        $attr.setAllData(el, key);
                     });
                 }
 
@@ -3790,12 +3771,12 @@ jui.define("util.dom.domchain", [ "util.dom.core", "util.dom.attr", "util.dom.cs
 
                 if (typeof value == 'function') {
                     return this.each(function(index, el) {
-                        var oldValue = $attr.data(el, key);
-                        $attr.data(el, key, value.call(el, index, oldValue));
+                        var oldValue = $attr.getData(el, key);
+                        $attr.setData(el, key, value.call(el, index, oldValue));
                     });
                 } else {
                     return this.each(function(i, el) {
-                        $attr.data(el, key, value);
+                        $attr.setData(el, key, value);
                     });
                 }
 
