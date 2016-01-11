@@ -8115,7 +8115,7 @@ jui.define("collection", [], function() {
 
     return UICollection;
 });
-jui.define("core", [ "util.base", "util.dom", "manager", "collection" ],
+jui.define("core", [ "util.base", "jquery", "manager", "collection" ],
     function(_, $, UIManager, UICollection) {
 
 	/** 
@@ -8408,7 +8408,7 @@ jui.define("core", [ "util.base", "util.dom", "manager", "collection" ],
 	
 	return UICore;
 });
-jui.define("event", [ "util.dom", "util.base", "manager", "collection" ],
+jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
     function($, _, UIManager, UICollection) {
 
     var DOMEventListener = function() {

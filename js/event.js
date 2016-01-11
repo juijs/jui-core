@@ -1,4 +1,4 @@
-jui.define("event", [ "util.dom", "util.base", "manager", "collection" ],
+jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
     function($, _, UIManager, UICollection) {
 
     var DOMEventListener = function() {

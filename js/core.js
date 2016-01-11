@@ -1,4 +1,4 @@
-jui.define("core", [ "util.base", "util.dom", "manager", "collection" ],
+jui.define("core", [ "util.base", "jquery", "manager", "collection" ],
     function(_, $, UIManager, UICollection) {
 
 	/** 
