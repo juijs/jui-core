@@ -3151,10 +3151,11 @@ jui.define("util.color", [ "util.math" ], function(math) {
 	return self;
 });
 /**
- * 범위에 대한 scale
- *
  * @class util.scale.linear
  * @singleton
+ *
+ * Linear scale
+ *
  */
 jui.define("util.scale.linear", [ "util.math" ], function(math) {
     var linear = function() {
@@ -3204,6 +3205,12 @@ jui.define("util.scale.linear", [ "util.math" ], function(math) {
             return _cache;
         }
 
+        /**
+         * @method min
+         * @static
+         *
+         * @returns {number}
+         */
         func.min = function () {
             return Math.min.apply(Math, _domain);
         }
@@ -3356,88 +3363,103 @@ jui.define("util.scale.linear", [ "util.math" ], function(math) {
  * @singleton
  */
 jui.define("util.scale.circle", [], function() {
-    var _domain = [];
-    var _range = [];
-    var _rangeBand = 0;
 
-    function func(t) {}
+    var circle = function () {
 
-    func.domain = function(values) {
+        var _domain = [];
+        var _range = [];
+        var _rangeBand = 0;
 
-        if ( typeof values == 'undefined') {
-            return _domain;
-        }
+        function func(t) {}
 
-        for (var i = 0; i < values.length; i++) {
-            _domain[i] = values[i];
-        }
+        /**
+         * @method domain
+         * @static 
+         *
+         * @param values
+         * @returns {*}
+         */
+        func.domain = function(values) {
 
-        return this;
-    }
-
-    func.range = function(values) {
-
-        if ( typeof values == 'undefined') {
-            return _range;
-        }
-
-        for (var i = 0; i < values.length; i++) {
-            _range[i] = values[i];
-        }
-
-        return this;
-    }
-
-    func.rangePoints = function(interval, padding) {
-
-        padding = padding || 0;
-
-        var step = _domain.length;
-        var unit = (interval[1] - interval[0] - padding) / step;
-
-        var range = [];
-        for (var i = 0; i < _domain.length; i++) {
-            if (i == 0) {
-                range[i] = interval[0] + padding / 2 + unit / 2;
-            } else {
-                range[i] = range[i - 1] + unit;
+            if ( typeof values == 'undefined') {
+                return _domain;
             }
+
+            for (var i = 0; i < values.length; i++) {
+                _domain[i] = values[i];
+            }
+
+            return this;
         }
 
-        _range = range;
-        _rangeBand = unit;
+        func.range = function(values) {
+
+            if ( typeof values == 'undefined') {
+                return _range;
+            }
+
+            for (var i = 0; i < values.length; i++) {
+                _range[i] = values[i];
+            }
+
+            return this;
+        }
+
+        func.rangePoints = function(interval, padding) {
+
+            padding = padding || 0;
+
+            var step = _domain.length;
+            var unit = (interval[1] - interval[0] - padding) / step;
+
+            var range = [];
+            for (var i = 0; i < _domain.length; i++) {
+                if (i == 0) {
+                    range[i] = interval[0] + padding / 2 + unit / 2;
+                } else {
+                    range[i] = range[i - 1] + unit;
+                }
+            }
+
+            _range = range;
+            _rangeBand = unit;
+
+            return func;
+        }
+
+        func.rangeBands = function(interval, padding, outerPadding) {
+            padding = padding || 0;
+            outerPadding = outerPadding || 0;
+
+            var count = _domain.length;
+            var step = count - 1;
+            var band = (interval[1] - interval[0]) / step;
+
+            var range = [];
+            for (var i = 0; i < _domain.length; i++) {
+                if (i == 0) {
+                    range[i] = interval[0];
+                } else {
+                    range[i] = band + range[i - 1];
+                }
+            }
+
+            _rangeBand = band;
+            _range = range;
+
+            return func;
+        }
+
+        func.rangeBand = function() {
+            return _rangeBand;
+        }
 
         return func;
-    }
 
-    func.rangeBands = function(interval, padding, outerPadding) {
-        padding = padding || 0;
-        outerPadding = outerPadding || 0;
 
-        var count = _domain.length;
-        var step = count - 1;
-        var band = (interval[1] - interval[0]) / step;
 
-        var range = [];
-        for (var i = 0; i < _domain.length; i++) {
-            if (i == 0) {
-                range[i] = interval[0];
-            } else {
-                range[i] = band + range[i - 1];
-            }
-        }
-
-        _rangeBand = band;
-        _range = range;
-
-        return func;
-    }
-
-    func.rangeBand = function() {
-        return _rangeBand;
-    }
-
-    return func;
+    };
+    return circle;
 });
 /**
  * 범위에 대한 log
@@ -3569,117 +3591,129 @@ jui.define("util.scale.log", [ "util.base", "util.scale.linear" ], function(_, l
  * @singleton
  */
 jui.define("util.scale.ordinal", [], function() {
-    var _domain = [];
-    var _range = [];
-    var _rangeBand = 0;
-    var _cache = {};
+    var ordinal = function () {
+        var _domain = [];
+        var _range = [];
+        var _rangeBand = 0;
+        var _cache = {};
 
-    function func(t) {
-        var key = "" + t;
-        if (typeof _cache[key] != 'undefined') {
-            return _cache[key];
-        }
-
-        var index = -1;
-        for (var i = 0; i < _domain.length; i++) {
-            if (typeof t == 'string' && _domain[i] === t) {
-                index = i;
-                break;
-            }
-        }
-
-        if (index > -1) {
-            _cache[key] = _range[index];
-            return _range[index];
-        } else {
-            if ( typeof _range[t] != 'undefined') {
-                _domain[t] = t;
-                _cache[key] = _range[t];
-                return _range[t];
+        function func(t) {
+            var key = "" + t;
+            if (typeof _cache[key] != 'undefined') {
+                return _cache[key];
             }
 
-            return null;
-        }
-    }
+            var index = -1;
+            for (var i = 0; i < _domain.length; i++) {
+                if (typeof t == 'string' && _domain[i] === t) {
+                    index = i;
+                    break;
+                }
+            }
 
-    func.domain = function(values) {
-
-        if ( typeof values == 'undefined') {
-            return _domain;
-        }
-
-        for (var i = 0; i < values.length; i++) {
-            _domain[i] = values[i];
-        }
-
-        return this;
-    }
-
-    func.range = function(values) {
-        if ( typeof values == 'undefined') {
-            return _range;
-        }
-
-        for (var i = 0; i < values.length; i++) {
-            _range[i] = values[i];
-        }
-
-        return this;
-    }
-
-    func.rangePoints = function(interval, padding) {
-        padding = padding || 0;
-
-        var step = _domain.length;
-        var unit = (interval[1] - interval[0] - padding) / step;
-
-        var range = [];
-        for (var i = 0; i < _domain.length; i++) {
-            if (i == 0) {
-                range[i] = interval[0] + padding / 2 + unit / 2;
+            if (index > -1) {
+                _cache[key] = _range[index];
+                return _range[index];
             } else {
-                range[i] = range[i - 1] + unit;
+                if ( typeof _range[t] != 'undefined') {
+                    _domain[t] = t;
+                    _cache[key] = _range[t];
+                    return _range[t];
+                }
+
+                return null;
             }
         }
 
-        _range = range;
-        _rangeBand = unit;
+        /**
+         * @method domain
+         * @static
+         *
+         * @param values
+         * @returns {*}
+         */
+        func.domain = function(values) {
+
+            if ( typeof values == 'undefined') {
+                return _domain;
+            }
+
+            for (var i = 0; i < values.length; i++) {
+                _domain[i] = values[i];
+            }
+
+            return this;
+        }
+
+        func.range = function(values) {
+            if ( typeof values == 'undefined') {
+                return _range;
+            }
+
+            for (var i = 0; i < values.length; i++) {
+                _range[i] = values[i];
+            }
+
+            return this;
+        }
+
+        func.rangePoints = function(interval, padding) {
+            padding = padding || 0;
+
+            var step = _domain.length;
+            var unit = (interval[1] - interval[0] - padding) / step;
+
+            var range = [];
+            for (var i = 0; i < _domain.length; i++) {
+                if (i == 0) {
+                    range[i] = interval[0] + padding / 2 + unit / 2;
+                } else {
+                    range[i] = range[i - 1] + unit;
+                }
+            }
+
+            _range = range;
+            _rangeBand = unit;
+
+            return func;
+        }
+
+        func.rangeBands = function(interval, padding, outerPadding) {
+            padding = padding || 0;
+            outerPadding = outerPadding || 0;
+
+            var count = _domain.length;
+            var step = count - 1;
+            var band = (interval[1] - interval[0]) / step;
+
+            var range = [];
+            for (var i = 0; i < _domain.length; i++) {
+                if (i == 0) {
+                    range[i] = interval[0];
+                } else {
+                    range[i] = band + range[i - 1];
+                }
+            }
+
+            _rangeBand = band;
+            _range = range;
+
+            return func;
+        }
+
+        func.rangeBand = function() {
+            return _rangeBand;
+        }
+
+        func.invert = function(x) {
+            return Math.ceil(x / _rangeBand);
+        }
 
         return func;
+
     }
 
-    func.rangeBands = function(interval, padding, outerPadding) {
-        padding = padding || 0;
-        outerPadding = outerPadding || 0;
-
-        var count = _domain.length;
-        var step = count - 1;
-        var band = (interval[1] - interval[0]) / step;
-
-        var range = [];
-        for (var i = 0; i < _domain.length; i++) {
-            if (i == 0) {
-                range[i] = interval[0];
-            } else {
-                range[i] = band + range[i - 1];
-            }
-        }
-
-        _rangeBand = band;
-        _range = range;
-
-        return func;
-    }
-
-    func.rangeBand = function() {
-        return _rangeBand;
-    }
-
-    func.invert = function(x) {
-        return Math.ceil(x / _rangeBand);
-    }
-
-    return func;
+    return ordinal;
 });
 /**
  * 시간에 대한 scale
@@ -3688,106 +3722,113 @@ jui.define("util.scale.ordinal", [], function() {
  * @singleton
  */
 jui.define("util.scale.time", [ "util.math", "util.time", "util.scale.linear" ], function(math, _time, linear) {
-    var _domain = [];
-    var _rangeBand;
-    var func = linear();
-    var df = func.domain;
 
-    func.domain = function(domain) {
-        if (!arguments.length)
-            return df.call(func);
+    var time = function () {
 
-        for (var i = 0; i < domain.length; i++) {
-            _domain[i] = +domain[i];
+        var _domain = [];
+        var _rangeBand;
+        var func = linear();
+        var df = func.domain;
+
+        func.domain = function (domain) {
+            if (!arguments.length)
+                return df.call(func);
+
+            for (var i = 0; i < domain.length; i++) {
+                _domain[i] = +domain[i];
+            }
+
+            return df.call(func, _domain);
         }
 
-        return df.call(func, _domain);
-    }
+        func.min = function () {
+            return Math.min(_domain[0], _domain[_domain.length - 1]);
+        }
 
-    func.min = function() {
-        return Math.min(_domain[0], _domain[_domain.length - 1]);
-    }
+        func.max = function () {
+            return Math.max(_domain[0], _domain[_domain.length - 1]);
+        }
 
-    func.max = function() {
-        return Math.max(_domain[0], _domain[_domain.length - 1]);
-    }
+        func.rate = function (value, max) {
+            return func(func.max() * (value / max));
+        }
 
-    func.rate = function(value, max) {
-        return func(func.max() * (value / max));
-    }
+        func.ticks = function (type, interval) {
+            var start = _domain[0];
+            var end = _domain[1];
 
-    func.ticks = function(type, interval) {
-        var start = _domain[0];
-        var end = _domain[1];
+            var times = [];
+            while (start < end) {
+                times.push(new Date(+start));
 
-        var times = [];
-        while (start < end) {
+                start = _time.add(start, type, interval);
+
+            }
+
             times.push(new Date(+start));
 
-            start = _time.add(start, type, interval);
+            var first = func(times[1]);
+            var second = func(times[2]);
+
+            _rangeBand = second - first;
+
+            return times;
 
         }
 
-        times.push(new Date(+start));
+        func.realTicks = function (type, interval) {
+            var start = _domain[0];
+            var end = _domain[1];
 
-        var first = func(times[1]);
-        var second = func(times[2]);
+            var times = [];
+            var date = new Date(+start)
+            var realStart = null;
 
-        _rangeBand = second - first;
+            if (type == _time.years) {
+                realStart = new Date(date.getFullYear(), 0, 1);
+            } else if (type == _time.months) {
+                realStart = new Date(date.getFullYear(), date.getMonth(), 1);
+            } else if (type == _time.days || type == _time.weeks) {
+                realStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            } else if (type == _time.hours) {
+                realStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), 0, 0, 0);
+            } else if (type == _time.minutes) {
+                realStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), 0, 0);
+            } else if (type == _time.seconds) {
+                realStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds(), 0);
+            } else if (type == _time.milliseconds) {
+                realStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds());
 
-        return times;
-
-    }
-
-    func.realTicks = function(type, interval) {
-        var start = _domain[0];
-        var end = _domain[1];
-
-        var times = [];
-        var date = new Date(+start)
-        var realStart = null;
-
-        if (type == _time.years) {
-            realStart = new Date(date.getFullYear(), 0, 1);
-        } else if (type == _time.months) {
-            realStart = new Date(date.getFullYear(), date.getMonth(), 1);
-        } else if (type == _time.days || type == _time.weeks) {
-            realStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-        } else if (type == _time.hours) {
-            realStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), 0, 0, 0);
-        } else if (type == _time.minutes) {
-            realStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), 0, 0);
-        } else if (type == _time.seconds) {
-            realStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds(), 0);
-        } else if (type == _time.milliseconds) {
-            realStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds());
-
-        }
-        realStart = _time.add(realStart, type, interval);
-
-        while (+realStart < +end) {
-            times.push(new Date(+realStart));
+            }
             realStart = _time.add(realStart, type, interval);
+
+            while (+realStart < +end) {
+                times.push(new Date(+realStart));
+                realStart = _time.add(realStart, type, interval);
+            }
+
+            var first = func(times[1]);
+            var second = func(times[2]);
+
+            _rangeBand = second - first;
+
+            return times;
         }
 
-        var first = func(times[1]);
-        var second = func(times[2]);
+        func.rangeBand = function () {
+            return _rangeBand;
+        }
 
-        _rangeBand = second - first;
+        func.invert = function (y) {
+            var f = linear().domain(func.range()).range(func.domain());
+            return new Date(f(y));
+        }
 
-        return times;
-    }
+        return func;
 
-    func.rangeBand = function() {
-        return _rangeBand;
-    }
+    };
 
-    func.invert = function(y) {
-        var f = linear().domain(func.range()).range(func.domain());
-        return new Date(f(y));
-    }
-
-    return func;
+    return time;
 });
 jui.define("util.svg.element", [], function() {
     /**

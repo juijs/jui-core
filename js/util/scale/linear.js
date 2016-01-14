@@ -1,8 +1,9 @@
 /**
- * 범위에 대한 scale
- *
  * @class util.scale.linear
  * @singleton
+ *
+ * Linear scale
+ *
  */
 jui.define("util.scale.linear", [ "util.math" ], function(math) {
     var linear = function() {
@@ -52,6 +53,12 @@ jui.define("util.scale.linear", [ "util.math" ], function(math) {
             return _cache;
         }
 
+        /**
+         * @method min
+         * @static
+         *
+         * @returns {number}
+         */
         func.min = function () {
             return Math.min.apply(Math, _domain);
         }
