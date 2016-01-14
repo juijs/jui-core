@@ -1,4 +1,9 @@
 module.exports = function(grunt) {
+    var publish_codes = [
+        "https://raw.githubusercontent.com/juijs/jui-core/develop/dist/core.js",
+        "https://raw.githubusercontent.com/juijs/jui-core/develop/dist/core.min.js"
+    ];
+
     grunt.initConfig({
         watch : {
             scripts : {
@@ -63,6 +68,20 @@ module.exports = function(grunt) {
                 files : {
                     "dist/core.min.js" : [ "dist/core.js" ]
                 }
+            }
+        },
+        "curl-dir": {
+            "jui-chart.js": {
+                src: publish_codes,
+                dest: "../jui-chart/lib"
+            },
+            "jui.js": {
+                src: publish_codes,
+                dest: "../jui/lib"
+            },
+            "jui-grid.js": {
+                src: publish_codes,
+                dest:"../jui-grid/lib"
             }
         },
         pkg: grunt.file.readJSON("package.json")
