@@ -392,4 +392,4 @@ jui.define("util.svg",
     }
 
     return SVG;
-}, "util.svg.3d");
+}, "util.svg.base3d");

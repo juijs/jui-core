@@ -1,4 +1,4 @@
-jui.define("util.svg.3d", [ "util.base", "util.math", "util.color" ], function(_, math, color) {
+jui.define("util.svg.base3d", [ "util.base", "util.math", "util.color" ], function(_, math, color) {
     var SVG3d = function() {
 
         // 3D 사각형 그리기

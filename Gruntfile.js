@@ -31,10 +31,22 @@ module.exports = function(grunt) {
                     "js/util/math.js",
                     "js/util/transform.js",
                     "js/util/time.js",
-                    "js/util/scale.js",
                     "js/util/color.js",
-                    "js/util/svgbase.js",
-                    "js/util/svg3d.js",
+
+                    "js/util/scale/linear.js",
+                    "js/util/scale/circle.js",
+                    "js/util/scale/log.js",
+                    "js/util/scale/ordinal.js",
+                    "js/util/scale/time.js",
+
+                    "js/util/svg/element.js",
+                    "js/util/svg/element.transform.js",
+                    "js/util/svg/element.path.js",
+                    "js/util/svg/element.path.rect.js",
+                    "js/util/svg/element.path.symbol.js",
+                    "js/util/svg/element.poly.js",
+                    "js/util/svg/base.js",
+                    "js/util/svg/base3d.js",
                     "js/util/svg.js",
 
                     // related ui
