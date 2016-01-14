@@ -1,4 +1,11 @@
 jui.define("util.svg.element.poly", [], function() {
+
+    /**
+     * @class util.svg.element.poly
+     *
+     * @alias PolyElement
+     * @extends util.svg.element.transform
+     */
     var PolyElement = function() {
         var orders = [];
 

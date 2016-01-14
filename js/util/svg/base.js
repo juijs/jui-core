@@ -5,6 +5,21 @@ jui.define("util.svg.base",
 
     var globalObj = null;
 
+    /**
+     * @class util.svg.base
+     * SVG base module
+     *
+     * @requires util.base
+     * @requires util.math
+     * @requires util.color
+     * @requires util.svg.element
+     * @requires util.svg.element.transform
+     * @requires util.svg.element.path
+     * @requires util.svg.element.path.symbol
+     * @requires util.svg.element.path.rect
+     * @requires util.svg.element.poly
+     * @alias SVGBase
+     */
     var SVGBase = function() {
         this.create = function(obj, type, attr, callback) {
             obj.create(type, attr);

@@ -1,16 +1,13 @@
 jui.define("util.svg.element", [], function() {
+
     /**
      * @class util.svg.element
-     * Create SVG Element
-     * @constructor
+     * A model class wraps the SVG element
+     *
+     * @alias Element
      */
     var Element = function() {
         var events = [];
-
-        /**
-         * 엘리먼트 생성 및 조회 메소드
-         *
-         */
 
         this.create = function(type, attr) {
             // 퍼블릭 프로퍼티
@@ -53,11 +50,6 @@ jui.define("util.svg.element", [], function() {
 
             return -1;
         }
-
-        /**
-         * 엘리먼트 관계 메소드
-         *
-         */
 
         this.append = function(elem) {
             if(elem instanceof Element) {
@@ -105,11 +97,6 @@ jui.define("util.svg.element", [], function() {
 
             return this;
         }
-
-        /**
-         * 엘리먼트 DOM 조작 메소드
-         *
-         */
 
         this.attr = function(attr) {
             if(typeof attr == "undefined" || !attr) return;
@@ -164,11 +151,6 @@ jui.define("util.svg.element", [], function() {
             return this;
         }
 
-        /**
-         * 엘리먼트 DOM 이벤트 메소드
-         *
-         */
-
         this.on = function(type, handler) {
             var callback = function(e) {
                 if(typeof(handler) == "function") {
@@ -220,10 +202,6 @@ jui.define("util.svg.element", [], function() {
             return this;
         }
 
-        /**
-         * 그 외 메소드
-         *
-         */
         this.size = function() {
             var size = { width: 0, height: 0 },
                 rect = this.element.getBoundingClientRect();

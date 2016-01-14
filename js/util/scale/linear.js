@@ -1,11 +1,12 @@
-/**
- * @class util.scale.linear
- * @singleton
- *
- * Linear scale
- *
- */
 jui.define("util.scale.linear", [ "util.math" ], function(math) {
+
+    /**
+     * @class util.scale.linear
+     * Linear scale
+     *
+     * @singleton
+     * @requires util.math
+     */
     var linear = function() {
         var _domain = [0, 1];
         var _range = [0, 1];

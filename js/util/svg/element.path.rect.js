@@ -1,4 +1,11 @@
-jui.define("util.svg.element.path.rect", [ "util.math" ], function() {
+jui.define("util.svg.element.path.rect", [], function() {
+
+    /**
+     * @class util.svg.element.path.rect
+     *
+     * @alias PathRectElement
+     * @extends util.svg.element.path
+     */
     var PathRectElement = function() {
         this.round = function(width, height, tl, tr, br, bl) {
             tl = (!tl) ? 0 : tl;

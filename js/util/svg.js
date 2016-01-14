@@ -5,11 +5,21 @@ jui.define("util.svg",
 
     /**
      * @class util.svg
+     * SVG Utility
      *
-     * SVG Util
-     *
-     * @param {jQuery/Element} rootElem
+     * @param {Element} rootElem
      * @param {Object} rootAttr
+     * @extends util.svg.base3d
+     * @requires util.base
+     * @requires util.math
+     * @requires util.color
+     * @requires util.svg.element
+     * @requires util.svg.element.transform
+     * @requires util.svg.element.transform
+     * @requires util.svg.element.path
+     * @requires util.svg.element.path.symbol
+     * @requires util.svg.element.path.rect
+     * @requires util.svg.element.poly
      * @constructor
      * @alias SVG
      */

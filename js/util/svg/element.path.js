@@ -1,4 +1,12 @@
 jui.define("util.svg.element.path", [ "util.base" ], function(_) {
+
+    /**
+     * @class util.svg.element.path
+     *
+     * @alias PathElement
+     * @extends util.svg.transform
+     * @requires util.base
+     */
     var PathElement = function() {
         var orders = [];
 

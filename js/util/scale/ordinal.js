@@ -1,10 +1,11 @@
-/**
- * 순서를 가지는 리스트에 대한 scale
- *
- * @class util.scale.ordinal
- * @singleton
- */
 jui.define("util.scale.ordinal", [], function() {
+
+    /**
+     * @class util.scale.singleton
+     * Scale for the list, which has the sequence
+     *
+     * @singleton
+     */
     var ordinal = function () {
         var _domain = [];
         var _range = [];

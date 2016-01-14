@@ -1,11 +1,11 @@
-/**
- * 원형 좌표에 대한 scale
- *
- * @class util.scale.circle
- * @singleton
- */
 jui.define("util.scale.circle", [], function() {
 
+    /**
+     * @class util.scale.circle
+     * For the circular coordinate scale
+     *
+     * @singleton
+     */
     var circle = function () {
 
         var _domain = [];
@@ -97,9 +97,7 @@ jui.define("util.scale.circle", [], function() {
         }
 
         return func;
-
-
-
     };
+
     return circle;
 });

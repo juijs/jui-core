@@ -1,11 +1,14 @@
-/**
- * 시간에 대한 scale
- *
- * @class util.scale.time
- * @singleton
- */
 jui.define("util.scale.time", [ "util.math", "util.time", "util.scale.linear" ], function(math, _time, linear) {
 
+    /**
+     * @class util.scale.time
+     * Scale for the time
+     *
+     * @singleton
+     * @requires util.math
+     * @requires util.time
+     * @requires util.scale.linear
+     */
     var time = function () {
 
         var _domain = [];

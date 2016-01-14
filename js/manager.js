@@ -1,7 +1,8 @@
 jui.define("manager", [ "util.base" ], function(_) {
 
     /**
-     * @class core.UIManager
+     * @class manager
+     * @alias UIManager
      * @private
      * @singleton
      */

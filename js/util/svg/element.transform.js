@@ -3,10 +3,9 @@ jui.define("util.svg.element.transform", [ "util.base" ], function(_) { // polyg
     /**
      * @class util.svg.element.transform
      *
-     * implement Transform Element
-     *
+     * @alias TransElement
      * @extends util.svg.element
-     * @constructor
+     * @requires util.base
      */
     var TransElement = function() {
         var orders = {

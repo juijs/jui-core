@@ -1,7 +1,17 @@
 jui.define("util.svg.base3d", [ "util.base", "util.math", "util.color" ], function(_, math, color) {
+
+    /**
+     * @class util.svg.base3d
+     * SVG 3d module
+     *
+     * @extends util.svg.base
+     * @requires util.base
+     * @requires util.math
+     * @requires util.color
+     * @alias SVG3d
+     */
     var SVG3d = function() {
 
-        // 3D 사각형 그리기
         this.rect3d = function(fill, width, height, degree, depth) {
             var self = this;
 
@@ -45,7 +55,6 @@ jui.define("util.svg.base3d", [ "util.base", "util.math", "util.color" ], functi
             return g;
         }
 
-        // 3D 타원 그리기
         this.cylinder3d = function(fill, width, height, degree, depth, rate) {
             var self = this;
 

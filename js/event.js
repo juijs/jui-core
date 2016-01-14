@@ -96,8 +96,16 @@ jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
     }
 
     /**
-     * @deprecated
+     * @class event
      * Later the jquery dependency should be removed.
+     *
+     * @alias UIEvent
+     * @extends core
+     * @requires jquery
+     * @requires util.base
+     * @requires manager
+     * @requires collection
+     * @deprecated
      */
     var UIEvent = function () {
         var vo = null;

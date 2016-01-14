@@ -1,10 +1,13 @@
-/**
- * 범위에 대한 log
- *
- * @class util.scale.log
- * @singleton
- */
 jui.define("util.scale.log", [ "util.base", "util.scale.linear" ], function(_, linear) {
+
+    /**
+     * @class util.scale.log
+     * Log scale
+     *
+     * @singleton
+     * @requires util.base
+     * @requires util.scale.linear
+     */
     var log = function(base) {
         var _base = base || 10;
 

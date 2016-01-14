@@ -1,4 +1,11 @@
-jui.define("util.svg.element.path.symbol", [ "util.base" ], function(_) { // symbol
+jui.define("util.svg.element.path.symbol", [], function() {
+
+    /**
+     * @class util.svg.element.path.symbol
+     *
+     * @alias PathSymbolElement
+     * @extends util.svg.element.path
+     */
     var PathSymbolElement = function() {
         var ordersString = "";
 

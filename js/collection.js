@@ -1,7 +1,8 @@
 jui.define("collection", [], function() {
 
     /**
-     * @class core.UICollection
+     * @class collection
+     * @alias UICollection
      * @private
      * @singleton
      */
