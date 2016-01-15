@@ -79,7 +79,7 @@ jui.define("util.svg",
             }
         }
 
-        function removeEvents(target) {
+        function removeEventAll(target) {
             var childs = target.children;
 
             for(var i = 0, len = childs.length; i < len; i++) {
@@ -165,7 +165,7 @@ jui.define("util.svg",
                 }
             });
 
-            removeEvents(main);
+            removeEventAll(main);
 
             if(isAll === true) {
                 sub.each(function() {
@@ -174,7 +174,7 @@ jui.define("util.svg",
                     }
                 });
 
-                removeEvents(sub);
+                removeEventAll(sub);
             }
         }
 

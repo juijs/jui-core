@@ -165,19 +165,28 @@ jui.define("util.svg.element", [], function() {
         }
 
         this.off = function(type) {
-            var newEvents = [];
+            if(!type) {
+                for (var i = 0, len = events.length; i < len; i++) {
+                    var e = events.shift();
 
-            for(var i = 0, len = events.length; i < len; i++) {
-                var event = events[i];
-
-                if(event.type != type) {
-                    newEvents.push(event);
-                } else {
-                    this.element.removeEventListener(type, event.callback, false);
+                    this.element.removeEventListener(e.type, e.callback, false);
                 }
+            } else {
+                var newEvents = [];
+
+                for (var i = 0, len = events.length; i < len; i++) {
+                    var e = events[i];
+
+                    if (e.type != type) {
+                        newEvents.push(e);
+                    } else {
+                        this.element.removeEventListener(e.type, e.callback, false);
+                    }
+                }
+
+                events = newEvents;
             }
 
-            events = newEvents;
             return this;
         }
 
