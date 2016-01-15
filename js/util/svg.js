@@ -79,6 +79,22 @@ jui.define("util.svg",
             }
         }
 
+        function removeEvents(target) {
+            var childs = target.children;
+
+            for(var i = 0, len = childs.length; i < len; i++) {
+                var child = childs[i];
+
+                if(child) {
+                    child.off();
+
+                    if(child.children.length > 0) {
+                        removeEvents(child);
+                    }
+                }
+            }
+        }
+
         function isOrderingChild(childs) { // order가 0 이상인 엘리먼트가 하나라도 있을 경우
             for(var i = 0, len = childs.length; i < len; i++) {
                 if(childs[i].order > 0) {
@@ -149,12 +165,16 @@ jui.define("util.svg",
                 }
             });
 
+            removeEvents(main);
+
             if(isAll === true) {
                 sub.each(function() {
                     if(this.element.parentNode) {
                         sub.element.removeChild(this.element);
                     }
                 });
+
+                removeEvents(sub);
             }
         }
 
