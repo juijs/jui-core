@@ -5045,7 +5045,7 @@ jui.define("util.svg",
                     child.off();
 
                     if(child.children.length > 0) {
-                        removeEvents(child);
+                        removeEventAll(child);
                     }
                 }
             }
