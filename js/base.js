@@ -1562,4 +1562,6 @@
 			return globalOpts;
 		}
 	};
+
+	module.exports = window.jui || global.jui;
 })(window, (typeof(global) !== "undefined") ? global : window);
