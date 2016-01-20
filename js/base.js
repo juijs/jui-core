@@ -1339,12 +1339,15 @@
 			globalClass[name] = uiFunc;
 			globalFunc[name] = true;
 
-			// support AMD module
+			/**
+			 * @deprecated
+				// support AMD module
 			if (typeof define == "function" && define.amd) {
 				define(name, function () {
 					return global[name]
 				});
 			}
+			 */
 		},
 
 		createUIObject: function (UI, selector, index, elem, options, afterHook) {
@@ -1436,11 +1439,13 @@
 			globalFunc[name] = true;
 
 			// support AMD module
+			// @deprecated
+			/*
 			if (typeof define == "function" && define.amd) {
 				define(name, function () {
 					return global[name]
 				});
-			}
+			}*/
 		},
 
 		/**
@@ -1563,5 +1568,8 @@
 		}
 	};
 
-	module.exports = window.jui || global.jui;
+	if (typeof module == 'object' && module.exports) {
+		module.exports = window.jui || global.jui;
+	}
+
 })(window, (typeof(global) !== "undefined") ? global : window);
