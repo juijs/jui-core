@@ -1413,8 +1413,8 @@
 		 * @param {String} parent 상속받을 클래스
 		 */
 		define: function (name, depends, callback, parent) {
-			if (!utility.typeCheck("string", name) || !utility.typeCheck("array", depends) || !utility.typeCheck("function", callback) || !utility.typeCheck(["string", "undefined"], parent)) {
-
+			if (!utility.typeCheck("string", name) || !utility.typeCheck("array", depends) ||
+				!utility.typeCheck("function", callback) || !utility.typeCheck([ "string", "undefined" ], parent)) {
 				throw new Error("JUI_CRITICAL_ERR: Invalid parameter type of the function");
 			}
 
@@ -1446,6 +1446,26 @@
 					return global[name]
 				});
 			}*/
+		},
+
+		/**
+		 * @method redefine
+		 *
+		 * UI 클래스에서 사용될 클래스를 정의하고, 자유롭게 상속할 수 있는 클래스를 정의
+		 *
+		 * @param {String} name 모듈 로드와 상속에 사용될 이름을 정한다.
+		 * @param {Array} depends 'define'이나 'defineUI'로 정의된 클래스나 객체를 인자로 받을 수 있다.
+		 * @param {Function} callback UI 클래스를 해당 콜백 함수 내에서 클래스 형태로 구현하고 리턴해야 한다.
+		 * @param {String} parent 상속받을 클래스
+		 */
+		redefine: function (name, depends, callback, parent) {
+			if (globalFunc[name] === true) {
+				global[name] = null;
+				globalClass[name] = null;
+				globalFunc[name] = false;
+			}
+
+			this.define(name, depends, callback, parent);
 		},
 
 		/**
