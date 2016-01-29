@@ -92,6 +92,54 @@ jui.define("util.math", [ "util.base" ], function(_) {
 		return nm;
 	}
 
+	function inverseMatrix3d(me) {
+		var te = [
+			new Float32Array(4),
+			new Float32Array(4),
+			new Float32Array(4),
+			new Float32Array(4)
+		];
+
+		var n11 = me[0][0], n12 = me[0][1], n13 = me[0][2], n14 = me[0][3];
+		var n21 = me[1][0], n22 = me[1][1], n23 = me[1][2], n24 = me[1][3];
+		var n31 = me[2][0], n32 = me[2][1], n33 = me[2][2], n34 = me[2][3];
+		var n41 = me[3][0], n42 = me[3][1], n43 = me[3][2], n44 = me[3][3];
+
+		te[0][0] = n23 * n34 * n42 - n24 * n33 * n42 + n24 * n32 * n43 - n22 * n34 * n43 - n23 * n32 * n44 + n22 * n33 * n44;
+		te[0][1] = n14 * n33 * n42 - n13 * n34 * n42 - n14 * n32 * n43 + n12 * n34 * n43 + n13 * n32 * n44 - n12 * n33 * n44;
+		te[0][2] = n13 * n24 * n42 - n14 * n23 * n42 + n14 * n22 * n43 - n12 * n24 * n43 - n13 * n22 * n44 + n12 * n23 * n44;
+		te[0][3] = n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34;
+		te[1][0] = n24 * n33 * n41 - n23 * n34 * n41 - n24 * n31 * n43 + n21 * n34 * n43 + n23 * n31 * n44 - n21 * n33 * n44;
+		te[1][1] = n13 * n34 * n41 - n14 * n33 * n41 + n14 * n31 * n43 - n11 * n34 * n43 - n13 * n31 * n44 + n11 * n33 * n44;
+		te[1][2] = n14 * n23 * n41 - n13 * n24 * n41 - n14 * n21 * n43 + n11 * n24 * n43 + n13 * n21 * n44 - n11 * n23 * n44;
+		te[1][3] = n13 * n24 * n31 - n14 * n23 * n31 + n14 * n21 * n33 - n11 * n24 * n33 - n13 * n21 * n34 + n11 * n23 * n34;
+		te[2][0] = n22 * n34 * n41 - n24 * n32 * n41 + n24 * n31 * n42 - n21 * n34 * n42 - n22 * n31 * n44 + n21 * n32 * n44;
+		te[2][1] = n14 * n32 * n41 - n12 * n34 * n41 - n14 * n31 * n42 + n11 * n34 * n42 + n12 * n31 * n44 - n11 * n32 * n44;
+		te[2][2] = n12 * n24 * n41 - n14 * n22 * n41 + n14 * n21 * n42 - n11 * n24 * n42 - n12 * n21 * n44 + n11 * n22 * n44;
+		te[2][3] = n14 * n22 * n31 - n12 * n24 * n31 - n14 * n21 * n32 + n11 * n24 * n32 + n12 * n21 * n34 - n11 * n22 * n34;
+		te[3][0] = n23 * n32 * n41 - n22 * n33 * n41 - n23 * n31 * n42 + n21 * n33 * n42 + n22 * n31 * n43 - n21 * n32 * n43;
+		te[3][1] = n12 * n33 * n41 - n13 * n32 * n41 + n13 * n31 * n42 - n11 * n33 * n42 - n12 * n31 * n43 + n11 * n32 * n43;
+		te[3][2] = n13 * n22 * n41 - n12 * n23 * n41 - n13 * n21 * n42 + n11 * n23 * n42 + n12 * n21 * n43 - n11 * n22 * n43;
+		te[3][4] = n12 * n23 * n31 - n13 * n22 * n31 + n13 * n21 * n32 - n11 * n23 * n32 - n12 * n21 * n33 + n11 * n22 * n33;
+
+		var det = 1 / (n11 * te[0][0] + n21 * te[0][1] + n31 * te[0][2] + n41 * te[0][3]);
+
+		if(det === 0) {
+			te = [
+				new Float32Array([ 1, 0, 0, 0 ]),
+				new Float32Array([ 0, 1, 0, 0 ]),
+				new Float32Array([ 0, 0, 1, 0 ]),
+				new Float32Array([ 0, 0, 0, 1 ])
+			];
+		} else {
+			te[0][0] *= det; te[0][1] *= det; te[0][2] *= det; te[0][3] *= det;
+			te[1][0] *= det; te[1][1] *= det; te[1][2] *= det; te[1][3] *= det;
+			te[2][0] *= det; te[2][1] *= det; te[2][2] *= det; te[2][3] *= det;
+			te[3][0] *= det; te[3][1] *= det; te[3][2] *= det; te[3][4] *= det;
+		}
+
+		return te;
+	}
 
 	/**
 	 * @class util.math
@@ -361,6 +409,10 @@ jui.define("util.math", [ "util.base" ], function(_) {
 			}
 
 			return matrix3d(a, b);
+		},
+
+		inverseMatrix3d: function(a) {
+			return inverseMatrix3d(a);
 		},
 
 		scaleValue: function(value, minValue, maxValue, minScale, maxScale) {
