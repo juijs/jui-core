@@ -78,10 +78,12 @@
 
 		/**
 		 * @method extend
+		 *
 		 * implements object extend
-		 * @param origin
-		 * @param add
-		 * @param skip
+		 *
+		 * @param {Object|Function} origin
+		 * @param {Object|Function} add
+		 * @param {Boolean} skip
 		 * @return {Object}
 		 */
 		extend: function (origin, add, skip) {

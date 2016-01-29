@@ -78,10 +78,12 @@
 
 		/**
 		 * @method extend
+		 *
 		 * implements object extend
-		 * @param origin
-		 * @param add
-		 * @param skip
+		 *
+		 * @param {Object|Function} origin
+		 * @param {Object|Function} add
+		 * @param {Boolean} skip
 		 * @return {Object}
 		 */
 		extend: function (origin, add, skip) {
@@ -2829,11 +2831,13 @@ jui.define("util.time", [ "util.base" ], function(_) {
 	return self;
 });
 
-jui.define("util.color", [ "util.math" ], function(math) {
+jui.define("util.color", [ "util.base", "util.math" ], function(_, math) {
 
 	/**
 	 *  @class util.color
-	 * color parser for chart
+	 *
+	 * color utility
+	 *
 	 * @singleton
 	 */
 	var self = {
@@ -2842,6 +2846,17 @@ jui.define("util.color", [ "util.math" ], function(math) {
 
 		/**
 		 * @method format
+		 *
+		 * convert color to format string
+		 *
+		 *     // hex
+		 *     color.format({ r : 255, g : 255, b : 255 }, 'hex')  // #FFFFFF
+		 *
+		 *     // rgb
+		 *     color.format({ r : 255, g : 255, b : 255 }, 'rgb') // rgba(255, 255, 255, 0.5);
+		 *
+		 *     // rgba
+		 *     color.format({ r : 255, g : 255, b : 255, a : 0.5 }, 'rgb') // rgba(255, 255, 255, 0.5);
 		 *
 		 * @param {Object} obj  obj has r, g, b and a attributes
 		 * @param {"hex"/"rgb"} type  format string type
@@ -2870,8 +2885,24 @@ jui.define("util.color", [ "util.math" ], function(math) {
 			return obj;
 		},
 
+		/**
+		 * @method scale
+		 *
+		 * get color scale
+		 *
+		 * 		var c = color.scale().domain('#FF0000', '#00FF00');
+		 *
+		 * 		// get middle color
+		 * 		c(0.5)   ==  #808000
+		 *
+		 * 		// get middle color list
+		 * 		c.ticks(20);  // return array ,    [startColor, ......, endColor ]
+		 *
+		 * @returns {func} scale function
+		 */
 		scale : function() {
 			var startColor, endColor;
+
 
 			function func(t, type) {
 
@@ -2909,6 +2940,17 @@ jui.define("util.color", [ "util.math" ], function(math) {
 			return func;
 		},
 
+		/**
+		 * @method map
+		 *
+		 * create color map
+		 *
+		 * 		var colorList = color.map(['#352a87', '#0f5cdd', '#00b5a6', '#ffc337', '#fdff00'], count)
+		 *
+		 * @param {Array} color_list
+		 * @param {Number} count  a divide number
+		 * @returns {Array} converted color list
+		 */
 		map : function (color_list, count) {
 
 			var colors = [];
@@ -2927,6 +2969,18 @@ jui.define("util.color", [ "util.math" ], function(math) {
 			return colors;
 		},
 
+		/**
+		 * @method rgb
+		 *
+		 * parse string to rgb color
+		 *
+		 * 		color.rgb("#FF0000") === { r : 255, g : 0, b : 0 }
+		 *
+		 * 		color.rgb("rgb(255, 0, 0)") == { r : 255, g : 0, b : }
+		 *
+		 * @param {String} str color string
+		 * @returns {Object}  rgb object
+		 */
 		rgb : function (str) {
 
 			if (typeof str == 'string') {
@@ -2975,6 +3029,18 @@ jui.define("util.color", [ "util.math" ], function(math) {
 
 		},
 
+		/**
+		 * @method HSVtoRGB
+		 *
+		 * convert hsv to rgb
+		 *
+		 * 		color.HSVtoRGB(0,0,1) === #FFFFF === { r : 255, g : 0, b : 0 }
+		 *
+		 * @param {Number} H  hue color number  (min : 0, max : 360)
+		 * @param {Number} S  Saturation number  (min : 0, max : 1)
+		 * @param {Number} V  Value number 		(min : 0, max : 1 )
+		 * @returns {Object}
+		 */
 		HSVtoRGB : function (H, S, V) {
 
 			if (H == 360) {
@@ -3005,6 +3071,8 @@ jui.define("util.color", [ "util.math" ], function(math) {
 		 * @method RGBtoHSV
 		 *
 		 * convert rgb to hsv
+		 *
+		 * 		color.RGBtoHSV(0, 0, 255) === { h : 240, s : 1, v : 1 } === '#FFFF00'
 		 *
 		 * @param {Number} R  red color value
 		 * @param {Number} G  green color value
