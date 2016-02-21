@@ -121,7 +121,16 @@ jui.define("util.scale.ordinal", [], function() {
         }
 
         func.invert = function(x) {
-            return Math.ceil(x / _rangeBand);
+            var min = Math.min(_range[0], _range[1]);
+
+            if (isRangePoints) {
+                var result = Math.abs(x - min) / _rangeBand ;
+                return Math.floor(result);
+            } else {
+                var result = Math.abs(x - min) / _rangeBand ;
+                return Math.ceil(result);
+            }
+
         }
 
         return func;
