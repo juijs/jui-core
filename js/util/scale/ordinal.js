@@ -11,6 +11,7 @@ jui.define("util.scale.ordinal", [], function() {
         var _range = [];
         var _rangeBand = 0;
         var _cache = {};
+        var _isRangePoints = false;
 
         function func(t) {
             var key = "" + t;
@@ -89,6 +90,7 @@ jui.define("util.scale.ordinal", [], function() {
 
             _range = range;
             _rangeBand = unit;
+            _isRangePoints = true;
 
             return func;
         }
@@ -112,6 +114,7 @@ jui.define("util.scale.ordinal", [], function() {
 
             _rangeBand = band;
             _range = range;
+            _isRangePoints = false;
 
             return func;
         }
@@ -123,7 +126,7 @@ jui.define("util.scale.ordinal", [], function() {
         func.invert = function(x) {
             var min = Math.min(_range[0], _range[1]);
 
-            if (isRangePoints) {
+            if (_isRangePoints) {
                 var result = Math.abs(x - min) / _rangeBand ;
                 return Math.floor(result);
             } else {
