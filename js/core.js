@@ -106,7 +106,7 @@ jui.define("core", [ "util.base", "util.dom", "manager", "collection" ],
                 var args = arguments;
 
                 if(_.typeCheck("function", callback)) {
-                    // before 콜백이 false가 이날 경우에만 실행 한다.
+                    // before 콜백이 false가 아닐 경우에만 실행 한다.
                     if(callback.apply(this, args) !== false) {
                         return ui.apply(this, args);
                     }

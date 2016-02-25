@@ -59,7 +59,7 @@ jui.define("manager", [ "util.base" ], function(_) {
             if(_.typeCheck("integer", key)) {
                 return instances[key];
             } else if(_.typeCheck("string", key)) {
-                // ������ ��ü �˻�
+                // 셀렉터 객체 검색
                 for(var i = 0; i < instances.length; i++) {
                     var uiSet = instances[i];
 
@@ -68,7 +68,7 @@ jui.define("manager", [ "util.base" ], function(_) {
                     }
                 }
 
-                // ��� ��ü �˻�
+                // 모듈 객체 검색
                 var result = [];
                 for(var i = 0; i < instances.length; i++) {
                     var uiSet = instances[i];
@@ -100,7 +100,7 @@ jui.define("manager", [ "util.base" ], function(_) {
          * @return {Object} Removed instance
          */
         this.remove = function(index) {
-            if(_.typeCheck("integer", index)) { // UI ��ü �ε���
+            if(_.typeCheck("integer", index)) { // UI 객체 인덱스
                 return instances.splice(index, 1)[0];
             }
         }

@@ -29,7 +29,7 @@ jui.define("util.keyparser", [], function() {
          * @param {String} index
          * @return {Array}
          */
-        this.getIndexList = function (index) { // Ʈ�� ������ ��� Ű�� �迭 ���·� ��ȯ
+        this.getIndexList = function (index) { // 트리 구조의 모든 키를 배열 형태로 반환
             var resIndex = [], strIndex = "" + index;
 
             if (strIndex.length == 1) {
@@ -73,7 +73,7 @@ jui.define("util.keyparser", [], function() {
          * @param {String} index
          * @return {String}
          */
-        this.getNextIndex = function (index) { // ���� �ε������� +1
+        this.getNextIndex = function (index) { // 현재 인덱스에서 +1
             var indexList = this.getIndexList(index),
                 no = indexList.pop() + 1;
 
