@@ -64,7 +64,7 @@ jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
                 if (e.type.toLowerCase().indexOf("animation") != -1)
                     settingEventAnimation(e);
                 else {
-                    // body, window, document ��쿡�� �̺�Ʈ ��ø�� ����
+                    // body, window, document 경우에만 이벤트 중첩이 가능
                     if (e.target != "body" && e.target != window && e.target != document) {
                         $(e.target).off(e.type);
                     }
@@ -170,7 +170,7 @@ jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
                 $(obj.target).off(obj.type);
             }
 
-            // ������ �޼ҵ� �޸𸮿��� ����
+            // 생성된 메소드 메모리에서 제거
             if(this.__proto__) {
                 for (var key in this.__proto__) {
                     delete this.__proto__[key];
