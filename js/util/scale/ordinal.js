@@ -32,7 +32,7 @@ jui.define("util.scale.ordinal", [], function() {
                 return _range[index];
             } else {
                 if ( typeof _range[t] != 'undefined') {
-                    _domain[t] = t;
+                    //_domain[t] = t;               // FIXME: 이건 나중에 따로 연산해야할 듯
                     _cache[key] = _range[t];
                     return _range[t];
                 }
