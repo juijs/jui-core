@@ -1867,14 +1867,8 @@ jui.define("util.keyparser", [], function() {
          */
         this.getParentIndex = function (index) {
             if (!this.isIndexDepth(index)) return null;
-            var keys = this.getIndexList(index);
-
-            if (keys.length == 2) {
-                return "" + keys[0];
-            } else if (keys.length > 2) {
-                keys.pop();
-                return keys.join(".");
-            }
+            
+            return index.substr(0, index.lastIndexOf("."))
         }
     }
 
