@@ -9,6 +9,7 @@ jui.define("util.keyparser", [], function() {
      * @constructor
      */
     var KeyParser = function () {
+        
         /**
          * @method isIndexDepth
          *
@@ -33,18 +34,13 @@ jui.define("util.keyparser", [], function() {
             var resIndex = [], strIndex = "" + index;
 
             if (strIndex.length == 1) {
-                resIndex[0] = parseInt(index);
+                resIndex[0] = index;
             } else {
-                var keys = strIndex.split(".");
-
-                for (var i = 0; i < keys.length; i++) {
-                    resIndex[i] = parseInt(keys[i]);
-                }
+                return strIndex.split(".");
             }
 
             return resIndex;
         }
-
 
         /**
          * @method changeIndex
