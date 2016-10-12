@@ -1812,12 +1812,11 @@ jui.define("util.keyparser", [], function() {
          * @return {Array}
          */
         this.getIndexList = function (index) { // 트리 구조의 모든 키를 배열 형태로 반환
-            var resIndex = [], strIndex = "" + index;
+            var resIndex = [],
+                strIndexes = ("" + index).split(".");
 
-            if (strIndex.length == 1) {
-                resIndex[0] = index;
-            } else {
-                return strIndex.split(".");
+            for(var i = 0; i < strIndexes.length; i++) {
+                resIndex[i] = parseInt(strIndexes[i]);
             }
 
             return resIndex;
