@@ -412,6 +412,7 @@
 				fields: null, // required
 				rows: null, // required
 				names: null,
+				types: null,
 				count: (this.typeCheck("integer", options.count)) ? options.count : options.rows.length
 			}, options);
 
@@ -428,7 +429,12 @@
 							}
 						} else {
 							var value = opts.rows[i][opts.fields[j]];
-							tmpArr.push(isNaN(value) ? '"' + value + '"' : value);
+
+							if (opts.types && opts.types[j]) {
+								tmpArr.push(opts.types[j] == "string" ? '"' + value + '"' : value);
+							} else {
+								tmpArr.push(isNaN(value) ? '"' + value + '"' : value);
+							}
 						}
 					}
 				}
