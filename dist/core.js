@@ -431,7 +431,15 @@
 							var value = opts.rows[i][opts.fields[j]];
 
 							if (opts.types && opts.types[j]) {
-								tmpArr.push(opts.types[j] == "string" ? '"' + value + '"' : value);
+								if(opts.types[j] == "string") {
+									tmpArr.push('"' + value + '"');
+								} else if(opts.types[j] == "integer") {
+									tmpArr.push(parseInt(value));
+								} else if(opts.types[j] == "float") {
+									tmpArr.push(parseFloat(value));
+								} else {
+									tmpArr.push(value);
+								}
 							} else {
 								tmpArr.push(isNaN(value) ? '"' + value + '"' : value);
 							}
