@@ -430,7 +430,7 @@
 						} else {
 							var value = opts.rows[i][opts.fields[j]];
 
-							if (opts.types && opts.types[j]) {
+							if (this.typeCheck("array", opts.types)) {
 								if(opts.types[j] == "string") {
 									tmpArr.push('"' + value + '"');
 								} else if(opts.types[j] == "integer") {
