@@ -37,11 +37,21 @@ jui.ready([ "util.color" ], function(color) {
 
 
     console.log('-------------------------------');
+    var rgb = color.colorHash("ABCDEFG", function(vector) {
+        console.log(vector);
 
+        return {
+            r: 50 + Math.round(55 * vector),
+            g: 0 + Math.round(160 * (1 - vector)),
+            b: 140 + Math.round(55 * (1 - vector))
+        }
+    });
+
+    $("#test_1").css({ "background": "#" + rgb.r.toString(16) + rgb.g.toString(16) + rgb.b.toString(16) });
 });
 </script>
 </head>
 <body class="jui">
-
+    <div id="test_1" style="width: 200px; height: 100px;"></div>
 </body>
 </html>
