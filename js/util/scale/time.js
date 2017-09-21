@@ -78,15 +78,22 @@ jui.define("util.scale.time", [ "util.math", "util.time", "util.scale.linear" ],
                 realStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
             } else if (type == _time.hours) {
                 realStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), 0, 0, 0);
+                if (interval != 1) { realStart.setHours(0); }                
             } else if (type == _time.minutes) {
                 realStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), 0, 0);
+                if (interval != 1) { realStart.setMinutes(0); }                
             } else if (type == _time.seconds) {
                 realStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds(), 0);
+                if (interval != 1) { realStart.setSeconds(0); }                
             } else if (type == _time.milliseconds) {
                 realStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds());
-
+                if (interval != 1) { realStart.setMilliseconds(0); }                
             }
-            realStart = _time.add(realStart, type, interval);
+            
+            // 기준 시작 시간 맞춤 
+            while(+realStart <= +start) {
+                realStart = _time.add(realStart, type, interval);
+            }
 
             while (+realStart < +end) {
                 times.push(new Date(+realStart));
