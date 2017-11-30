@@ -1430,7 +1430,7 @@
 		 */
 		define: function (name, depends, callback, parent) {
 			if (!utility.typeCheck("string", name) || !utility.typeCheck("array", depends) ||
-				!utility.typeCheck("function", callback) || !utility.typeCheck([ "string", "undefined" ], parent)) {
+				!utility.typeCheck("function", callback) || !utility.typeCheck([ "string", "undefined", "null" ], parent)) {
 				throw new Error("JUI_CRITICAL_ERR: Invalid parameter type of the function");
 			}
 
@@ -1474,14 +1474,16 @@
 		 * @param {Function} callback UI 클래스를 해당 콜백 함수 내에서 클래스 형태로 구현하고 리턴해야 한다.
 		 * @param {String} parent 상속받을 클래스
 		 */
-		redefine: function (name, depends, callback, parent) {
-			if (globalFunc[name] === true) {
-				global[name] = null;
-				globalClass[name] = null;
-				globalFunc[name] = false;
-			}
+		redefine: function (name, depends, callback, parent, skip) {
+            if (!skip && globalFunc[name] === true) {
+                global[name] = null;
+                globalClass[name] = null;
+                globalFunc[name] = false;
+            }
 
-			this.define(name, depends, callback, parent);
+            if (!skip || (skip && globalFunc[name] !== true)) {
+                this.define(name, depends, callback, parent);
+            }
 		},
 
 		/**
