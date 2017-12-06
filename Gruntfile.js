@@ -27,6 +27,7 @@ module.exports = function(grunt) {
                     "js/util/sort.js",
                     "js/util/keyparser.js",
                     "js/util/base64.js",
+                    "js/util/math.js",
                     "js/util/template.js",
                     "js/util/color.js",
 
