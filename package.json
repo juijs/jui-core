@@ -1,6 +1,6 @@
 {
-  "name": "jui-core",
-  "version": "2.0.6",
+  "name": "juijs-core",
+  "version": "2.1.0",
   "description": "The core framework provided by the JUI for implementing such a grid and chart.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -70,7 +70,7 @@
       "deps": [
         "jquery"
       ],
-      "exports": "jui-core"
+      "exports": "juijs-core"
     }
   }
 }
