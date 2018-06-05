@@ -8,9 +8,9 @@ JUI core is now available without loading the jQuery.
 
 #### Installing in command
 ```
-npm install juijs-core
-bower install juijs-core
-jamjs install juijs-core
+npm install juijs
+bower install juijs
+jamjs install juijs
 ```
 
 #### To build the project

@@ -1,5 +1,5 @@
 {
-  "name": "juijs-core",
+  "name": "juijs",
   "version": "2.1.0",
   "description": "The core framework provided by the JUI for implementing such a grid and chart.",
   "scripts": {
@@ -68,7 +68,7 @@
       "deps": [
         "jquery"
       ],
-      "exports": "juijs-core"
+      "exports": "juijs"
     }
   }
 }
