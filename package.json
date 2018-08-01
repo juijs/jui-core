@@ -1,11 +1,24 @@
 {
   "name": "juijs",
-  "version": "2.1.0",
+  "version": "2.1.0-es",
+  "sideEffects": false,
   "description": "The core framework provided by the JUI for implementing such a grid and chart.",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "npm run prod",
+    "prod": "webpack"
   },
-  "main": "dist/core.min.js",
+  "main": "src/index.js",
+  "files": [
+    "dist",
+    "examples",
+    "lib",
+    "src",
+    "test",
+    "package.json",
+    "webpack.config.js",
+    "webpack.dev.js",
+    "webpack.prod.js"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/juijs/jui-core.git"
@@ -29,13 +42,10 @@
     "url": "https://github.com/juijs/jui-core/issues"
   },
   "devDependencies": {
-    "grunt": "~0.4.5",
-    "grunt-contrib-concat": "~0.5.1",
-    "grunt-contrib-copy": "~0.8.2",
-    "grunt-contrib-qunit": "~0.7.0",
-    "grunt-contrib-uglify": "~0.11.0",
-    "grunt-contrib-watch": "~0.6.1",
-    "load-grunt-tasks": "~3.4.0"
+    "uglifyjs-webpack-plugin": "^1.2.7",
+    "webpack": "^4.14.0",
+    "webpack-cli": "^3.0.8",
+    "webpack-dev-server": "^3.1.4"
   },
   "categories": [
     "Frameworks",
@@ -57,18 +67,7 @@
       "email": "yoha@jennifersoft.com"
     }
   ],
-  "jam": {
-    "dependencies": {
-      "jquery": ">=1.8.0"
-    },
-    "main": [
-      "dist/core.min.js"
-    ],
-    "shim": {
-      "deps": [
-        "jquery"
-      ],
-      "exports": "juijs"
-    }
+  "peerDependencies": {
+    "jquery": "^2.0.0"
   }
 }

@@ -1,3 +1,5 @@
+var jui = require("./base.js");
+
 jui.define("core", [ "util.base", "util.dom", "manager", "collection" ],
     function(_, $, UIManager, UICollection) {
 

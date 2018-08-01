@@ -1,3 +1,5 @@
+var jui = require("./base.js");
+
 jui.define("event", [ "jquery", "util.base", "manager", "collection" ],
     function($, _, UIManager, UICollection) {
 

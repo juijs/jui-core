@@ -1,3 +1,5 @@
+var jui = require("../base/base.js");
+
 jui.define("util.color", [ "util.base", "util.math" ], function(_, math) {
 
     function generateHash(name) {

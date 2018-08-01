@@ -1,3 +1,5 @@
+var jui = require("./base.js");
+
 jui.define("manager", [ "util.base" ], function(_) {
 
     /**

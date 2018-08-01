@@ -1,3 +1,5 @@
+var jui = require("../base/base.js");
+
 jui.define("util.dom", [ "util.base" ], function(_) {
 
     /**

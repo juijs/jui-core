@@ -1,7 +1,15 @@
-(function (window, nodeGlobal) {
-	var global = {
-			jquery: (typeof(jQuery) != "undefined") ? jQuery : null
-		},
+(function (window) {
+    var jq = (typeof(jQuery) != "undefined") ? jQuery : null;
+
+    if(jq == null) {
+        try {
+            jq = require("jquery");
+        } catch(e) {
+            jq = null;
+        }
+    }
+
+	var global = { jquery: jq },
 		globalFunc = {},
 		globalClass = {};
 
@@ -24,7 +32,7 @@
 	 * ```
 	 * var _ = jui.include("util.base");
 	 *
-	 * console.log(_.browser.webkit);
+	 * console.warn(_.browser.webkit);
 	 * ```
 	 *
 	 * @singleton
@@ -205,7 +213,7 @@
 			callback();
 			var nEnd = new Date().getTime();
 
-			console.log(name + " : " + (nEnd - nStart) + "ms");
+			console.warn(name + " : " + (nEnd - nStart) + "ms");
 		},
 
 		/**
@@ -1229,7 +1237,7 @@
 				var modules = getModules(depends[i]);
 
 				if (modules == null) {
-					console.log("JUI_WARNING_MSG: '" + depends[i] + "' is not loaded");
+					console.warn("JUI_WARNING_MSG: '" + depends[i] + "' is not loaded");
 					args.push(null);
 				} else {
 					args.push(modules);
@@ -1273,7 +1281,7 @@
 	 *
 	 * @singleton
 	 */
-	window.jui = nodeGlobal.jui = {
+	var jui = {
 
 		/**
 		 * @method ready
@@ -1554,7 +1562,7 @@
 				var modules = getModules(name);
 
 				if (modules == null) {
-					console.log("JUI_WARNING_MSG: '" + name + "' is not loaded");
+					console.warn("JUI_WARNING_MSG: '" + name + "' is not loaded");
 					return null;
 				} else {
 					return modules;
@@ -1603,11 +1611,39 @@
 			}
 
 			return globalOpts;
+		},
+
+		use: function() {
+            var modules = [];
+
+            if(arguments.length == 1 && typeof(arguments[0]) == "object") {
+                modules = [ arguments[0] ];
+            } else {
+                modules = arguments;
+            }
+
+            for(var i = 0; i < modules.length; i++) {
+                var module = modules[i];
+
+                if(typeof(module) == "object") {
+                    if(typeof(module.name) != "string") return;
+                    if(typeof(module.component) != "function") return;
+
+                    // 상속 대상 부모 클래스가 존재할 경우
+                    if(module.extend != null) {
+                        if(jui.include(module.extend) == null) {
+                            console.warn("JUI_WARNING_MSG: '" + module.extend +  "' module should be imported in first");
+                        }
+                    }
+
+                    jui.redefine(module.name, [], module.component, module.extend);
+                }
+            }
 		}
 	};
 
-	if (typeof module == 'object' && module.exports) {
-		module.exports = window.jui || global.jui;
+    if (typeof module == 'object' && module.exports) {
+		module.exports = jui;
 	}
 
-})(window, (typeof(global) !== "undefined") ? global : window);
+})(window);

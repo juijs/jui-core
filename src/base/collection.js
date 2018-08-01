@@ -1,3 +1,5 @@
+var jui = require("./base.js");
+
 jui.define("collection", [], function() {
 
     /**

@@ -1,3 +1,5 @@
+var jui = require("../base/base.js");
+
 jui.define("util.keyparser", [], function() {
 
     /**

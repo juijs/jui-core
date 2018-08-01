@@ -1,3 +1,5 @@
+var jui = require("../base/base.js");
+
 jui.define("util.template", [], function() {
     var template = function (text, data, settings) {
         var _ = {},

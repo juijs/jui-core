@@ -1,3 +1,5 @@
+var jui = require("../base/base.js");
+
 jui.define("util.base64", [], function() {
     /**
      * Private Static Classes

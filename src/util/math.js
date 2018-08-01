@@ -1,3 +1,5 @@
+var jui = require("../base/base.js");
+
 jui.define("util.math", [ "util.base" ], function(_) {
 
 	// 2x1 or 3x1 or ?x1 형태의 매트릭스 연산
