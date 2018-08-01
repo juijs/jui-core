@@ -1616,11 +1616,19 @@
 		use: function() {
             var modules = [];
 
-            if(arguments.length == 1 && typeof(arguments[0]) == "object") {
-                modules = [ arguments[0] ];
-            } else {
-                modules = arguments;
-            }
+            if(arguments.length == 1) {
+            	if(utility.typeCheck("array", arguments[0])) {
+            		modules = arguments[0];
+				} else if(utility.typeCheck("object", arguments[0])) {
+                    modules.push(arguments[0]);
+				}
+			} else {
+				for(var i = 0; i < arguments.length; i++) {
+                    if(utility.typeCheck("object", arguments[i])) {
+                        modules.push(arguments[i]);
+                    }
+				}
+			}
 
             for(var i = 0; i < modules.length; i++) {
                 var module = modules[i];
