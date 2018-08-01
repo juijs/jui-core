@@ -289,7 +289,7 @@ jui.define("core", [ "util.base", "util.dom", "manager", "collection" ],
      * @extends core.UIManager
      * @singleton
      */
-	window.jui = (typeof(jui) == "object") ? _.extend(jui, UIManager, true) : UIManager;
+	jui = (typeof(jui) == "object") ? _.extend(jui, UIManager, true) : UIManager;
 	
 	return UICore;
 });
