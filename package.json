@@ -1,6 +1,6 @@
 {
   "name": "juijs",
-  "version": "2.1.2-es6",
+  "version": "2.1.3-es6",
   "sideEffects": false,
   "description": "The core framework provided by the JUI for implementing such a grid and chart.",
   "scripts": {

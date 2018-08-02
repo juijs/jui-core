@@ -1644,7 +1644,17 @@
                         }
                     }
 
-                    jui.redefine(module.name, [], module.component, module.extend);
+                    if(utility.typeCheck("boolean", arguments[arguments.length - 1])) {
+                    	var isUI = arguments[arguments.length - 1];
+
+                    	if(isUI) {
+                            jui.defineUI(module.name, [], module.component);
+						} else {
+                            jui.redefine(module.name, [], module.component, module.extend);
+						}
+					} else {
+                        jui.redefine(module.name, [], module.component, module.extend);
+					}
                 }
             }
 		}
