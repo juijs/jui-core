@@ -1616,19 +1616,19 @@
 		use: function() {
             var modules = [];
 
-            if(arguments.length == 1) {
-            	if(utility.typeCheck("array", arguments[0])) {
-            		modules = arguments[0];
-				} else if(utility.typeCheck("object", arguments[0])) {
-                    modules.push(arguments[0]);
-				}
-			} else {
-				for(var i = 0; i < arguments.length; i++) {
-                    if(utility.typeCheck("object", arguments[i])) {
-                        modules.push(arguments[i]);
+            for(var i = 0; i < arguments.length; i++) {
+                if(utility.typeCheck("array", arguments[i])) {
+                    var list = arguments[i];
+
+                    for(var j = 0; j < list.length; j++) {
+                        if(utility.typeCheck("object", list[j])) {
+                            modules.push(list[j]);
+                        }
                     }
-				}
-			}
+                } else if(utility.typeCheck("object", arguments[i])) {
+                    modules.push(arguments[i]);
+                }
+            }
 
             for(var i = 0; i < modules.length; i++) {
                 var module = modules[i];
