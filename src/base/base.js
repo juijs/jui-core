@@ -1666,16 +1666,10 @@
                         }
                     }
 
-                    if(utility.typeCheck("boolean", arguments[arguments.length - 1])) {
-                    	var isUI = arguments[arguments.length - 1];
-
-                    	if(isUI) {
-                            jui.redefineUI(module.name, [], module.component);
-						} else {
-                            jui.redefine(module.name, [], module.component, module.extend);
-						}
+					if(module.extend == "event") {
+						jui.redefineUI(module.name, [], module.component, module.extend);
 					} else {
-                        jui.redefine(module.name, [], module.component, module.extend);
+						jui.redefine(module.name, [], module.component, module.extend);
 					}
                 }
             }
