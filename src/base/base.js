@@ -1374,6 +1374,28 @@
 			 */
 		},
 
+        /**
+         * @method redefineUI
+         *
+         * UI 클래스에서 사용될 클래스를 정의하고, 자유롭게 상속할 수 있는 클래스를 정의
+         *
+         * @param {String} name 모듈 로드와 상속에 사용될 이름을 정한다.
+         * @param {Array} depends 'define'이나 'defineUI'로 정의된 클래스나 객체를 인자로 받을 수 있다.
+         * @param {Function} callback UI 클래스를 해당 콜백 함수 내에서 클래스 형태로 구현하고 리턴해야 한다.
+         * @param {String} parent 상속받을 클래스
+         */
+        redefineUI: function (name, depends, callback, parent, skip) {
+            if (!skip && globalFunc[name] === true) {
+                global[name] = null;
+                globalClass[name] = null;
+                globalFunc[name] = false;
+            }
+
+            if (!skip || (skip && globalFunc[name] !== true)) {
+                this.defineUI(name, depends, callback, parent);
+            }
+        },
+
 		createUIObject: function (UI, selector, index, elem, options, afterHook) {
 			var mainObj = new UI["class"]();
 
@@ -1648,7 +1670,7 @@
                     	var isUI = arguments[arguments.length - 1];
 
                     	if(isUI) {
-                            jui.defineUI(module.name, [], module.component);
+                            jui.redefineUI(module.name, [], module.component);
 						} else {
                             jui.redefine(module.name, [], module.component, module.extend);
 						}
