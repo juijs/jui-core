@@ -1344,8 +1344,6 @@ var jui = {
         utility.inherit(uiFunc, globalClass[parent]);
 
         // TODO: 차트 빌더를 제외하고, 무조건 event 클래스에 정의된 init 메소드를 호출함
-        console.log(parent)
-        console.log(globalClass[parent])
         global[name] = globalClass[parent].init({
             type: name,
             "class": uiFunc
