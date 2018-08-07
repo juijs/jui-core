@@ -1666,7 +1666,7 @@
                         }
                     }
 
-					if(module.extend == "event") {
+					if(module.extend == "core" || module.extend == "event") {
 						jui.redefineUI(module.name, [], module.component, module.extend);
 					} else {
 						jui.redefine(module.name, [], module.component, module.extend);
