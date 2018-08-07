@@ -11,7 +11,7 @@ import Collection from './base/collection.js'
 import Core from './base/core.js'
 
 jui.use([
-    DomUtil, SortUtil, KeyParserUtil, Base64Util, MathUtil, ColorUtil,
+    DomUtil, SortUtil, KeyParserUtil, Base64Util, MathUtil, TemplateUtil, ColorUtil,
     Manager, Collection, Core
 ])
 
