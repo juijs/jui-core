@@ -5,7 +5,6 @@
 <META charset="UTF-8">
 <title>[JUI Library] - JavaScript/Inherit</title>
 
-<script src="../lib/jquery-1.8.0.min.js"></script>
 <script src="../dist/jui-core.js"></script>
 
 <script>
@@ -54,7 +53,7 @@ jui.ready([ "base.ui.select", "test.ui.select" ], function(base, test) {
   var obj = test(".jui", { testParam : true });
   obj.on('start', function(param) {
     console.log('start ', param);
-    
+
   });
   obj.start();  // execute parent's method
 });
