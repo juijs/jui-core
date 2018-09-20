@@ -34,7 +34,8 @@ export default {
             }
 
             this.run = function (left, right) {
-                var pivot = null;
+                var pivot = null,
+                    newPivot = null;
 
                 if (typeof left !== 'number') {
                     left = 0;
