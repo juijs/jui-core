@@ -5,10 +5,10 @@
   "description": "The core framework provided by the JUI for implementing such a grid and chart.",
   "scripts": {
     "test": "jest --config ./jest.config.js",
-    "dist": "npm run test && rollup -c"
+    "dist": "rollup -c && npm run test"
   },
-  "main": "dist/juijs.cjs.js",
-  "module": "dist/juijs.esm.js",
+  "main": "dist/jui-core.cjs.js",
+  "module": "dist/jui-core.esm.js",
   "files": [
     "bundles",
     "dist",

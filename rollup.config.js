@@ -27,7 +27,7 @@ export default [
     {
         input: 'src/main.js',
         output: {
-            file: 'dist/juijs.js',
+            file: 'dist/jui-core.js',
             format: 'iife',
             name: 'jui'
         },
@@ -36,7 +36,7 @@ export default [
     {
         input: 'src/main.js',
         output: {
-            file: 'dist/juijs.min.js',
+            file: 'dist/jui-core.min.js',
             format: 'iife',
             name: 'jui'
         },
