@@ -1,12 +1,13 @@
 {
   "name": "juijs",
-  "version": "2.1.11-es6",
+  "version": "2.1.12-es6",
   "sideEffects": false,
   "description": "The core framework provided by the JUI for implementing such a grid and chart.",
   "scripts": {
     "start": "npm run dev",
     "dev": "webpack-dev-server --env dev",
-    "prod": "webpack --env prod"
+    "prod": "webpack --env prod",
+    "test": "jest --config ./jest.config.js"
   },
   "main": "src/main.js",
   "files": [
@@ -64,9 +65,14 @@
     }
   ],
   "devDependencies": {
+    "babel": "^6.23.0",
+    "babel-core": "^6.26.3",
+    "babel-jest": "^23.6.0",
+    "babel-loader": "^7.1.5",
+    "babel-preset-env": "^1.7.0",
     "compression-webpack-plugin": "^1.1.11",
-    "css-loader": "^0.28.11",
     "html-webpack-plugin": "^3.2.0",
+    "jest": "^23.6.0",
     "uglifyjs-webpack-plugin": "^1.2.7",
     "webpack": "^4.14.0",
     "webpack-bundle-analyzer": "^2.13.1",
