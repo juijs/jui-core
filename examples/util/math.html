@@ -2,12 +2,10 @@
 <html>
 <head>
 <META charset="UTF-8">
-<title>[JUI Library] - JavaScript/Table/API</title>	
-
-<script src="../../dist/jui-core.js"></script>
+<title>[JUI Library] - JavaScript/Table/API</title>
+<script src="../../dist/juijs.min.js"></script>
 
 <script>
-
 jui.ready([ "util.math" ], function(math) {
 
     console.log('0.1 + 0.2 =', math.plus(0.1, 0.2), 0.1+ 0.2);
@@ -44,11 +42,6 @@ jui.ready([ "util.math" ], function(math) {
     for(var i = 0; i < 3; i = math.plus(i, 0.1)) {
         console.log(i, ' / ', 0.1, '=', math.div(i, 0.1), "(native ", i / 0.1, ")");
     }
-
-
-
-
-
 });
 </script>
 </head>

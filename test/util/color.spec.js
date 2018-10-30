@@ -1,4 +1,4 @@
-import jui from '../../src/main.js'
+import jui from '../../dist/juijs.esm.js'
 
 describe('/util/color.js', () => {
     const ColorUtil = jui.include('util.color');
