@@ -10,16 +10,16 @@
   "main": "dist/jui-core.cjs.js",
   "module": "dist/jui-core.esm.js",
   "files": [
-    "bundles",
     "dist",
     "examples",
     "src",
     "test",
     "package.json",
     "README.md",
-    "webpack.config.js",
-    "webpack.dev.js",
-    "webpack.prod.js"
+    "jest.config.js",
+    "rollup.dev.js",
+    ".babelrc",
+    ".gitignore"
   ],
   "repository": {
     "type": "git",
