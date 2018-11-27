@@ -17,7 +17,7 @@
     "package.json",
     "README.md",
     "jest.config.js",
-    "rollup.dev.js",
+    "rollup.config.js",
     ".babelrc",
     ".gitignore"
   ],
