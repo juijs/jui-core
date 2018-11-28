@@ -1,4 +1,4 @@
-import jui from './base.js'
+import jui from "./base.js"
 
 export default {
     name: "manager",

@@ -9,10 +9,11 @@ import ColorUtil from './util/color.js'
 import Manager from './base/manager.js'
 import Collection from './base/collection.js'
 import Core from './base/core.js'
+import Event from './base/event.js'
 
 jui.use([
     DomUtil, SortUtil, KeyParserUtil, Base64Util, MathUtil, TemplateUtil, ColorUtil,
-    Manager, Collection, Core
+    Manager, Collection, Core, Event
 ])
 
 var _ = jui.include("util.base"),

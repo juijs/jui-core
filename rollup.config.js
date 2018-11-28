@@ -26,6 +26,7 @@ export default [
     },
     {
         input: 'src/main.js',
+        external: [ 'jquery' ],
         output: {
             file: 'dist/jui-core.js',
             format: 'iife',
@@ -35,6 +36,7 @@ export default [
     },
     {
         input: 'src/main.js',
+        external: [ 'jquery' ],
         output: {
             file: 'dist/jui-core.min.js',
             format: 'iife',

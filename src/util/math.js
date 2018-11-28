@@ -1,4 +1,4 @@
-import jui from '../base/base.js'
+import jui from "../base/base.js"
 
 export default {
     name: "util.math",

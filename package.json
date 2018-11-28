@@ -1,6 +1,6 @@
 {
   "name": "juijs",
-  "version": "2.2.0-es6",
+  "version": "2.2.1-es6",
   "sideEffects": false,
   "description": "The core framework provided by the JUI for implementing such a grid and chart.",
   "scripts": {
@@ -63,6 +63,9 @@
       "email": "yoha@jennifersoft.com"
     }
   ],
+  "dependencies": {
+    "jquery": "^3.3.1"
+  },
   "devDependencies": {
     "babel": "^6.23.0",
     "babel-core": "^6.26.3",

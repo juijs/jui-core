@@ -1,4 +1,9 @@
-import jui from './base.js'
+import jui from "./base.js"
+import dom from "../util/dom.js"
+import manager from "./manager.js"
+import collection from "./collection.js"
+
+jui.use(dom, manager, collection);
 
 export default {
     name: "core",

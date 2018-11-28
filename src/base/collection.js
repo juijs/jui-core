@@ -1,5 +1,3 @@
-import jui from './base.js'
-
 export default {
     name: "collection",
     extend: null,

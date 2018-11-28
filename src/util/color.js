@@ -1,4 +1,7 @@
-import jui from '../base/base.js'
+import jui from "../base/base.js"
+import math from "./math.js"
+
+jui.use(math);
 
 export default {
     name: "util.color",
