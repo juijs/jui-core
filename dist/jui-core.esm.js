@@ -1335,8 +1335,8 @@ var jui = {
         // 상속
         utility.inherit(uiFunc, globalClass[parent]);
 
-        // TODO: 차트 빌더를 제외하고, 무조건 event 클래스에 정의된 init 메소드를 호출함
-        global$1[name] = globalClass[parent].init({
+        // TODO: event를 기본 패키지에 포함하면서 다시 롤백한 코드
+        global$1[name] = globalClass[parent != "core" ? "event" : "core"].init({
             type: name,
             "class": uiFunc
         });
