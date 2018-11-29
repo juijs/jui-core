@@ -1,11 +1,26 @@
 {
   "name": "juijs",
-  "version": "2.1.0",
+  "version": "2.2.2-es6",
+  "sideEffects": false,
   "description": "The core framework provided by the JUI for implementing such a grid and chart.",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --config ./jest.config.js",
+    "dist": "rollup -c && npm run test"
   },
-  "main": "dist/core.min.js",
+  "main": "dist/jui-core.cjs.js",
+  "module": "dist/jui-core.esm.js",
+  "files": [
+    "dist",
+    "examples",
+    "src",
+    "test",
+    "package.json",
+    "README.md",
+    "jest.config.js",
+    "rollup.config.js",
+    ".babelrc",
+    ".gitignore"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/juijs/jui-core.git"
@@ -28,15 +43,6 @@
   "bugs": {
     "url": "https://github.com/juijs/jui-core/issues"
   },
-  "devDependencies": {
-    "grunt": "~1.0.3",
-    "grunt-contrib-concat": "~1.0.1",
-    "grunt-contrib-copy": "~1.0.0",
-    "grunt-contrib-qunit": "~2.0.0",
-    "grunt-contrib-uglify": "~3.3.0",
-    "grunt-contrib-watch": "~1.1.0",
-    "load-grunt-tasks": "~4.0.0"
-  },
   "categories": [
     "Frameworks",
     "UI"
@@ -57,18 +63,18 @@
       "email": "yoha@jennifersoft.com"
     }
   ],
-  "jam": {
-    "dependencies": {
-      "jquery": ">=1.8.0"
-    },
-    "main": [
-      "dist/core.min.js"
-    ],
-    "shim": {
-      "deps": [
-        "jquery"
-      ],
-      "exports": "juijs"
-    }
+  "dependencies": {
+    "jquery": "^3.3.1"
+  },
+  "devDependencies": {
+    "babel": "^6.23.0",
+    "babel-core": "^6.26.3",
+    "babel-jest": "^23.6.0",
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-preset-env": "^1.7.0",
+    "jest": "^23.6.0",
+    "rollup": "^0.66.6",
+    "rollup-plugin-babel": "^3.0.7",
+    "rollup-plugin-uglify": "^6.0.0"
   }
 }

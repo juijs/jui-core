@@ -3,27 +3,24 @@
 #### Loading resources
 JUI core is now available without loading the jQuery.
 ```html
-<script src="dist/core.min.js"></script>
+<script src="dist/jui-core.js"></script>
 ```
 
 #### Installing in command
 ```
 npm install juijs
-bower install juijs
-jamjs install juijs
 ```
 
 #### To build the project
-Build using a grunt in JUI Library
+Build using a rollup in JUI Library
 ```
-grunt       // Build all processes
-grunt js    // Merge and Minifiy JavaScript files
-grunt test  // Unit Tests
+npm run dist
 ```
+
 After the build output is shown below.
 ```
-dist/core.js
-dist/core.min.js
+dist/jui-core.js
+dist/jui-core.min.js
 ```
 
 ## Documentation
@@ -38,7 +35,7 @@ Created by Alvin and Jayden, Yoha
 
 MIT License 
 
-Copyright (C) 2016 (```JenniferSoft Inc.```)
+Copyright (C) 2018 (```JenniferSoft Inc.```)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
