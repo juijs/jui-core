@@ -2544,7 +2544,7 @@ var jui = (function ($) {
                   var source = "__p+='" + text.replace(escaper, function (match) {
                       return '\\' + escapes[match];
                   }).replace(settings.escape || noMatch, function (match, code) {
-                      return "'+\n_.escape(" + unescape(code) + ")+\n'";
+                      return "'+\nescape(" + unescape(code) + ")+\n'";
                   }).replace(settings.interpolate || noMatch, function (match, code) {
                       return "'+\n(" + unescape(code) + ")+\n'";
                   }).replace(settings.evaluate || noMatch, function (match, code) {
